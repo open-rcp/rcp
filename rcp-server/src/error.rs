@@ -34,6 +34,9 @@ pub enum Error {
     #[error("Service error: {0}")]
     Service(String),
     
+    #[error("Protocol error: {0}")]
+    Protocol(String),
+    
     #[error("{0}")]
     Other(String),
 }

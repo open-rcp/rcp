@@ -1,7 +1,7 @@
 use crate::{
     config::ServerConfig,
     error::{Error, Result},
-    service::Service,
+    service::{Service, ServiceFactory},
 };
 use log::{debug, error, info, warn};
 use rcp_core::{
@@ -11,7 +11,6 @@ use rcp_core::{
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::net::TcpStream;
-use tokio::sync::Mutex;
 use uuid::Uuid;
 
 /// A client session
@@ -41,7 +40,7 @@ pub struct Session {
     permissions: Vec<String>,
     
     /// Active services
-    services: HashMap<String, Arc<Mutex<dyn Service + Send>>>,
+    services: HashMap<String, Box<dyn Service + Send>>,
 }
 
 impl Session {
@@ -104,7 +103,15 @@ impl Session {
     
     /// Handle an incoming frame
     async fn handle_frame(&mut self, frame: Frame) -> Result<()> {
-        match frame.command_id() {
+        self.process_frame(&frame).await
+    }
+    
+    /// Process a frame
+    async fn process_frame(&mut self, frame: &Frame) -> Result<()> {
+        let cmd_id = frame.command_id();
+        log::debug!("Processing frame with command ID {:02x} for session {}", cmd_id, self.id);
+        
+        match cmd_id {
             cmd if cmd == CommandId::Heartbeat as u8 => {
                 // Reply with heartbeat
                 let response = Frame::new(CommandId::Heartbeat as u8, Vec::new());
@@ -120,28 +127,104 @@ impl Session {
                 warn!("Application launch not implemented yet");
             }
             cmd if cmd == CommandId::ServiceSubscribe as u8 => {
-                // Handle service subscription
-                // TODO: Parse service name from frame
-                let service_name = String::from_utf8_lossy(&frame.payload());
-                info!("Client requested subscription to service: {}", service_name);
+                let service_name = String::from_utf8_lossy(&frame.payload()).to_string();
+                info!("Received service subscription request for {} from session {}", service_name, self.id);
                 
-                // Check permissions
-                if !self.has_permission(&format!("service:{}", service_name)) {
-                    return Err(Error::PermissionDenied(format!("No permission to use service {}", service_name)));
+                // Check if we're allowed to access this service
+                if !self.has_permission(&service_name) && !self.has_permission("*") {
+                    return Err(Error::PermissionDenied(format!("No permission to access service: {}", service_name)));
                 }
                 
-                // TODO: Register service
-                warn!("Service subscription not implemented yet");
+                self.subscribe_service(&service_name).await?;
+                
+                // Send acknowledgment to the client
+                let ack_frame = Frame::new(CommandId::Ack as u8, service_name.into_bytes());
+                self.protocol.write_frame(&ack_frame).await?;
             }
             cmd if cmd == CommandId::Ping as u8 => {
                 // Reply with pong (same command ID)
                 let response = Frame::new(CommandId::Ping as u8, frame.payload().to_vec());
                 self.protocol.write_frame(&response).await?;
             }
-            cmd => {
-                warn!("Unhandled command: {:02x}", cmd);
+            // Commands that may be handled by services
+            cmd if cmd == CommandId::VideoQuality as u8 || 
+                     cmd == CommandId::SendInput as u8 || 
+                     cmd == CommandId::ClipboardData as u8 => {
+                
+                let mut handled = false;
+                // Try to find a service that can handle this command
+                for (name, service) in &mut self.services {
+                    match service.process_frame(frame).await {
+                        Ok(_) => {
+                            log::info!("Frame with command {:02x} processed by service {} for session {}", cmd_id, name, self.id);
+                            handled = true;
+                            break;
+                        }
+                        Err(Error::Service(msg)) if msg.contains("Unsupported command") => {
+                            // This service doesn't support this command, try the next one
+                            continue;
+                        }
+                        Err(e) => {
+                            log::error!("Error processing frame in service {}: {}", name, e);
+                            return Err(e);
+                        }
+                    }
+                }
+                
+                if !handled {
+                    // No service could handle this frame
+                    log::warn!("No service could handle command {:02x} for session {}", cmd_id, self.id);
+                    return Err(Error::Protocol(format!("Unhandled command: {:02x}", cmd_id)));
+                }
+            }
+            _ => {
+                // Unrecognized command
+                log::warn!("Unrecognized command {:02x} for session {}", cmd_id, self.id);
+                return Err(Error::Protocol(format!("Unrecognized command: {:02x}", cmd_id)));
             }
         }
+        
+        // Check for service frames to send
+        self.process_service_frames().await?;
+        
+        Ok(())
+    }
+    
+    /// Process outgoing frames from services
+    async fn process_service_frames(&mut self) -> Result<()> {
+        // Poll each service for frames to send
+        for (name, service) in &mut self.services {
+            if let Ok(Some(frame)) = service.get_frame().await {
+                log::debug!("Sending frame from service {} to client for session {}", name, self.id);
+                if let Err(e) = self.protocol.write_frame(&frame).await {
+                    log::error!("Failed to send frame to client: {}", e);
+                    return Err(Error::Core(e));
+                }
+            }
+        }
+        
+        Ok(())
+    }
+    
+    /// Subscribe to a service
+    async fn subscribe_service(&mut self, service_name: &str) -> Result<()> {
+        if self.services.contains_key(service_name) {
+            log::info!("Service {} already subscribed for session {}", service_name, self.id);
+            return Ok(());
+        }
+        
+        log::info!("Subscribing to service {} for session {}", service_name, self.id);
+        let mut service = ServiceFactory::create(service_name).ok_or_else(|| {
+            Error::Service(format!("Service not available: {}", service_name))
+        })?;
+        
+        // Start the service
+        service.start().await?;
+        
+        // Add to services map
+        self.services.insert(service_name.to_string(), service);
+        
+        log::info!("Service {} successfully subscribed for session {}", service_name, self.id);
         
         Ok(())
     }
@@ -272,9 +355,11 @@ impl Session {
         info!("Closing session {}", self.id);
         
         // Clean up services
-        for (name, service) in self.services.drain() {
+        for (name, mut service) in self.services.drain() {
             debug!("Stopping service: {}", name);
-            // TODO: Add proper service shutdown
+            if let Err(e) = service.stop().await {
+                warn!("Error stopping service {}: {}", name, e);
+            }
         }
         
         // Close the protocol

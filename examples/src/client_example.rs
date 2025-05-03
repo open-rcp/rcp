@@ -63,8 +63,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Subscribing to display service...");
     let display_service = {
         let client = client_arc.lock().await;
+        // Use the generic ServiceSubscribe command instead of specific subscription commands
         client.subscribe_service(ServiceType::Display).await?
     };
+
+    // Log subscription progress
+    println!("Display service subscription complete, sending quality setting");
+
+    // Send video quality request - use actual VideoQuality command
+    println!("Setting display quality...");
+    let quality_frame = rcp_core::Frame::new(rcp_core::CommandId::VideoQuality as u8, vec![90]); // 90% quality
+    if let Err(e) = display_service.send_fire_and_forget(quality_frame).await {
+        eprintln!("Failed to set display quality: {}", e);
+    }
     
     // Subscribe to input service
     println!("Subscribing to input service...");
@@ -79,13 +90,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let client = client_arc.lock().await;
         client.subscribe_service(ServiceType::Clipboard).await?
     };
-    
-    // Send video quality request
-    println!("Setting display quality...");
-    let quality_frame = rcp_core::Frame::new(rcp_core::CommandId::VideoQuality as u8, vec![90]); // 90% quality
-    if let Err(e) = display_service.send_fire_and_forget(quality_frame).await {
-        eprintln!("Failed to set display quality: {}", e);
-    }
     
     // Simulate mouse movements
     println!("Simulating mouse movements...");
