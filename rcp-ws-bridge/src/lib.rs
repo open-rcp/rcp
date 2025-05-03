@@ -1,7 +1,7 @@
 use std::net::SocketAddr;
 use std::sync::Arc;
 
-use anyhow::Result;
+use anyhow;
 use futures_util::{SinkExt, StreamExt};
 use log::{debug, error, info, warn};
 use serde::{Deserialize, Serialize};
@@ -10,10 +10,11 @@ use tokio::sync::{mpsc, Mutex};
 use tokio_tungstenite::{accept_async, tungstenite::Message};
 use uuid::Uuid;
 
-use rcp_client::Client;
+use rcp_client::{Client, ClientBuilder, ClientConfig};
+use rcp_core::AuthMethod;
 
 mod error;
-pub use error::Error;
+pub use error::{Error, Result};
 
 /// WebSocket message types that can be exchanged with browser clients
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -33,15 +34,18 @@ pub enum WsMessage {
 pub struct BridgeConfig {
     /// The address to bind the WebSocket server to
     pub ws_addr: SocketAddr,
-    /// The RCP server address to connect to
-    pub rcp_addr: String,
+    /// The RCP server host to connect to
+    pub rcp_host: String,
+    /// The RCP server port to connect to
+    pub rcp_port: u16,
 }
 
 impl Default for BridgeConfig {
     fn default() -> Self {
         Self {
             ws_addr: "127.0.0.1:9002".parse().unwrap(),
-            rcp_addr: "127.0.0.1:9001".to_string(),
+            rcp_host: "127.0.0.1".to_string(),
+            rcp_port: 9001,
         }
     }
 }
@@ -66,12 +70,13 @@ impl WsBridge {
         // Accept connections
         while let Ok((stream, addr)) = listener.accept().await {
             info!("New WebSocket connection from {}", addr);
-            let rcp_addr = self.config.rcp_addr.clone();
+            let rcp_host = self.config.rcp_host.clone();
+            let rcp_port = self.config.rcp_port;
             
             // Spawn a new task for each connection
             tokio::spawn(async move {
-                if let Err(e) = handle_connection(stream, rcp_addr).await {
-                    error!("Error handling WebSocket connection: {}", e);
+                if let Err(e) = handle_connection(stream, rcp_host, rcp_port).await {
+                    error!("Error handling WebSocket connection: {:?}", e);
                 }
             });
         }
@@ -81,7 +86,7 @@ impl WsBridge {
 }
 
 /// Handle a single WebSocket connection
-async fn handle_connection(stream: TcpStream, rcp_addr: String) -> Result<()> {
+async fn handle_connection(stream: TcpStream, rcp_host: String, rcp_port: u16) -> Result<()> {
     // Accept the WebSocket connection
     let ws_stream = accept_async(stream).await?;
     let (mut ws_sender, mut ws_receiver) = ws_stream.split();
@@ -94,7 +99,7 @@ async fn handle_connection(stream: TcpStream, rcp_addr: String) -> Result<()> {
     let client_clone = client.clone();
     
     // Handle incoming messages from the WebSocket
-    let ws_handler = async move {
+    let ws_handler = async {
         while let Some(msg) = ws_receiver.next().await {
             let msg = match msg {
                 Ok(msg) => msg,
@@ -113,14 +118,39 @@ async fn handle_connection(stream: TcpStream, rcp_addr: String) -> Result<()> {
                             match ws_msg {
                                 WsMessage::Auth { token } => {
                                     // Create RCP client and authenticate
-                                    let mut client_config = rcp_client::ClientConfig::default();
-                                    client_config.server_addr = rcp_addr.clone();
+                                    let client_builder = Client::builder()
+                                        .host(rcp_host.clone())
+                                        .port(rcp_port)
+                                        .client_name("WebSocket Bridge")
+                                        .client_id(Uuid::new_v4())
+                                        .auth_method(AuthMethod::PreSharedKey)
+                                        .auth_psk(token.clone());
                                     
-                                    match Client::connect(client_config).await {
-                                        Ok(mut new_client) => {
-                                            match new_client.authenticate(&token).await {
+                                    let new_client = client_builder.build();
+                                    
+                                    // Attempt to connect
+                                    match new_client.connect().await {
+                                        Ok(_) => {
+                                            // Now authenticate
+                                            match new_client.authenticate().await {
                                                 Ok(_) => {
                                                     info!("Client authenticated successfully");
+                                                    
+                                                    // Start client message processor
+                                                    if let Err(e) = new_client.start().await {
+                                                        error!("Failed to start client: {}", e);
+                                                        let response = WsMessage::Error {
+                                                            code: "START_FAILED".to_string(),
+                                                            message: format!("Failed to start client: {}", e)
+                                                        };
+                                                        let json_str = serde_json::to_string(&response).unwrap_or_default();
+                                                        if let Err(e) = to_ws_tx.send(Message::Text(json_str)).await {
+                                                            error!("Failed to send error response: {}", e);
+                                                        }
+                                                        continue;
+                                                    }
+                                                    
+                                                    // Store the client
                                                     let mut client_guard = client_clone.lock().await;
                                                     *client_guard = Some(new_client);
                                                     
@@ -129,7 +159,8 @@ async fn handle_connection(stream: TcpStream, rcp_addr: String) -> Result<()> {
                                                         service: "auth".to_string(),
                                                         data: serde_json::json!({"status": "success"})
                                                     };
-                                                    if let Err(e) = to_ws_tx.send(Message::Text(serde_json::to_string(&response)?)).await {
+                                                    let json_str = serde_json::to_string(&response).unwrap_or_default();
+                                                    if let Err(e) = to_ws_tx.send(Message::Text(json_str)).await {
                                                         error!("Failed to send auth response: {}", e);
                                                     }
                                                 }
@@ -139,7 +170,8 @@ async fn handle_connection(stream: TcpStream, rcp_addr: String) -> Result<()> {
                                                         code: "AUTH_FAILED".to_string(),
                                                         message: format!("Authentication failed: {}", e)
                                                     };
-                                                    if let Err(e) = to_ws_tx.send(Message::Text(serde_json::to_string(&response)?)).await {
+                                                    let json_str = serde_json::to_string(&response).unwrap_or_default();
+                                                    if let Err(e) = to_ws_tx.send(Message::Text(json_str)).await {
                                                         error!("Failed to send auth error: {}", e);
                                                     }
                                                 }
@@ -151,7 +183,8 @@ async fn handle_connection(stream: TcpStream, rcp_addr: String) -> Result<()> {
                                                 code: "CONNECTION_FAILED".to_string(),
                                                 message: format!("Failed to connect to RCP server: {}", e)
                                             };
-                                            if let Err(e) = to_ws_tx.send(Message::Text(serde_json::to_string(&response)?)).await {
+                                            let json_str = serde_json::to_string(&response).unwrap_or_default();
+                                            if let Err(e) = to_ws_tx.send(Message::Text(json_str)).await {
                                                 error!("Failed to send connection error: {}", e);
                                             }
                                         }
@@ -169,7 +202,8 @@ async fn handle_connection(stream: TcpStream, rcp_addr: String) -> Result<()> {
                                             service: service.clone(),
                                             data: serde_json::json!({"status": "received"})
                                         };
-                                        if let Err(e) = to_ws_tx.send(Message::Text(serde_json::to_string(&response)?)).await {
+                                        let json_str = serde_json::to_string(&response).unwrap_or_default();
+                                        if let Err(e) = to_ws_tx.send(Message::Text(json_str)).await {
                                             error!("Failed to send command response: {}", e);
                                         }
                                     } else {
@@ -178,7 +212,8 @@ async fn handle_connection(stream: TcpStream, rcp_addr: String) -> Result<()> {
                                             code: "NOT_AUTHENTICATED".to_string(),
                                             message: "Not authenticated".to_string()
                                         };
-                                        if let Err(e) = to_ws_tx.send(Message::Text(serde_json::to_string(&response)?)).await {
+                                        let json_str = serde_json::to_string(&response).unwrap_or_default();
+                                        if let Err(e) = to_ws_tx.send(Message::Text(json_str)).await {
                                             error!("Failed to send auth error: {}", e);
                                         }
                                     }
@@ -194,7 +229,8 @@ async fn handle_connection(stream: TcpStream, rcp_addr: String) -> Result<()> {
                                 code: "INVALID_MESSAGE".to_string(),
                                 message: format!("Invalid message format: {}", e)
                             };
-                            if let Err(e) = to_ws_tx.send(Message::Text(serde_json::to_string(&response)?)).await {
+                            let json_str = serde_json::to_string(&response).unwrap_or_default();
+                            if let Err(e) = to_ws_tx.send(Message::Text(json_str)).await {
                                 error!("Failed to send parse error: {}", e);
                             }
                         }

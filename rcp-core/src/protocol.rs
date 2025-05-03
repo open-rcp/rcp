@@ -2,6 +2,7 @@ use crate::{Error, Frame, Result};
 use bytes::BytesMut;
 use tokio::io::{AsyncRead, AsyncWrite, AsyncReadExt, AsyncWriteExt};
 use std::sync::Arc;
+use std::fmt;
 
 /// Connection state for the protocol
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -32,6 +33,16 @@ pub struct Protocol<T> {
     
     /// Connection state
     state: ConnectionState,
+}
+
+// Implement Debug trait for Protocol
+impl<T> fmt::Debug for Protocol<T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Protocol")
+            .field("read_buffer_size", &self.read_buffer.len())
+            .field("state", &self.state)
+            .finish_non_exhaustive()
+    }
 }
 
 impl<T> Protocol<T>
