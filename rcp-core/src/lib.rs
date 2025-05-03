@@ -8,14 +8,14 @@ mod header;
 mod protocol;
 mod auth;
 mod command;
-mod utils;
+pub mod utils;
 
 pub use error::{Error, Result};
 pub use frame::Frame;
 pub use header::Header;
-pub use protocol::Protocol;
-pub use auth::{Auth, AuthMethod};
-pub use command::Command;
+pub use protocol::{Protocol, ConnectionState};
+pub use auth::{Auth, AuthMethod, AuthChallenge, AuthPayload, AuthResponse, SessionInfo};
+pub use command::{Command, CommandId};
 
 /// Current protocol version
 pub const PROTOCOL_VERSION: u8 = 0x01;

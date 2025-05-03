@@ -1,6 +1,6 @@
 use crate::{Error, Frame, Result};
 use bytes::BytesMut;
-use tokio::io::{AsyncRead, AsyncWrite};
+use tokio::io::{AsyncRead, AsyncWrite, AsyncReadExt, AsyncWriteExt};
 use std::sync::Arc;
 
 /// Connection state for the protocol

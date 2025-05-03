@@ -27,7 +27,7 @@ pub const DEFAULT_KEEP_ALIVE_SECS: u64 = 30;
 pub const DEFAULT_RECONNECT_DELAY_MS: u64 = 2000;
 
 /// A simple example of using the RCP client:
-///
+/// 
 /// ```rust,no_run
 /// use rcp_client::{Client, ServiceType};
 /// use tokio::time::{sleep, Duration};
@@ -61,3 +61,5 @@ pub const DEFAULT_RECONNECT_DELAY_MS: u64 = 2000;
 /// # Ok(())
 /// # }
 /// ```
+#[doc(hidden)]
+pub struct Examples;
