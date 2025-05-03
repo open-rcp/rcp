@@ -30,7 +30,7 @@ pub const DEFAULT_RECONNECT_DELAY_MS: u64 = 2000;
 ///
 /// ```rust,no_run
 /// use rcp_client::{Client, ServiceType};
-/// use tokio::time::Duration;
+/// use tokio::time::{sleep, Duration};
 /// 
 /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
 /// // Create the client
@@ -54,7 +54,7 @@ pub const DEFAULT_RECONNECT_DELAY_MS: u64 = 2000;
 /// let input_service = client.subscribe_service(ServiceType::Input).await?;
 /// 
 /// // Keep the client running
-/// tokio::time::sleep(Duration::from_secs(60)).await;
+/// sleep(Duration::from_secs(60)).await;
 /// 
 /// // Disconnect when done
 /// client.disconnect().await?;

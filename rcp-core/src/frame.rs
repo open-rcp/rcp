@@ -1,4 +1,4 @@
-use crate::{Error, Header, Result};
+use crate::{Header, Result};
 use bytes::{Buf, BytesMut};
 
 /// Represents a complete RCP protocol frame with header and payload
