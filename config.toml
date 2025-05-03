@@ -1,0 +1,29 @@
+# RCP Server Configuration
+
+# Server address to bind to
+address = "0.0.0.0"
+
+# Server port to listen on
+port = 8716
+
+[tls]
+enabled = false
+cert_path = "cert.pem"
+key_path = "key.pem"
+
+[auth]
+required = true
+# Pre-shared key for testing purposes
+psk = "test_key"
+allowed_clients = []
+
+[session]
+max_sessions = 10
+timeout_secs = 3600
+allow_resumption = true
+
+[application]
+allowed_apps = []
+denied_apps = []
+allow_elevated = false
+work_dir = "./apps"
