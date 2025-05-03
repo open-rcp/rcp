@@ -1,6 +1,6 @@
 use crate::{
     config::ServerConfig,
-    error::{Error, Result},
+    error::Result,
     session::Session,
 };
 use log::{debug, error, info};

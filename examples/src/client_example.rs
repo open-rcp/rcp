@@ -62,21 +62,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Subscribe to display service
     println!("Subscribing to display service...");
     let display_service = {
-        let mut client = client_arc.lock().await;
+        let client = client_arc.lock().await;
         client.subscribe_service(ServiceType::Display).await?
     };
     
     // Subscribe to input service
     println!("Subscribing to input service...");
     let input_service = {
-        let mut client = client_arc.lock().await;
+        let client = client_arc.lock().await;
         client.subscribe_service(ServiceType::Input).await?
     };
     
     // Subscribe to clipboard service
     println!("Subscribing to clipboard service...");
     let clipboard_service = {
-        let mut client = client_arc.lock().await;
+        let client = client_arc.lock().await;
         client.subscribe_service(ServiceType::Clipboard).await?
     };
     
@@ -139,7 +139,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Cleanup and disconnecting...");
     
     // Disconnect
-    let mut client = client_arc.lock().await;
+    let client = client_arc.lock().await;
     if let Err(e) = client.disconnect().await {
         eprintln!("Failed to disconnect: {}", e);
     }

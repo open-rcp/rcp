@@ -1,4 +1,4 @@
-use std::{fmt, io};
+use std::io;
 use thiserror::Error;
 
 /// Result type for RCP client operations

@@ -5,8 +5,8 @@ use crate::{
 };
 use log::{debug, error, info, warn};
 use rcp_core::{
-    Auth, AuthChallenge, AuthMethod, AuthPayload, AuthResponse, CommandId, ConnectionState,
-    Frame, Protocol, SessionInfo,
+    Auth, AuthMethod, AuthPayload, AuthResponse, CommandId, ConnectionState,
+    Frame, Protocol,
 };
 use std::collections::HashMap;
 use std::sync::Arc;
