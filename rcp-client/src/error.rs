@@ -1,135 +1,77 @@
-use std::fmt;
-use std::io;
-use std::result;
+use std::{fmt, io};
 use thiserror::Error;
 
 /// Result type for RCP client operations
-pub type Result<T> = result::Result<T, Error>;
+pub type Result<T> = std::result::Result<T, Error>;
 
-/// Error types for RCP client
+/// Error type for RCP client
 #[derive(Error, Debug)]
 pub enum Error {
-    /// Connection errors
+    /// I/O error
+    #[error("I/O error: {0}")]
+    IO(#[from] io::Error),
+
+    /// Connection error
     #[error("Connection error: {0}")]
     Connection(String),
 
-    /// Authentication errors
+    /// Authentication error
     #[error("Authentication error: {0}")]
-    Authentication(String),
+    Auth(String),
 
-    /// Protocol errors
+    /// Protocol error
     #[error("Protocol error: {0}")]
     Protocol(String),
 
-    /// Service-specific errors
+    /// Service error
     #[error("Service error: {0}")]
     Service(String),
 
-    /// Timeout errors
+    /// Timeout error
     #[error("Operation timed out: {0}")]
     Timeout(String),
 
-    /// I/O errors
-    #[error("I/O error: {0}")]
-    Io(#[from] io::Error),
+    /// Core library error
+    #[error("Core error: {0}")]
+    Core(#[from] rcp_core::error::Error),
 
-    /// Serialization errors
+    /// Websocket protocol error
+    #[error("WebSocket error: {0}")]
+    WebSocket(String),
+
+    /// Serialization error
     #[error("Serialization error: {0}")]
-    Serialization(String),
+    Serialize(String),
 
-    /// State errors (operation not valid in current state)
-    #[error("Invalid state for operation: {0}")]
-    InvalidState(String),
+    /// Deserialization error
+    #[error("Deserialization error: {0}")]
+    Deserialize(String),
 
-    /// Session errors
-    #[error("Session error: {0}")]
-    Session(String),
-
-    /// Configuration errors
-    #[error("Configuration error: {0}")]
-    Config(String),
-
-    /// Permission errors
-    #[error("Permission denied: {0}")]
-    Permission(String),
-
-    /// Frame parsing errors
-    #[error("Frame parsing error: {0}")]
-    FrameParsing(String),
-
-    /// Other errors
+    /// Generic error
     #[error("{0}")]
     Other(String),
 }
 
-impl Error {
-    /// Create a new connection error
-    pub fn connection<S: Into<String>>(msg: S) -> Self {
-        Error::Connection(msg.into())
-    }
-
-    /// Create a new authentication error
-    pub fn authentication<S: Into<String>>(msg: S) -> Self {
-        Error::Authentication(msg.into())
-    }
-
-    /// Create a new protocol error
-    pub fn protocol<S: Into<String>>(msg: S) -> Self {
-        Error::Protocol(msg.into())
-    }
-
-    /// Create a new service error
-    pub fn service<S: Into<String>>(msg: S) -> Self {
-        Error::Service(msg.into())
-    }
-
-    /// Create a new timeout error
-    pub fn timeout<S: Into<String>>(msg: S) -> Self {
-        Error::Timeout(msg.into())
-    }
-
-    /// Create a new serialization error
-    pub fn serialization<S: Into<String>>(msg: S) -> Self {
-        Error::Serialization(msg.into())
-    }
-
-    /// Create a new invalid state error
-    pub fn invalid_state<S: Into<String>>(msg: S) -> Self {
-        Error::InvalidState(msg.into())
-    }
-
-    /// Create a new session error
-    pub fn session<S: Into<String>>(msg: S) -> Self {
-        Error::Session(msg.into())
-    }
-
-    /// Create a new configuration error
-    pub fn config<S: Into<String>>(msg: S) -> Self {
-        Error::Config(msg.into())
-    }
-
-    /// Create a new permission error
-    pub fn permission<S: Into<String>>(msg: S) -> Self {
-        Error::Permission(msg.into())
-    }
-
-    /// Create a new frame parsing error
-    pub fn frame_parsing<S: Into<String>>(msg: S) -> Self {
-        Error::FrameParsing(msg.into())
-    }
-
-    /// Create a new other error
-    pub fn other<S: Into<String>>(msg: S) -> Self {
-        Error::Other(msg.into())
+impl From<tokio_tungstenite::tungstenite::Error> for Error {
+    fn from(err: tokio_tungstenite::tungstenite::Error) -> Self {
+        Self::WebSocket(err.to_string())
     }
 }
 
-// Allow conversion from string types to Error
-impl<S> From<S> for Error
-where
-    S: Into<String>,
-{
-    fn from(s: S) -> Self {
-        Error::Other(s.into())
+impl From<serde_json::Error> for Error {
+    fn from(err: serde_json::Error) -> Self {
+        Self::Deserialize(err.to_string())
+    }
+}
+
+impl From<String> for Error {
+    fn from(err: String) -> Self {
+        Self::Other(err)
+    }
+}
+
+impl From<&str> for Error {
+    fn from(err: &str) -> Self {
+        Self::Other(err.to_string())
     }
 }

@@ -1,247 +1,365 @@
-use crate::client::Client;
 use crate::error::{Error, Result};
-use async_trait::async_trait;
-use log::{debug, error, info, warn};
+use log::{debug, trace};
 use rcp_core::{CommandId, Frame};
-use std::sync::Arc;
-use tokio::sync::{mpsc, Mutex};
+use std::fmt;
+use tokio::sync::{mpsc, oneshot};
 use uuid::Uuid;
 
-/// Event handler for services
-#[async_trait]
-pub trait ServiceEventHandler: Send + Sync {
-    /// Handle a frame received for this service
-    async fn handle_frame(&self, frame: Frame) -> Result<()>;
+/// Service type enumeration
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum ServiceType {
+    /// Display service for screen sharing
+    Display,
+    
+    /// Input service for sending keyboard/mouse events
+    Input,
+    
+    /// Audio service for streaming audio
+    Audio,
+    
+    /// Clipboard service for clipboard synchronization
+    Clipboard,
+    
+    /// File transfer service
+    FileTransfer,
+    
+    /// Custom service
+    Custom(u8),
 }
 
-/// Client service
-pub struct Service {
+impl ServiceType {
+    /// Get the string representation of a service type
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Display => "display",
+            Self::Input => "input",
+            Self::Audio => "audio",
+            Self::Clipboard => "clipboard",
+            Self::FileTransfer => "file-transfer",
+            Self::Custom(_) => "custom",
+        }
+    }
+    
+    /// Get the command ID for subscribing to this service
+    pub fn subscription_command(&self) -> u8 {
+        match self {
+            Self::Display => CommandId::SubscribeDisplay as u8,
+            Self::Input => CommandId::SubscribeInput as u8,
+            Self::Audio => CommandId::SubscribeAudio as u8,
+            Self::Clipboard => CommandId::SubscribeClipboard as u8,
+            Self::FileTransfer => CommandId::SubscribeFileTransfer as u8,
+            Self::Custom(id) => *id,
+        }
+    }
+    
+    /// Get a service type from a string
+    pub fn from_str(s: &str) -> Option<Self> {
+        match s.to_lowercase().as_str() {
+            "display" => Some(Self::Display),
+            "input" => Some(Self::Input),
+            "audio" => Some(Self::Audio),
+            "clipboard" => Some(Self::Clipboard),
+            "file-transfer" => Some(Self::FileTransfer),
+            _ => None,
+        }
+    }
+}
+
+impl fmt::Display for ServiceType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.as_str())
+    }
+}
+
+/// Service message with request-response channel
+#[derive(Debug)]
+pub struct ServiceMessage {
+    /// Message ID
+    pub id: Uuid,
+    
+    /// Frame containing the message
+    pub frame: Frame,
+    
+    /// Response channel
+    pub response_tx: Option<oneshot::Sender<Result<Frame>>>,
+}
+
+impl Clone for ServiceMessage {
+    fn clone(&self) -> Self {
+        Self {
+            id: self.id,
+            frame: self.frame.clone(),
+            response_tx: None, // Can't clone the oneshot sender
+        }
+    }
+}
+
+/// Generic service trait
+#[async_trait::async_trait]
+pub trait Service: Send + Sync {
+    /// Start the service
+    async fn start(&mut self) -> Result<()>;
+    
+    /// Stop the service
+    async fn stop(&mut self) -> Result<()>;
+    
+    /// Handle an incoming message
+    async fn handle_message(&mut self, message: ServiceMessage) -> Result<()>;
+}
+
+/// Client-side service client
+#[derive(Debug, Clone)]
+pub struct ServiceClient {
+    /// Service type
+    service_type: ServiceType,
+    
     /// Service name
-    name: String,
+    service_name: String,
     
-    /// Service ID
-    id: Uuid,
-    
-    /// The client
-    client: Arc<Mutex<Client>>,
-    
-    /// Event handler
-    event_handler: Option<Box<dyn ServiceEventHandler>>,
-    
-    /// Event receiver
-    event_receiver: mpsc::Receiver<Frame>,
-    
-    /// Event sender
-    event_sender: mpsc::Sender<Frame>,
+    /// Message sender channel
+    tx: mpsc::Sender<ServiceMessage>,
 }
 
-impl Service {
-    /// Create a new service
-    pub fn new(name: String, client: Arc<Mutex<Client>>) -> Self {
-        let (tx, rx) = mpsc::channel(100);
-        
+impl ServiceClient {
+    /// Create a new service client
+    pub fn new(
+        service_type: ServiceType,
+        service_name: String,
+        tx: mpsc::Sender<ServiceMessage>,
+    ) -> Self {
         Self {
-            name,
+            service_type,
+            service_name,
+            tx,
+        }
+    }
+    
+    /// Get the service type
+    pub fn service_type(&self) -> ServiceType {
+        self.service_type
+    }
+    
+    /// Get the service name
+    pub fn service_name(&self) -> &str {
+        &self.service_name
+    }
+    
+    /// Send a message and get a response
+    pub async fn send_request(&self, frame: Frame) -> Result<Frame> {
+        let (tx, rx) = oneshot::channel();
+        let msg = ServiceMessage {
             id: Uuid::new_v4(),
-            client,
-            event_handler: None,
-            event_receiver: rx,
-            event_sender: tx,
-        }
+            frame,
+            response_tx: Some(tx),
+        };
+        
+        // Send the message to the service handler
+        trace!("Sending request message to service {}", self.service_name);
+        self.tx.send(msg).await.map_err(|_| {
+            Error::Service(format!("Failed to send message to service {}", self.service_name))
+        })?;
+        
+        // Wait for the response
+        trace!("Waiting for response from service {}", self.service_name);
+        let response = rx.await.map_err(|_| {
+            Error::Service(format!("Failed to receive response from service {}", self.service_name))
+        })??;
+        
+        Ok(response)
     }
     
-    /// Set the event handler for this service
-    pub fn set_event_handler(&mut self, handler: Box<dyn ServiceEventHandler>) {
-        self.event_handler = Some(handler);
-    }
-    
-    /// Subscribe to the service on the server
-    pub async fn subscribe(&self) -> Result<()> {
-        let mut client = self.client.lock().await;
+    /// Send a message without expecting a response
+    pub async fn send_fire_and_forget(&self, frame: Frame) -> Result<()> {
+        let msg = ServiceMessage {
+            id: Uuid::new_v4(),
+            frame,
+            response_tx: None,
+        };
         
-        // Send subscription frame
-        let payload = self.name.as_bytes().to_vec();
-        let frame = Frame::new(CommandId::ServiceSubscribe as u8, payload);
-        
-        client.send_frame(frame).await?;
-        info!("Subscribed to service: {}", self.name);
-        
-        Ok(())
-    }
-    
-    /// Unsubscribe from the service
-    pub async fn unsubscribe(&self) -> Result<()> {
-        let mut client = self.client.lock().await;
-        
-        // Send unsubscription frame
-        let payload = self.name.as_bytes().to_vec();
-        let frame = Frame::new(CommandId::ServiceUnsubscribe as u8, payload);
-        
-        client.send_frame(frame).await?;
-        info!("Unsubscribed from service: {}", self.name);
-        
-        Ok(())
-    }
-    
-    /// Send a frame to the service
-    pub async fn send_frame(&self, frame: Frame) -> Result<()> {
-        let mut client = self.client.lock().await;
-        client.send_frame(frame).await
-    }
-    
-    /// Process a frame received from the server
-    pub async fn process_frame(&self, frame: Frame) -> Result<()> {
-        if let Some(handler) = &self.event_handler {
-            handler.handle_frame(frame).await?;
-        }
+        // Send the message to the service handler
+        trace!("Sending fire-and-forget message to service {}", self.service_name);
+        self.tx.send(msg).await.map_err(|_| {
+            Error::Service(format!("Failed to send message to service {}", self.service_name))
+        })?;
         
         Ok(())
     }
 }
 
-/// Display service client
-pub struct DisplayService {
-    /// The underlying service
-    service: Service,
-    
-    /// Frame receiver for display updates
-    frame_receiver: mpsc::Receiver<Frame>,
-    
-    /// Frame sender for display updates
-    frame_sender: mpsc::Sender<Frame>,
+/// Factory for creating service instances
+pub struct ServiceFactory;
+
+impl ServiceFactory {
+    /// Create a new service instance
+    pub fn create(service_type: ServiceType) -> Option<Box<dyn Service>> {
+        match service_type {
+            ServiceType::Display => Some(Box::new(builtin::DisplayService::new())),
+            ServiceType::Input => Some(Box::new(builtin::InputService::new())),
+            ServiceType::Clipboard => Some(Box::new(builtin::ClipboardService::new())),
+            ServiceType::FileTransfer => Some(Box::new(builtin::FileTransferService::new())),
+            _ => None,
+        }
+    }
 }
 
-impl DisplayService {
-    /// Create a new display service
-    pub fn new(client: Arc<Mutex<Client>>) -> Self {
-        let service = Service::new("display".to_string(), client);
-        let (tx, rx) = mpsc::channel(100);
-        
-        Self {
-            service,
-            frame_receiver: rx,
-            frame_sender: tx,
+/// Built-in service implementations
+pub mod builtin {
+    use super::*;
+    
+    /// Display service implementation
+    pub struct DisplayService {}
+    
+    impl DisplayService {
+        /// Create a new display service
+        pub fn new() -> Self {
+            Self {}
         }
     }
     
-    /// Subscribe to the display service
-    pub async fn subscribe(&self) -> Result<()> {
-        self.service.subscribe().await
-    }
-    
-    /// Unsubscribe from the display service
-    pub async fn unsubscribe(&self) -> Result<()> {
-        self.service.unsubscribe().await
-    }
-    
-    /// Set the display quality
-    pub async fn set_quality(&self, quality: u8) -> Result<()> {
-        let frame = Frame::new(CommandId::VideoQuality as u8, vec![quality]);
-        self.service.send_frame(frame).await
-    }
-}
-
-/// Input service client
-pub struct InputService {
-    /// The underlying service
-    service: Service,
-}
-
-impl InputService {
-    /// Create a new input service
-    pub fn new(client: Arc<Mutex<Client>>) -> Self {
-        let service = Service::new("input".to_string(), client);
+    #[async_trait::async_trait]
+    impl Service for DisplayService {
+        async fn start(&mut self) -> Result<()> {
+            debug!("Starting display service");
+            Ok(())
+        }
         
-        Self {
-            service,
+        async fn stop(&mut self) -> Result<()> {
+            debug!("Stopping display service");
+            Ok(())
+        }
+        
+        async fn handle_message(&mut self, message: ServiceMessage) -> Result<()> {
+            trace!("Display service handling message: {:?}", message.id);
+            
+            // Process message based on command ID
+            match message.frame.command_id() {
+                cmd if cmd == CommandId::DisplayInfo as u8 => {
+                    // Parse display info and store it
+                    // For now, just acknowledge receipt
+                    if let Some(tx) = message.response_tx {
+                        let response = Frame::new(CommandId::Ack as u8, Vec::new());
+                        let _ = tx.send(Ok(response));
+                    }
+                }
+                cmd if cmd == CommandId::StreamFrame as u8 => {
+                    // Process frame data (e.g., decode and display)
+                    // No response needed for streaming data
+                }
+                _ => {
+                    debug!("Unknown command for display service: {:02x}", message.frame.command_id());
+                    if let Some(tx) = message.response_tx {
+                        let response = Frame::new(CommandId::Error as u8, b"Unknown command".to_vec());
+                        let _ = tx.send(Ok(response));
+                    }
+                }
+            }
+            
+            Ok(())
         }
     }
     
-    /// Subscribe to the input service
-    pub async fn subscribe(&self) -> Result<()> {
-        self.service.subscribe().await
-    }
+    /// Input service implementation
+    pub struct InputService {}
     
-    /// Unsubscribe from the input service
-    pub async fn unsubscribe(&self) -> Result<()> {
-        self.service.unsubscribe().await
-    }
-    
-    /// Send a key press event
-    pub async fn send_key(&self, key_code: u16, pressed: bool) -> Result<()> {
-        let mut payload = Vec::with_capacity(3);
-        payload.push(1); // Event type: key
-        payload.extend_from_slice(&key_code.to_le_bytes());
-        payload.push(if pressed { 1 } else { 0 });
-        
-        let frame = Frame::new(CommandId::SendInput as u8, payload);
-        self.service.send_frame(frame).await
-    }
-    
-    /// Send a mouse move event
-    pub async fn send_mouse_move(&self, x: u16, y: u16) -> Result<()> {
-        let mut payload = Vec::with_capacity(5);
-        payload.push(2); // Event type: mouse move
-        payload.extend_from_slice(&x.to_le_bytes());
-        payload.extend_from_slice(&y.to_le_bytes());
-        
-        let frame = Frame::new(CommandId::SendInput as u8, payload);
-        self.service.send_frame(frame).await
-    }
-    
-    /// Send a mouse button event
-    pub async fn send_mouse_button(&self, button: u8, pressed: bool) -> Result<()> {
-        let mut payload = Vec::with_capacity(3);
-        payload.push(3); // Event type: mouse button
-        payload.push(button);
-        payload.push(if pressed { 1 } else { 0 });
-        
-        let frame = Frame::new(CommandId::SendInput as u8, payload);
-        self.service.send_frame(frame).await
-    }
-    
-    /// Send a mouse wheel event
-    pub async fn send_mouse_wheel(&self, delta: i16) -> Result<()> {
-        let mut payload = Vec::with_capacity(3);
-        payload.push(4); // Event type: mouse wheel
-        payload.extend_from_slice(&delta.to_le_bytes());
-        
-        let frame = Frame::new(CommandId::SendInput as u8, payload);
-        self.service.send_frame(frame).await
-    }
-}
-
-/// Clipboard service client
-pub struct ClipboardService {
-    /// The underlying service
-    service: Service,
-}
-
-impl ClipboardService {
-    /// Create a new clipboard service
-    pub fn new(client: Arc<Mutex<Client>>) -> Self {
-        let service = Service::new("clipboard".to_string(), client);
-        
-        Self {
-            service,
+    impl InputService {
+        /// Create a new input service
+        pub fn new() -> Self {
+            Self {}
         }
     }
     
-    /// Subscribe to the clipboard service
-    pub async fn subscribe(&self) -> Result<()> {
-        self.service.subscribe().await
-    }
-    
-    /// Unsubscribe from the clipboard service
-    pub async fn unsubscribe(&self) -> Result<()> {
-        self.service.unsubscribe().await
-    }
-    
-    /// Send clipboard data to the server
-    pub async fn send_clipboard(&self, data: &str) -> Result<()> {
-        let payload = data.as_bytes().to_vec();
-        let frame = Frame::new(CommandId::ClipboardData as u8, payload);
+    #[async_trait::async_trait]
+    impl Service for InputService {
+        async fn start(&mut self) -> Result<()> {
+            debug!("Starting input service");
+            Ok(())
+        }
         
-        self.service.send_frame(frame).await
+        async fn stop(&mut self) -> Result<()> {
+            debug!("Stopping input service");
+            Ok(())
+        }
+        
+        async fn handle_message(&mut self, message: ServiceMessage) -> Result<()> {
+            trace!("Input service handling message: {:?}", message.id);
+            
+            // Basic acknowledgment for now
+            if let Some(tx) = message.response_tx {
+                let response = Frame::new(CommandId::Ack as u8, Vec::new());
+                let _ = tx.send(Ok(response));
+            }
+            
+            Ok(())
+        }
+    }
+    
+    /// Clipboard service implementation
+    pub struct ClipboardService {}
+    
+    impl ClipboardService {
+        /// Create a new clipboard service
+        pub fn new() -> Self {
+            Self {}
+        }
+    }
+    
+    #[async_trait::async_trait]
+    impl Service for ClipboardService {
+        async fn start(&mut self) -> Result<()> {
+            debug!("Starting clipboard service");
+            Ok(())
+        }
+        
+        async fn stop(&mut self) -> Result<()> {
+            debug!("Stopping clipboard service");
+            Ok(())
+        }
+        
+        async fn handle_message(&mut self, message: ServiceMessage) -> Result<()> {
+            trace!("Clipboard service handling message: {:?}", message.id);
+            
+            // Basic acknowledgment for now
+            if let Some(tx) = message.response_tx {
+                let response = Frame::new(CommandId::Ack as u8, Vec::new());
+                let _ = tx.send(Ok(response));
+            }
+            
+            Ok(())
+        }
+    }
+    
+    /// File transfer service implementation
+    pub struct FileTransferService {}
+    
+    impl FileTransferService {
+        /// Create a new file transfer service
+        pub fn new() -> Self {
+            Self {}
+        }
+    }
+    
+    #[async_trait::async_trait]
+    impl Service for FileTransferService {
+        async fn start(&mut self) -> Result<()> {
+            debug!("Starting file transfer service");
+            Ok(())
+        }
+        
+        async fn stop(&mut self) -> Result<()> {
+            debug!("Stopping file transfer service");
+            Ok(())
+        }
+        
+        async fn handle_message(&mut self, message: ServiceMessage) -> Result<()> {
+            trace!("File transfer service handling message: {:?}", message.id);
+            
+            // Basic acknowledgment for now
+            if let Some(tx) = message.response_tx {
+                let response = Frame::new(CommandId::Ack as u8, Vec::new());
+                let _ = tx.send(Ok(response));
+            }
+            
+            Ok(())
+        }
     }
 }
