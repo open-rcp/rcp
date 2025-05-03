@@ -23,6 +23,16 @@ pub enum CommandId {
     Error = 0xF1,
     Auth = 0xFE,
     Heartbeat = 0xFF,
+    
+    // Additional service subscription commands
+    SubscribeDisplay = 0x20,
+    SubscribeInput = 0x21,
+    SubscribeAudio = 0x22,
+    SubscribeClipboard = 0x23,
+    SubscribeFileTransfer = 0x24,
+    
+    // Response types
+    Ack = 0xE0,
 }
 
 impl TryFrom<u8> for CommandId {
@@ -44,6 +54,12 @@ impl TryFrom<u8> for CommandId {
             0x0C => Ok(CommandId::VideoQuality),
             0x0D => Ok(CommandId::PrivacyMode),
             0x0E => Ok(CommandId::WindowFocus),
+            0x20 => Ok(CommandId::SubscribeDisplay),
+            0x21 => Ok(CommandId::SubscribeInput),
+            0x22 => Ok(CommandId::SubscribeAudio),
+            0x23 => Ok(CommandId::SubscribeClipboard),
+            0x24 => Ok(CommandId::SubscribeFileTransfer),
+            0xE0 => Ok(CommandId::Ack),
             0xF0 => Ok(CommandId::Ping),
             0xF1 => Ok(CommandId::Error),
             0xFE => Ok(CommandId::Auth),

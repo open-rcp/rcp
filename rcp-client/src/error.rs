@@ -18,6 +18,10 @@ pub enum Error {
     /// Authentication error
     #[error("Authentication error: {0}")]
     Auth(String),
+    
+    /// Authentication error (alias used in code)
+    #[error("Authentication error: {0}")]
+    Authentication(String),
 
     /// Protocol error
     #[error("Protocol error: {0}")]
@@ -26,6 +30,10 @@ pub enum Error {
     /// Service error
     #[error("Service error: {0}")]
     Service(String),
+    
+    /// Session error
+    #[error("Session error: {0}")]
+    Session(String),
 
     /// Timeout error
     #[error("Operation timed out: {0}")]
@@ -33,7 +41,7 @@ pub enum Error {
 
     /// Core library error
     #[error("Core error: {0}")]
-    Core(#[from] rcp_core::error::Error),
+    Core(#[from] rcp_core::Error),
 
     /// Websocket protocol error
     #[error("WebSocket error: {0}")]

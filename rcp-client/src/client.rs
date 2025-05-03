@@ -347,8 +347,9 @@ impl Client {
                 };
                 
                 // Generate response
-                let response_data = Auth::generate_psk_response(psk, &challenge.challenge, &challenge.salt);
+                let response_data = Auth::compute_psk_response(psk, &challenge.challenge, &challenge.salt);
                 let auth_response = AuthResponse {
+                    client_id: self.config.client_id.unwrap_or_else(Uuid::new_v4),
                     response: response_data,
                 };
                 
