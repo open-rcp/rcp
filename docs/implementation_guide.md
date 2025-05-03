@@ -1,316 +1,362 @@
 # RCP Implementation Guide
 
-This document provides guidance on implementing components of the Rust Control Protocol (RCP) system.
+This guide provides detailed instructions for implementing and using the Rust Control Protocol (RCP) in your applications.
 
-## Getting Started
+## Table of Contents
 
-### Environment Setup
+1. [Introduction](#introduction)
+2. [Architecture Overview](#architecture-overview)
+3. [Client Implementation](#client-implementation)
+4. [Server Implementation](#server-implementation)
+5. [Authentication](#authentication)
+6. [Services](#services)
+7. [Error Handling](#error-handling)
+8. [Best Practices](#best-practices)
+9. [Examples](#examples)
 
-1. Ensure Rust 1.75+ is installed:
-   ```bash
-   rustup update stable
-   ```
+## Introduction
 
-2. Required dependencies:
-   - `tokio` for async networking
-   - `bytes` for efficient byte manipulation
-   - `thiserror` for error handling
-   - `rustls` for TLS support
+The Rust Control Protocol (RCP) is a lightweight, secure protocol for remote control and service sharing between applications. It is designed to be efficient, extensible, and easy to integrate into Rust applications.
 
-### Project Structure Recommendations
+Key features:
+- Binary protocol with minimal overhead
+- Secure authentication mechanisms
+- Extensible service architecture
+- Efficient data streaming
+- Reconnection support
+- Cross-platform compatibility
 
-Follow this structure for RCP components:
+## Architecture Overview
 
-```
-src/
-├── lib.rs         # Public API exports
-├── error.rs       # Error definitions
-├── protocol/      # Protocol implementation
-│   ├── frame.rs   # Frame definitions
-│   ├── header.rs  # Header parsing/serialization
-│   └── commands/  # Command implementations
-├── transport/     # Transport layer
-│   ├── tcp.rs     # TCP implementation
-│   └── tls.rs     # TLS implementation
-└── utils/         # Utility functions
-```
+RCP follows a client-server model with the following key components:
 
-## Core Protocol Implementation
+1. **Core Protocol**: Defines the basic message format, framing, and protocol state machine.
+2. **Authentication**: Mechanisms for authenticating clients with the server.
+3. **Services**: Pluggable components that provide specific functionality.
+4. **Session Management**: Handling of client sessions and permissions.
 
-### Frame Parsing
+### Protocol Flow
 
-Implement frame parsing with careful attention to binary format:
+1. Client connects to server
+2. Client authenticates with server
+3. Server creates a session for the client
+4. Client subscribes to services
+5. Client and server exchange service-specific messages
+6. Client unsubscribes from services
+7. Client disconnects
 
-```rust
-pub struct RcpHeader {
-    version: u8,
-    command: u8,
-    payload_size: u32,
-    flags: u16,
-}
+## Client Implementation
 
-impl RcpHeader {
-    pub fn parse(input: &[u8]) -> Result<Self, RcpError> {
-        if input.len() < HEADER_SIZE {
-            return Err(RcpError::InvalidHeader);
-        }
-        
-        Ok(Self {
-            version: input[0],
-            command: input[1],
-            payload_size: u32::from_le_bytes([input[2], input[3], input[4], input[5]]),
-            flags: u16::from_le_bytes([input[6], input[7]]),
-        })
-    }
-    
-    pub fn serialize(&self) -> Vec<u8> {
-        let mut buffer = Vec::with_capacity(HEADER_SIZE);
-        buffer.push(self.version);
-        buffer.push(self.command);
-        buffer.extend_from_slice(&self.payload_size.to_le_bytes());
-        buffer.extend_from_slice(&self.flags.to_le_bytes());
-        buffer
-    }
-}
-```
-
-### Implementing Commands
-
-Each command should implement the `RcpCommand` trait:
+### Basic Client Usage
 
 ```rust
-pub trait RcpCommand {
-    fn command_id(&self) -> u8;
-    fn serialize(&self) -> Result<Vec<u8>, RcpError>;
-    fn parse(payload: &[u8]) -> Result<Self, RcpError> where Self: Sized;
-}
+use rcp_client::{Client, ClientConfig, AuthMethod};
+use std::sync::Arc;
+use tokio::sync::Mutex;
 
-// Example implementation for LaunchApp command
-pub struct LaunchAppCommand {
-    pub flags: u32,
-    pub application_path: String,
+async fn example_client() -> Result<(), Box<dyn std::error::Error>> {
+    // Create client configuration
+    let config = ClientConfig {
+        host: "example.com".to_string(),
+        port: 8716,
+        auth_method: AuthMethod::PreSharedKey,
+        psk: Some("your_secret_key".to_string()),
+        ..Default::default()
+    };
+    
+    // Create and connect client
+    let mut client = Client::new(config);
+    client.connect().await?;
+    
+    // Authenticate
+    let session = client.authenticate().await?;
+    println!("Connected with session ID: {}", session.session_id);
+    
+    // Create shared client reference for services
+    let client_arc = Arc::new(Mutex::new(client));
+    
+    // Work with services...
+    
+    // Disconnect when done
+    let mut client = client_arc.lock().await;
+    client.disconnect().await?;
+    
+    Ok(())
 }
+```
 
-impl RcpCommand for LaunchAppCommand {
-    fn command_id(&self) -> u8 {
-        0x01 // LaunchApp command ID
-    }
+### Working with Services
+
+```rust
+use rcp_client::{DisplayService, InputService, ClipboardService};
+
+async fn use_services(client_arc: Arc<Mutex<Client>>) -> Result<(), Box<dyn std::error::Error>> {
+    // Create service clients
+    let display = DisplayService::new(Arc::clone(&client_arc));
+    let input = InputService::new(Arc::clone(&client_arc));
+    let clipboard = ClipboardService::new(Arc::clone(&client_arc));
     
-    fn serialize(&self) -> Result<Vec<u8>, RcpError> {
-        let path_bytes = self.application_path.as_bytes();
-        let path_len = path_bytes.len() as u32;
-        
-        let mut buffer = Vec::with_capacity(8 + path_bytes.len());
-        buffer.extend_from_slice(&self.flags.to_le_bytes());
-        buffer.extend_from_slice(&path_len.to_le_bytes());
-        buffer.extend_from_slice(path_bytes);
-        
-        Ok(buffer)
-    }
+    // Subscribe to services
+    display.subscribe().await?;
+    input.subscribe().await?;
+    clipboard.subscribe().await?;
     
-    fn parse(payload: &[u8]) -> Result<Self, RcpError> {
-        if payload.len() < 8 {
-            return Err(RcpError::InvalidPayload);
+    // Use display service
+    display.set_quality(90).await?;
+    
+    // Use input service
+    input.send_mouse_move(100, 200).await?;
+    input.send_key(0x41, true).await?;  // Press 'A'
+    input.send_key(0x41, false).await?; // Release 'A'
+    
+    // Use clipboard service
+    clipboard.send_clipboard("Shared clipboard text").await?;
+    
+    // Unsubscribe when done
+    display.unsubscribe().await?;
+    input.unsubscribe().await?;
+    clipboard.unsubscribe().await?;
+    
+    Ok(())
+}
+```
+
+### Handling Events
+
+```rust
+use futures_util::StreamExt;
+use rcp_client::ClientEvent;
+
+async fn handle_events(client: &mut Client) {
+    let mut receiver = client.event_receiver();
+    
+    while let Some(event) = receiver.next().await {
+        match event {
+            ClientEvent::StateChanged(state) => {
+                println!("Client state changed to {:?}", state);
+            }
+            ClientEvent::FrameReceived(frame) => {
+                println!("Received frame: command={:02x}, size={} bytes",
+                         frame.command_id(), frame.payload().len());
+                
+                // Handle specific frame types
+                if frame.command_id() == rcp_client::CommandId::VideoFrame as u8 {
+                    // Process video frame...
+                }
+            }
+            ClientEvent::Disconnected(reason) => {
+                println!("Disconnected: {:?}", reason);
+                break;
+            }
+            ClientEvent::Error(error) => {
+                println!("Error: {}", error);
+            }
+            _ => {}
         }
-        
-        let flags = u32::from_le_bytes([payload[0], payload[1], payload[2], payload[3]]);
-        let path_len = u32::from_le_bytes([payload[4], payload[5], payload[6], payload[7]]) as usize;
-        
-        if payload.len() < 8 + path_len {
-            return Err(RcpError::InvalidPayload);
-        }
-        
-        let path = String::from_utf8(payload[8..8+path_len].to_vec())
-            .map_err(|_| RcpError::InvalidUtf8)?;
-            
-        Ok(Self {
-            flags,
-            application_path: path,
-        })
     }
 }
 ```
 
 ## Server Implementation
 
-### Connection Handling
-
-Use Tokio's async/await for efficient connection handling:
+### Basic Server Setup
 
 ```rust
-pub async fn run_server(addr: SocketAddr) -> Result<(), RcpError> {
-    let listener = TcpListener::bind(addr).await?;
+use rcp_server::{Server, ServerConfig, AuthMethod, AuthConfig};
+
+async fn run_server() -> Result<(), Box<dyn std::error::Error>> {
+    // Configure authentication
+    let auth_config = AuthConfig::new()
+        .with_psk("your_secret_key")
+        .with_allowed_methods(&[AuthMethod::PreSharedKey]);
     
-    loop {
-        let (socket, _) = listener.accept().await?;
-        
-        tokio::spawn(async move {
-            if let Err(e) = handle_connection(socket).await {
-                eprintln!("Connection error: {}", e);
-            }
-        });
-    }
+    // Create server configuration
+    let config = ServerConfig {
+        bind_address: "0.0.0.0".to_string(),
+        port: 8716,
+        auth_config,
+        ..Default::default()
+    };
+    
+    // Create and start server
+    let server = Server::new(config);
+    server.start().await?;
+    
+    // Wait for server to stop
+    server.wait().await;
+    
+    Ok(())
+}
+```
+
+### Implementing Services
+
+```rust
+use rcp_server::{Service, ServiceContext, ServiceConfig, Session, Frame};
+use async_trait::async_trait;
+
+struct MyCustomService {
+    // Service state...
 }
 
-async fn handle_connection(socket: TcpStream) -> Result<(), RcpError> {
-    let mut session = RcpSession::new(socket);
-    
-    // Handle authentication
-    if !session.authenticate().await? {
-        return Err(RcpError::AuthenticationFailed);
+#[async_trait]
+impl Service for MyCustomService {
+    async fn initialize(&mut self, _config: ServiceConfig) -> rcp_server::Result<()> {
+        // Initialize service
+        Ok(())
     }
     
-    // Main connection loop
-    loop {
-        match session.read_frame().await? {
-            Some(frame) => {
-                process_frame(&mut session, frame).await?;
-            }
-            None => {
-                // Connection closed
-                break;
-            }
-        }
+    async fn client_subscribed(&mut self, session: &Session, ctx: &mut ServiceContext) -> rcp_server::Result<()> {
+        // Handle new client subscription
+        println!("Client {} subscribed to service", session.client_name);
+        Ok(())
+    }
+    
+    async fn handle_frame(&mut self, frame: Frame, session: &Session, ctx: &mut ServiceContext) -> rcp_server::Result<()> {
+        // Handle client request
+        println!("Received frame from client {}: {:02x}", session.client_name, frame.command_id());
+        
+        // Send response if needed
+        let response = Frame::new(0x42, b"response data".to_vec());
+        ctx.send_frame(response, session).await?;
+        
+        Ok(())
+    }
+    
+    async fn client_unsubscribed(&mut self, session: &Session, _ctx: &mut ServiceContext) -> rcp_server::Result<()> {
+        // Handle client unsubscription
+        println!("Client {} unsubscribed from service", session.client_name);
+        Ok(())
+    }
+}
+```
+
+### Registering Services with the Server
+
+```rust
+async fn register_services(server: &mut Server) -> Result<(), Box<dyn std::error::Error>> {
+    // Register built-in services
+    server.register_service("display", Box::new(DisplayService::new())).await?;
+    server.register_service("input", Box::new(InputService::new())).await?;
+    server.register_service("clipboard", Box::new(ClipboardService::new())).await?;
+    
+    // Register custom services
+    server.register_service("custom", Box::new(MyCustomService{})).await?;
+    
+    Ok(())
+}
+```
+
+## Authentication
+
+RCP supports multiple authentication mechanisms:
+
+### Pre-Shared Key (PSK)
+
+The simplest authentication method using a shared secret key.
+
+**Server configuration:**
+```rust
+let auth_config = AuthConfig::new()
+    .with_psk("your_secret_key")
+    .with_allowed_methods(&[AuthMethod::PreSharedKey]);
+```
+
+**Client configuration:**
+```rust
+let config = ClientConfig {
+    auth_method: AuthMethod::PreSharedKey,
+    psk: Some("your_secret_key".to_string()),
+    ..Default::default()
+};
+```
+
+### Certificate-Based (Future Implementation)
+
+For enhanced security, certificate-based authentication will be supported in future versions.
+
+## Services
+
+RCP includes several built-in services:
+
+### Display Service
+
+Handles screen capture and streaming from server to client.
+
+```rust
+// Client usage
+let display = DisplayService::new(client_arc);
+display.subscribe().await?;
+display.set_quality(90).await?; // Set quality level (0-100)
+```
+
+### Input Service
+
+Handles keyboard and mouse input from client to server.
+
+```rust
+// Client usage
+let input = InputService::new(client_arc);
+input.subscribe().await?;
+input.send_key(0x41, true).await?;  // Press 'A'
+input.send_key(0x41, false).await?; // Release 'A'
+input.send_mouse_move(100, 200).await?;
+input.send_mouse_button(1, true).await?;  // Press left button
+input.send_mouse_button(1, false).await?; // Release left button
+```
+
+### Clipboard Service
+
+Syncs clipboard contents between client and server.
+
+```rust
+// Client usage
+let clipboard = ClipboardService::new(client_arc);
+clipboard.subscribe().await?;
+clipboard.send_clipboard("Shared clipboard text").await?;
+```
+
+### Custom Services
+
+You can implement your own services by implementing the `Service` trait.
+
+## Error Handling
+
+RCP uses proper error types and propagation throughout the codebase:
+
+```rust
+use rcp_client::Error;
+
+async fn handle_errors() -> Result<(), Error> {
+    let mut client = Client::new(ClientConfig::default());
+    
+    match client.connect().await {
+        Ok(_) => println!("Connected successfully"),
+        Err(Error::Connection(msg)) => println!("Connection error: {}", msg),
+        Err(Error::Timeout(msg)) => println!("Connection timed out: {}", msg),
+        Err(e) => println!("Other error: {}", e),
     }
     
     Ok(())
 }
 ```
 
-### Application Management
+## Best Practices
 
-Implement secure application launching:
+1. **Authentication**: Always use secure authentication methods and protect credentials.
+2. **Error Handling**: Implement proper error handling and recovery mechanisms.
+3. **Reconnection**: Enable automatic reconnection for better user experience during network issues.
+4. **Resource Management**: Properly close connections and unsubscribe from services when done.
+5. **Permissions**: Implement appropriate permissions on the server to restrict client actions.
 
-```rust
-pub async fn launch_application(
-    cmd: &LaunchAppCommand,
-    user_context: &UserContext,
-) -> Result<ApplicationHandle, RcpError> {
-    // Validate application path against allowed list
-    if !is_application_allowed(&cmd.application_path, user_context) {
-        return Err(RcpError::ApplicationNotAllowed);
-    }
-    
-    // Launch the application
-    let mut command = Command::new(&cmd.application_path);
-    
-    // Set appropriate environment and security context
-    // ...
-    
-    let process = command.spawn()?;
-    
-    Ok(ApplicationHandle::new(process))
-}
-```
+## Examples
 
-## Client Implementation
+See the `examples/` directory for complete working examples:
 
-### Connection Establishment
+- `client_example.rs`: Basic RCP client usage
+- `server_example.rs`: Basic RCP server setup
+- `custom_service.rs`: Implementing a custom service
 
-```rust
-pub async fn connect(
-    server_addr: SocketAddr,
-    credentials: Credentials,
-) -> Result<RcpClient, RcpError> {
-    let socket = TcpStream::connect(server_addr).await?;
-    
-    let mut client = RcpClient::new(socket);
-    if !client.authenticate(credentials).await? {
-        return Err(RcpError::AuthenticationFailed);
-    }
-    
-    Ok(client)
-}
-```
+---
 
-### Screen Capture Processing
-
-```rust
-pub async fn process_screen_frame(
-    frame_data: &[u8],
-    width: u32,
-    height: u32,
-    format: FrameFormat,
-) -> Result<Image, RcpError> {
-    // Decode the image data based on format
-    // ...
-    
-    // Return image for display
-    // ...
-}
-```
-
-## Testing Strategy
-
-### Unit Testing
-
-Write comprehensive unit tests for protocol parsers:
-
-```rust
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_header_parsing() {
-        let data = [
-            0x01, 0x02, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00,
-        ];
-        
-        let header = RcpHeader::parse(&data).unwrap();
-        
-        assert_eq!(header.version, 0x01);
-        assert_eq!(header.command, 0x02);
-        assert_eq!(header.payload_size, 16);
-        assert_eq!(header.flags, 0);
-    }
-}
-```
-
-### Integration Testing
-
-Set up integration tests with in-memory transports:
-
-```rust
-#[tokio::test]
-async fn test_client_server_interaction() {
-    // Create in-memory transport pair
-    let (client_transport, server_transport) = create_in_memory_transport_pair();
-    
-    // Set up server
-    let server = TestServer::new(server_transport);
-    let server_handle = tokio::spawn(async move {
-        server.run().await.unwrap();
-    });
-    
-    // Set up client
-    let client = RcpClient::new(client_transport);
-    
-    // Test interaction
-    let cmd = LaunchAppCommand {
-        flags: 0,
-        application_path: "notepad.exe".to_string(),
-    };
-    
-    let result = client.send_command(&cmd).await;
-    assert!(result.is_ok());
-    
-    // Shut down
-    drop(client);
-    server_handle.await.unwrap();
-}
-```
-
-## Performance Optimization
-
-- Use zero-copy operations where possible
-- Implement buffer pooling for frame handling
-- Consider compressed formats for screen streaming
-- Use shared memory for local connections
-
-## Security Best Practices
-
-- Always validate user input before parsing
-- Use allowlists for application launching
-- Implement rate limiting for authentication attempts
-- Regular security audits of the codebase
+For more information, refer to the [Architecture Overview](architecture.md) and [Protocol Specification](spec.md) documents.
