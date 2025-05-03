@@ -1,0 +1,23 @@
+[package]
+name = "rcp-examples"
+version = "0.1.0"
+edition = "2021"
+authors = ["Akash Shah <akash@devstroop.com>", "Devstroop Technologies <info@devstroop.com>"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/open-rcp/rcp"
+homepage = "https://github.com/open-rcp/rcp"
+publish = false
+
+[dependencies]
+rcp-core = { path = "../rcp-core" }
+rcp-client = { path = "../rcp-client" }
+rcp-server = { path = "../rcp-server" }
+tokio = { version = "1", features = ["full"] }
+anyhow = { workspace = true }
+futures-util = "0.3"
+uuid = { version = "1.3", features = ["v4"] }
+env_logger = "0.10"
+
+[[bin]]
+name = "client-example"
+path = "src/client_example.rs"
