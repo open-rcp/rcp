@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
 use rcp_client::Client;
 use rcp_core::AuthMethod;
@@ -34,6 +34,10 @@ struct Cli {
 enum Commands {
     /// Connect to a remote server
     Connect {
+        /// Connection string in the format [user[:pass]@]host[:port][/path]
+        #[arg(value_name = "CONNECTION_STRING")]
+        connection_string: Option<String>,
+
         /// Pre-shared key for authentication
         #[arg(short, long)]
         psk: Option<String>,
@@ -41,6 +45,10 @@ enum Commands {
 
     /// Execute a command on the remote server
     Execute {
+        /// Connection string in the format [user[:pass]@]host[:port][/path]
+        #[arg(value_name = "CONNECTION_STRING")]
+        connection_string: Option<String>,
+
         /// Command to execute
         command: String,
 
@@ -65,54 +73,92 @@ async fn main() -> Result<()> {
     let subscriber = FmtSubscriber::builder().with_max_level(log_level).finish();
     tracing::subscriber::set_global_default(subscriber).expect("Failed to set tracing subscriber");
 
-    // Create client
-    let client = Client::builder()
-        .host(cli.host.clone())
-        .port(cli.port)
-        .client_name(cli.client_name.clone())
-        .client_id(Uuid::new_v4())
-        .auth_method(AuthMethod::PreSharedKey)
-        .build();
-
     // Process command
     match &cli.command {
-        Some(Commands::Connect { psk }) => {
-            tracing::info!("Connecting to server at {}:{}", cli.host, cli.port);
-            client.connect().await?;
-
-            if let Some(auth_psk) = psk {
-                tracing::info!("Authenticating with PSK");
-                let client = Client::builder()
+        Some(Commands::Connect { connection_string, psk }) => {
+            // Create client builder based on connection string or command line arguments
+            let mut builder = Client::builder();
+            
+            if let Some(conn_str) = connection_string {
+                // Use connection string
+                builder = builder.connection_string(conn_str)
+                    .context("Failed to parse connection string")?;
+                
+                // Log connection details from the parsed connection string
+                tracing::info!("Connecting using connection string: {}", conn_str);
+            } else {
+                // Use command line arguments
+                builder = builder
                     .host(cli.host.clone())
                     .port(cli.port)
-                    .client_name(cli.client_name.clone())
-                    .client_id(Uuid::new_v4())
-                    .auth_method(AuthMethod::PreSharedKey)
-                    .auth_psk(auth_psk)
-                    .build();
-
-                client.authenticate().await?;
-            } else {
-                tracing::info!("No authentication token provided");
-                client.authenticate().await?;
+                    .client_name(cli.client_name.clone());
+                
+                tracing::info!("Connecting to server at {}:{}", cli.host, cli.port);
             }
+            
+            // Set authentication method and PSK if provided
+            builder = builder
+                .client_id(Uuid::new_v4())
+                .auth_method(AuthMethod::PreSharedKey);
+                
+            if let Some(auth_psk) = psk {
+                builder = builder.auth_psk(auth_psk);
+            }
+            
+            // Build the client
+            let client = builder.build();
 
-            tracing::info!("Connection established and authenticated successfully");
+            // Connect and authenticate
+            client.connect().await?;
+            tracing::info!("Connected successfully, authenticating...");
+            client.authenticate().await?;
+            tracing::info!("Authentication successful");
 
             // Start the client message processor
             client.start().await?;
+            tracing::info!("Client started, press Ctrl+C to disconnect");
 
-            // Keep the connection open for a bit
-            tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
+            // Keep the connection open until user interrupts
+            tokio::signal::ctrl_c().await?;
+            tracing::info!("Received interrupt signal, disconnecting...");
 
             // Disconnect
             client.disconnect().await?;
+            tracing::info!("Disconnected successfully");
         }
 
-        Some(Commands::Execute { command, args }) => {
-            tracing::info!("Connecting to server");
-            client.connect().await?;
-            client.authenticate().await?;
+        Some(Commands::Execute { connection_string, command, args }) => {
+            // Create client builder based on connection string or command line arguments
+            let mut builder = Client::builder();
+            
+            if let Some(conn_str) = connection_string {
+                // Use connection string
+                builder = builder.connection_string(conn_str)
+                    .context("Failed to parse connection string")?;
+                
+                // Log connection details from the parsed connection string
+                tracing::info!("Connecting using connection string: {}", conn_str);
+            } else {
+                // Use command line arguments
+                builder = builder
+                    .host(cli.host.clone())
+                    .port(cli.port)
+                    .client_name(cli.client_name.clone());
+                
+                tracing::info!("Connecting to server at {}:{}", cli.host, cli.port);
+            }
+            
+            // Set authentication method
+            builder = builder
+                .client_id(Uuid::new_v4())
+                .auth_method(AuthMethod::PreSharedKey);
+                
+            // Build the client
+            let client = builder.build();
+
+            // Connect and authenticate
+            client.connect_and_authenticate().await?;
+            tracing::info!("Connection established and authenticated successfully");
 
             tracing::info!("Executing command: {} {:?}", command, args);
             // You would implement command execution logic here

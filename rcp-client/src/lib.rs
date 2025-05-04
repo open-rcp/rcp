@@ -5,10 +5,12 @@
 //! streaming, input control, clipboard sharing, and file transfers.
 
 pub mod client;
+pub mod connection_string;
 pub mod error;
 pub mod service;
 
 pub use client::{Client, ClientBuilder, ClientConfig, ClientState};
+pub use connection_string::ConnectionString;
 pub use error::{Error, Result};
 pub use service::{builtin, Service, ServiceClient, ServiceFactory, ServiceMessage, ServiceType};
 

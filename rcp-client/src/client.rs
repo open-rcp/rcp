@@ -1,4 +1,5 @@
 use crate::{
+    connection_string::ConnectionString,
     error::{Error, Result},
     service::{ServiceClient, ServiceFactory, ServiceMessage, ServiceType},
     DEFAULT_CONNECTION_TIMEOUT_SECS, DEFAULT_KEEP_ALIVE_SECS, DEFAULT_RECONNECT_DELAY_MS,
@@ -80,6 +81,33 @@ impl ClientBuilder {
         Self {
             config: ClientConfig::default(),
         }
+    }
+
+    /// Set connection parameters from a connection string
+    /// Supports both SSH-style (user:pass@host:port/path) and URL (rcp://user:pass@host:port/path)
+    pub fn connection_string(mut self, conn_str: &str) -> Result<Self> {
+        let conn = ConnectionString::parse(conn_str)?;
+
+        // Set host
+        self.config.host = conn.host;
+        
+        // Set port if specified
+        if let Some(port) = conn.port {
+            self.config.port = port;
+        }
+        
+        // Set username if specified
+        if let Some(username) = conn.username {
+            // Use username as client name if no other client name has been set
+            self.config.client_name = username;
+        }
+        
+        // Set password as PSK if specified
+        if let Some(password) = conn.password {
+            self.config.auth_psk = Some(password);
+        }
+        
+        Ok(self)
     }
 
     /// Set the server host

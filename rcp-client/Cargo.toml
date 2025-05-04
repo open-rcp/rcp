@@ -35,3 +35,4 @@ rustls = { workspace = true }
 webpki-roots = { workspace = true }
 async-trait = "0.1"
 tokio-tungstenite = "0.20"
+url = "2.4"
