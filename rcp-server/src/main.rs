@@ -63,7 +63,6 @@ async fn main() -> Result<()> {
 
     // Initialize server
     let server = Server::new(config);
-    
     // Run RCP server
     server.run().await?;
 
