@@ -1,6 +1,9 @@
 name: Changelog Preparation
 
 on:
+  push:
+    branches:
+      - master
   pull_request:
     types: [closed]
     branches:
@@ -13,7 +16,7 @@ on:
 
 jobs:
   update_changelog:
-    if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'push' || github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -36,8 +39,16 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "version=${{ github.event.inputs.release_version }}" >> $GITHUB_OUTPUT
           else
-            echo "version=v$(grep -m 1 'version = "[0-9]\+\.[0-9]\+\.[0-9]\+"' Cargo.toml | sed 's/.*version = "\([0-9]\+\.[0-9]\+\.[0-9]\+\)".*/\1/')" >> $GITHUB_OUTPUT
+            # Try to detect version from git tags first (for autonomous releases)
+            latest_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+            if [[ "$latest_tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+ ]]; then
+              echo "version=$latest_tag" >> $GITHUB_OUTPUT
+            else
+              # Fallback to Cargo.toml
+              echo "version=v$(grep -m 1 'version = "[0-9]\+\.[0-9]\+\.[0-9]\+"' Cargo.toml | sed 's/.*version = "\([0-9]\+\.[0-9]\+\.[0-9]\+\)".*/\1/')" >> $GITHUB_OUTPUT
+            fi
           fi
+          echo "Using version: ${{ steps.version.outputs.version }}"
       
       - name: Determine previous tag
         id: prev_tag
@@ -91,8 +102,26 @@ jobs:
             cat temp_changelog.md >> CHANGELOG.md
           fi
       
-      - name: Create Pull Request
-        if: github.event_name == 'workflow_dispatch'
+      - name: Create Pull Request or Commit Directly
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            # In autonomous mode, commit directly to the branch
+            git add CHANGELOG.md
+            git commit -m "docs: update changelog for ${{ steps.version.outputs.version }}"
+            git push
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            # For manual triggers, create a PR
+            git checkout -b "changelog-${{ steps.version.outputs.version }}"
+            git add CHANGELOG.md
+            git commit -m "docs: update changelog for ${{ steps.version.outputs.version }}"
+            git push --set-upstream origin "changelog-${{ steps.version.outputs.version }}"
+            gh pr create --title "Update CHANGELOG for ${{ steps.version.outputs.version }}" --body "Automatically generated changelog for ${{ steps.version.outputs.version }}" --label "documentation"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Create Pull Request (fallback)
+        if: github.event_name == 'workflow_dispatch' && failure()
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
