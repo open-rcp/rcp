@@ -1,0 +1,11 @@
+[package]
+name = "zstd-mod"
+version = "0.1.0"
+edition = "2021"
+description = "Wrapper around zstd-sys to force source builds"
+
+[dependencies]
+zstd-sys = { version = "2.0.8+zstd.1.5.5", default-features = false, features = ["zstdmt"] }
+
+[build-dependencies]
+cc = "1.0"

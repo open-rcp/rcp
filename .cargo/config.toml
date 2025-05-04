@@ -1,15 +1,14 @@
 # RCP Project - Cargo Configuration
-# This configuration avoids the need for libclang/LLVM dependencies
+# This configuration handles native dependencies using bindgen properly
 
 [env]
-# Force zstd-sys and other sys crates to use precompiled bindings and avoid bindgen
-CARGO_FEATURE_USE_STATIC_ZSTD = "1"
-CARGO_FEATURE_DISABLE_ZSTD_SYS_MMAP = "1"
-ZSTD_SYS_USE_PKG_CONFIG = "0" 
-ZSTD_SYS_STATIC = "1"
-RUST_BINDGEN_DISABLE = "1"
+# Force zstd-sys to build from source and avoid pkg-config
+ZSTD_SYS_USE_PKG_CONFIG = "0"
+ZSTD_SYS_FORCE_FROM_SOURCE = "1"
+
+# Use pre-generated bindings for zstd-sys
 ZSTD_SYS_USE_BINDGEN = "0"
-# Removed problematic flag: BINDGEN_EXTRA_CLANG_ARGS = "--no-system-headers"
+ZSTD_SYS_ZSTD_SRC_PATH = "./target/zstd-src"
 
 # AWS-LC system configuration to avoid CMake requirement
 AWS_LC_SYS_STATIC = "1"
@@ -20,7 +19,8 @@ AWS_LC_SYS_VENDORED = "1"
 [build]
 # Use the vscode toolchain by default
 target-dir = "target"
+rustflags = ["-C", "link-arg=-s"]
 
-# Rustflags applied to all Windows builds
+# Windows-specific settings
 [target.'cfg(target_os = "windows")']
 rustflags = ["-C", "target-feature=+crt-static"]

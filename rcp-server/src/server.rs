@@ -136,22 +136,26 @@ impl Server {
     // -- Management API methods --
 
     /// Check if the server is currently running
+    #[allow(dead_code)]
     pub async fn is_running(&self) -> bool {
         *self.running.lock().await
     }
 
     /// Get the number of active sessions
+    #[allow(dead_code)]
     pub async fn active_session_count(&self) -> usize {
         self.sessions.lock().await.len()
     }
 
     /// Get the number of connected clients
+    #[allow(dead_code)]
     pub async fn connected_client_count(&self) -> usize {
         // In this implementation, each session corresponds to one client
         self.active_session_count().await
     }
 
     /// Get the uptime of the server in seconds
+    #[allow(dead_code)]
     pub async fn uptime(&self) -> u64 {
         let start_time_guard = self.start_time.lock().await;
         match *start_time_guard {
@@ -161,6 +165,7 @@ impl Server {
     }
 
     /// Get the uptime of the server as a formatted string
+    #[allow(dead_code)]
     pub async fn uptime_formatted(&self) -> String {
         let secs = self.uptime().await;
         let days = secs / 86400;
@@ -180,6 +185,7 @@ impl Server {
     }
 
     /// Stop the server
+    #[allow(dead_code)]
     pub async fn stop(&self) -> Result<()> {
         info!("Stopping server...");
         let mut running_guard = self.running.lock().await;
@@ -188,6 +194,7 @@ impl Server {
     }
 
     /// Start the server (if not already running)
+    #[allow(dead_code)]
     pub async fn start(&self) -> Result<()> {
         let already_running = *self.running.lock().await;
 
@@ -210,6 +217,7 @@ impl Server {
     }
 
     /// Restart the server
+    #[allow(dead_code)]
     pub async fn restart(&self) -> Result<()> {
         info!("Restarting server...");
 

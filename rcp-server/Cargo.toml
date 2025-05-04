@@ -8,6 +8,10 @@ repository.workspace = true
 homepage.workspace = true
 description = "Server implementation for the Rust Control Protocol (RCP)"
 
+[features]
+default = []
+management-api = []  # Feature flag for the management API
+
 [dependencies]
 rcp-core = { workspace = true }
 tokio = { workspace = true }
@@ -26,11 +30,3 @@ futures-util = { workspace = true }
 async-trait = "0.1.88"
 rustls = { workspace = true }
 webpki-roots = { workspace = true }
-
-# Make management API optional to break the circular dependency
-[features]
-management-api = ["rcp-management-api"]
-
-[dependencies.rcp-management-api]
-path = "../rcp-management-api"
-optional = true
