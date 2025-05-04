@@ -1,6 +1,6 @@
 use clap::Parser;
 use log::{info, LevelFilter};
-use rcp_ws_bridge::{BridgeConfig, start_bridge};
+use rcp_ws_bridge::{start_bridge, BridgeConfig};
 
 /// RCP WebSocket Bridge - Proxy for browser clients
 #[derive(Parser, Debug)]
