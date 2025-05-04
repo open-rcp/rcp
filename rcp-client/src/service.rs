@@ -24,6 +24,9 @@ pub enum ServiceType {
     /// File transfer service
     FileTransfer,
 
+    /// Application launching service
+    App,
+
     /// Custom service
     Custom(u8),
 }
@@ -37,6 +40,7 @@ impl ServiceType {
             Self::Audio => "audio",
             Self::Clipboard => "clipboard",
             Self::FileTransfer => "file-transfer",
+            Self::App => "app",
             Self::Custom(_) => "custom",
         }
     }
@@ -49,6 +53,7 @@ impl ServiceType {
             Self::Audio => CommandId::SubscribeAudio as u8,
             Self::Clipboard => CommandId::SubscribeClipboard as u8,
             Self::FileTransfer => CommandId::SubscribeFileTransfer as u8,
+            Self::App => CommandId::ServiceSubscribe as u8, // Use generic service subscription for App
             Self::Custom(id) => *id,
         }
     }
@@ -64,6 +69,7 @@ impl FromStr for ServiceType {
             "audio" => Ok(Self::Audio),
             "clipboard" => Ok(Self::Clipboard),
             "file-transfer" => Ok(Self::FileTransfer),
+            "app" => Ok(Self::App),
             _ => Err(()),
         }
     }
@@ -213,6 +219,7 @@ impl ServiceFactory {
             ServiceType::Input => Some(Box::new(builtin::InputService::new())),
             ServiceType::Clipboard => Some(Box::new(builtin::ClipboardService::new())),
             ServiceType::FileTransfer => Some(Box::new(builtin::FileTransferService::new())),
+            ServiceType::App => Some(Box::new(builtin::AppService::new())),
             _ => None,
         }
     }
@@ -401,6 +408,65 @@ pub mod builtin {
             if let Some(tx) = message.response_tx {
                 let response = Frame::new(CommandId::Ack as u8, Vec::new());
                 let _ = tx.send(Ok(response));
+            }
+
+            Ok(())
+        }
+    }
+
+    /// App service implementation for launching applications
+    pub struct AppService {}
+
+    impl Default for AppService {
+        fn default() -> Self {
+            Self::new()
+        }
+    }
+
+    impl AppService {
+        /// Create a new app service
+        pub fn new() -> Self {
+            Self {}
+        }
+    }
+
+    #[async_trait::async_trait]
+    impl Service for AppService {
+        async fn start(&mut self) -> Result<()> {
+            debug!("Starting app service");
+            Ok(())
+        }
+
+        async fn stop(&mut self) -> Result<()> {
+            debug!("Stopping app service");
+            Ok(())
+        }
+
+        async fn handle_message(&mut self, message: ServiceMessage) -> Result<()> {
+            trace!("App service handling message: {:?}", message.id);
+
+            // Process message based on command ID
+            match message.frame.command_id() {
+                cmd if cmd == CommandId::LaunchApp as u8 => {
+                    debug!("Handling LaunchApp command");
+                    // Process launch app command
+                    // Just forward to the server, no special handling needed client-side
+                    if let Some(tx) = message.response_tx {
+                        let response = Frame::new(CommandId::Ack as u8, Vec::new());
+                        let _ = tx.send(Ok(response));
+                    }
+                }
+                _ => {
+                    debug!(
+                        "Unknown command for app service: {:02x}",
+                        message.frame.command_id()
+                    );
+                    if let Some(tx) = message.response_tx {
+                        let response =
+                            Frame::new(CommandId::Error as u8, b"Unknown command".to_vec());
+                        let _ = tx.send(Ok(response));
+                    }
+                }
             }
 
             Ok(())

@@ -11,7 +11,7 @@ mod protocol;
 pub mod utils;
 
 pub use auth::{Auth, AuthChallenge, AuthMethod, AuthPayload, AuthResponse, SessionInfo};
-pub use command::{Command, CommandId};
+pub use command::{Command, CommandId, LaunchAppCommand};
 pub use error::{Error, Result};
 pub use frame::Frame;
 pub use header::Header;
