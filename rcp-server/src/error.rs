@@ -6,6 +6,7 @@ pub type Result<T> = std::result::Result<T, Error>;
 
 /// Error type for RCP server
 #[derive(Error, Debug)]
+#[allow(dead_code)]
 pub enum Error {
     #[error("IO error: {0}")]
     Io(#[from] io::Error),

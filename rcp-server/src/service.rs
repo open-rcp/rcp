@@ -7,6 +7,7 @@ use std::fmt::Debug;
 #[async_trait]
 pub trait Service: Debug + Send + Sync {
     /// Get the name of the service
+    #[allow(dead_code)]
     fn name(&self) -> &str;
 
     /// Start the service
@@ -348,6 +349,7 @@ impl ServiceFactory {
     }
 
     /// Get a list of available service names
+    #[allow(dead_code)]
     pub fn available_services() -> Vec<&'static str> {
         vec!["display", "input", "clipboard"]
     }
