@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
 use surrealdb::sql::Thing;
+use crate::auth::WithId;
 
 // User model for database and API
 #[derive(Debug, Serialize, Deserialize)]
@@ -80,11 +81,7 @@ pub struct StatsOverview {
     pub uptime: i64,
 }
 
-// Helper methods for serializing and deserializing SurrealDB Thing IDs
-pub trait WithId {
-    fn get_id(&self) -> Option<String>;
-}
-
+// Helper trait implementation for models to get their ID as a string
 impl WithId for User {
     fn get_id(&self) -> Option<String> {
         self.id.as_ref().map(|thing| thing.to_string())

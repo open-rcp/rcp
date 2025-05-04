@@ -5,6 +5,7 @@ use axum::{
 
 // Import server handlers from the handlers module
 use crate::handlers::servers as server_handlers;
+use crate::handlers::auth as auth_handlers;
 
 // Define the main router that collects all API routes
 pub fn api_routes() -> Router {
@@ -33,29 +34,13 @@ mod auth {
         routing::{get, post},
         Router,
     };
+    use crate::handlers::auth as handler;
 
     pub fn routes() -> Router {
         Router::new()
-            .route("/login", post(login))
-            .route("/logout", post(logout))
-            .route("/refresh", post(refresh_token))
-            .route("/me", get(get_current_user))
-    }
-
-    async fn login() -> &'static str {
-        "Login endpoint"
-    }
-
-    async fn logout() -> &'static str {
-        "Logout endpoint"
-    }
-
-    async fn refresh_token() -> &'static str {
-        "Refresh token endpoint"
-    }
-
-    async fn get_current_user() -> &'static str {
-        "Get current user endpoint"
+            .route("/login", post(handler::login))
+            .route("/logout", post(handler::logout))
+            .route("/me", get(handler::get_current_user))
     }
 }
 
