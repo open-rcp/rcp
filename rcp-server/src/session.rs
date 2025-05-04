@@ -389,7 +389,7 @@ impl Session {
             let permissions = vec![
                 "display".to_string(),
                 "input".to_string(),
-                "app".to_string(),  // Added app service permission
+                "app".to_string(), // Added app service permission
                 "app:launch".to_string(),
             ];
 

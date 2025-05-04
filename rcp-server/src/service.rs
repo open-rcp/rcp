@@ -411,7 +411,7 @@ pub mod services {
             );
 
             let mut command = Command::new(path);
-            
+
             // Make sure the process is visible by explicitly setting create_no_window to false
             #[cfg(target_os = "windows")]
             {
@@ -448,7 +448,11 @@ pub mod services {
 
             match command.spawn() {
                 Ok(child) => {
-                    info!("Successfully launched application: {} with PID: {:?}", path, child.id());
+                    info!(
+                        "Successfully launched application: {} with PID: {:?}",
+                        path,
+                        child.id()
+                    );
                     Ok(())
                 }
                 Err(e) => {
@@ -466,12 +470,12 @@ pub mod services {
         fn launch_notepad(&self) -> Result<()> {
             info!("Launching Notepad");
             let mut command = Command::new("notepad.exe");
-            
+
             // Ensure the window is visible
             use std::os::windows::process::CommandExt;
             // CREATE_NEW_CONSOLE = 0x00000010
             command.creation_flags(0x00000010);
-            
+
             match command.spawn() {
                 Ok(child) => {
                     info!("Successfully launched Notepad with PID: {:?}", child.id());
@@ -516,15 +520,18 @@ pub mod services {
             #[cfg(target_os = "windows")]
             {
                 let mut command = Command::new("calc.exe");
-                
+
                 // Ensure the window is visible
                 use std::os::windows::process::CommandExt;
                 // CREATE_NEW_CONSOLE = 0x00000010
                 command.creation_flags(0x00000010);
-                
+
                 match command.spawn() {
                     Ok(child) => {
-                        info!("Successfully launched Calculator with PID: {:?}", child.id());
+                        info!(
+                            "Successfully launched Calculator with PID: {:?}",
+                            child.id()
+                        );
                         Ok(())
                     }
                     Err(e) => Err(Error::Service(format!(
@@ -575,12 +582,12 @@ pub mod services {
             {
                 let mut command = Command::new("explorer");
                 command.arg("https://www.google.com");
-                
+
                 // Ensure the window is visible
                 use std::os::windows::process::CommandExt;
                 // CREATE_NEW_CONSOLE = 0x00000010
                 command.creation_flags(0x00000010);
-                
+
                 match command.spawn() {
                     Ok(child) => {
                         info!("Successfully launched browser with PID: {:?}", child.id());
@@ -624,12 +631,12 @@ pub mod services {
             #[cfg(target_os = "windows")]
             {
                 let mut command = Command::new("cmd.exe");
-                
+
                 // Ensure the window is visible
                 use std::os::windows::process::CommandExt;
                 // CREATE_NEW_CONSOLE = 0x00000010
                 command.creation_flags(0x00000010);
-                
+
                 match command.spawn() {
                     Ok(child) => {
                         info!("Successfully launched terminal with PID: {:?}", child.id());
