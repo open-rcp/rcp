@@ -29,7 +29,10 @@ pub enum Error {
     PermissionDenied(String),
 
     #[error("Serialization error: {0}")]
-    SerializationError(#[from] bincode::Error),
+    SerializationError(String),
+
+    #[error("Deserialization error: {0}")]
+    DeserializationError(String),
 
     #[error("JSON error: {0}")]
     JsonError(#[from] serde_json::Error),

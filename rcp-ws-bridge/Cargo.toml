@@ -21,7 +21,7 @@ path = "src/lib.rs"
 rcp-core = { path = "../rcp-core" }
 rcp-client = { path = "../rcp-client" }
 tokio = { workspace = true }
-tokio-tungstenite = "0.20"
+tokio-tungstenite = "0.26.2"
 futures-util.workspace = true
 log.workspace = true
 env_logger.workspace = true
@@ -30,4 +30,4 @@ serde_json.workspace = true
 uuid.workspace = true
 anyhow.workspace = true
 thiserror.workspace = true
-clap = { version = "4.3", features = ["derive"] }
+clap = { version = "4.5.37", features = ["derive"] }

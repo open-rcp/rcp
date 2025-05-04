@@ -1,10 +1,11 @@
 use crate::{Error, Result};
-use rand::{rngs::OsRng, Rng};
+use rand::RngCore;
 
 /// Generate random bytes of the specified length
 pub fn generate_random_bytes(length: usize) -> Vec<u8> {
     let mut bytes = vec![0u8; length];
-    OsRng.fill(&mut bytes[..]);
+    let mut rng = rand::rng();
+    rng.fill_bytes(&mut bytes[..]);
     bytes
 }
 
@@ -57,12 +58,16 @@ pub fn pad_to_block_size(data: &[u8], block_size: usize) -> Vec<u8> {
 
 /// Convert a struct to bytes using bincode serialization
 pub fn to_bytes<T: serde::Serialize>(value: &T) -> Result<Vec<u8>> {
-    bincode::serialize(value).map_err(Error::SerializationError)
+    // Using a simpler approach directly calling the re-exported serde functionality
+    bincode::serialize(value)
+        .map_err(|e| Error::SerializationError(e.to_string()))
 }
 
 /// Convert bytes to a struct using bincode deserialization
 pub fn from_bytes<T: serde::de::DeserializeOwned>(bytes: &[u8]) -> Result<T> {
-    bincode::deserialize(bytes).map_err(Error::SerializationError)
+    // Using a simpler approach directly calling the re-exported serde functionality
+    bincode::deserialize(bytes)
+        .map_err(|e| Error::DeserializationError(e.to_string()))
 }
 
 /// Get current time in seconds since UNIX epoch

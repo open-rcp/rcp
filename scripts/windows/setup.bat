@@ -21,7 +21,7 @@ rustup default stable
 rustup component add rustfmt
 rustup component add clippy
 
-echo Setting up environment variables...
+echo Setting up environment variables for OpenSSL...
 set OPENSSL_DIR=C:\Program Files\OpenSSL-Win64
 set OPENSSL_INCLUDE_DIR=C:\Program Files\OpenSSL-Win64\include
 set OPENSSL_LIB_DIR=C:\Program Files\OpenSSL-Win64\lib

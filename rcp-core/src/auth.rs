@@ -1,4 +1,4 @@
-use rand::{rngs::OsRng, RngCore};
+use rand::RngCore;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use uuid::Uuid;
@@ -83,9 +83,10 @@ impl Auth {
     pub fn generate_challenge() -> AuthChallenge {
         let mut challenge = vec![0u8; CHALLENGE_LENGTH];
         let mut salt = vec![0u8; SALT_LENGTH];
-
-        OsRng.fill_bytes(&mut challenge);
-        OsRng.fill_bytes(&mut salt);
+        
+        let mut rng = rand::rng();
+        rng.fill_bytes(&mut challenge);
+        rng.fill_bytes(&mut salt);
 
         AuthChallenge { challenge, salt }
     }

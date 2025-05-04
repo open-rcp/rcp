@@ -66,8 +66,7 @@ scripts\windows\setup.bat
 This script:
 - Checks for and installs Rust if needed
 - Configures the Rust toolchain
-- Installs OpenSSL and CMake via Chocolatey (if available)
-- Sets up environment variables
+- Sets up environment variables for OpenSSL
 - Verifies dependencies with `cargo check`
 
 #### Build Options
@@ -100,9 +99,8 @@ sudo ./scripts/linux/setup.sh
 ```
 
 This script:
-- Installs essential build tools (build-essential, cmake, pkg-config)
+- Installs essential build tools (build-essential, pkg-config)
 - Installs SSL development libraries
-- Installs additional dependencies (libclang-dev, llvm-dev)
 - Installs or updates Rust
 - Configures the Rust toolchain
 - Verifies dependencies with `cargo check`
@@ -133,7 +131,6 @@ This script:
 - Sets up environment variables in ~/.zshrc
 - Installs or updates Rust
 - Configures the Rust toolchain
-- Installs LLVM
 - Verifies dependencies with `cargo check`
 
 After setup completes, you may need to restart your terminal or run:
@@ -167,7 +164,7 @@ OPENSSL_LIB_DIR=C:\Program Files\OpenSSL-Win64\lib
 OPENSSL_DIR=[Homebrew OpenSSL path]
 OPENSSL_INCLUDE_DIR=[Homebrew OpenSSL include path]
 OPENSSL_LIB_DIR=[Homebrew OpenSSL lib path]
-PATH=[Updated to include OpenSSL and LLVM]
+PATH=[Updated to include OpenSSL]
 ```
 
 ## Examples
@@ -231,10 +228,8 @@ The Windows setup script performs the following operations:
 
 1. Checks for Rust installation and installs/updates as needed
 2. Configures Rust toolchain with rustfmt and clippy
-3. Installs OpenSSL using Chocolatey if available
-4. Installs CMake if needed
-5. Sets up environment variables for OpenSSL
-6. Verifies project dependencies
+3. Sets up environment variables for OpenSSL
+4. Verifies project dependencies
 
 ### Linux/macOS Setup Scripts
 
@@ -252,34 +247,3 @@ All build scripts follow a similar pattern:
 
 1. Parse command line arguments
 2. Set build type and target components
-3. Configure environment variables if needed
-4. Create build directory if it doesn't exist
-5. Run cargo build with appropriate options
-6. Run the component if requested
-
-## Troubleshooting
-
-### OpenSSL Not Found
-
-If you encounter OpenSSL-related errors during building:
-
-- On Windows: Ensure OpenSSL is installed at `C:\Program Files\OpenSSL-Win64` or set OPENSSL_DIR manually
-- On Linux: Run `sudo apt-get install libssl-dev` (or your distro's equivalent)
-- On macOS: Run `brew install openssl@3` and ensure environment variables are set correctly
-
-### Permission Denied on Linux/macOS
-
-If you get "Permission denied" when running scripts:
-
-```bash
-chmod +x scripts/linux/*.sh scripts/macos/*.sh
-```
-
-### Build Errors
-
-If you encounter build errors:
-
-1. Ensure all dependencies are installed
-2. Run `cargo check` to verify dependencies
-3. Try building in debug mode first
-4. Check compiler error messages for specific issues

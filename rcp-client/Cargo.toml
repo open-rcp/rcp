@@ -24,7 +24,7 @@ thiserror = { workspace = true }
 anyhow = { workspace = true }
 log = { workspace = true }
 env_logger = { workspace = true }
-clap = { version = "4.3", features = ["derive"] }
+clap = { version = "4.5.37", features = ["derive"] }
 serde = { workspace = true }
 serde_json = { workspace = true }
 uuid = { workspace = true }
@@ -33,6 +33,6 @@ tracing-subscriber = { workspace = true }
 futures-util = { workspace = true }
 rustls = { workspace = true }
 webpki-roots = { workspace = true }
-async-trait = "0.1"
-tokio-tungstenite = "0.20"
-url = "2.4"
+async-trait = "0.1.88"
+tokio-tungstenite = "0.26.2"
+url = "2.5.4"
