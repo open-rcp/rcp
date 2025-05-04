@@ -119,16 +119,33 @@ Connect using host and port flags (must be specified before the connect command)
 ### 🖥️ Using the Management UI
 
 ```bash
-# Start the management interface (Tauri-based)
-cargo run -p rcp-management-ui
+# Start the management interface (SvelteKit+Tauri)
+cargo run -p rcp-desk
 ```
 
-The management UI provides a complete interface for:
+The desk management UI provides a complete interface for:
 - Managing server configurations
 - Monitoring active sessions
 - Configuring application access
 - Viewing analytics and logs
 - User management
+
+#### Web Interface
+
+```bash
+# Start the web interface
+cargo run -p rcp-desk -- --web
+```
+
+#### Desktop App
+
+```bash
+# Build and install the desktop app
+cargo run -p rcp-desk -- --desktop-install
+
+# Run the desktop app
+cargo run -p rcp-desk
+```
 
 ---
 

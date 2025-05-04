@@ -1,18 +1,20 @@
-# RCP Build Scripts
+# RCP Build & Development Guide
 
-This directory contains build and configuration scripts for the RCP project. These scripts are designed to simplify setting up the development environment and building the project across different operating systems.
+This document provides comprehensive instructions for building and developing the RCP (Rust Control Protocol) project across different operating systems. The guide includes setting up development environments, building various components, and running the project for testing.
 
-## Directory Structure
+## Build Scripts Location
 
-- `windows/` - Scripts for Windows
-- `linux/` - Scripts for Linux
-- `macos/` - Scripts for macOS
+All build scripts are located in the `scripts/` directory with platform-specific subdirectories:
 
-## Usage
+- `scripts/windows/` - Scripts for Windows
+- `scripts/linux/` - Scripts for Linux
+- `scripts/macos/` - Scripts for macOS
+
+## Platform-Specific Instructions
 
 ### Windows
 
-#### Setup
+#### Setup Development Environment
 
 1. Open Command Prompt or PowerShell as administrator
 2. Run the setup script:
@@ -20,7 +22,7 @@ This directory contains build and configuration scripts for the RCP project. The
    scripts\windows\setup.bat
    ```
 
-#### Building
+#### Building Components
 
 ```
 scripts\windows\build.bat [options]
@@ -31,11 +33,19 @@ Options:
 - `--debug` - Build in debug mode
 - `--server` - Build only the server component
 - `--client` - Build only the client component
+- `--service` - Build only the service component
+- `--cli` - Build only the CLI component
+- `--api` - Build only the API component
+- `--desk` - Build only the Desk interface component
 - `--ws-bridge` - Build only the WebSocket bridge component
 - `--all` - Build all components (default)
 - `--run` - Run the server after building
 - `--run-server` - Run the server after building
 - `--run-client` - Run the client after building
+- `--run-service` - Run the service after building
+- `--run-cli` - Run the CLI after building
+- `--run-api` - Run the API after building
+- `--run-desk` - Run the Desk interface after building
 - `--run-ws-bridge` - Run the WebSocket bridge after building
 
 Example:
@@ -45,7 +55,7 @@ scripts\windows\build.bat --release --server --run
 
 ### Linux
 
-#### Setup
+#### Setup Development Environment
 
 1. Make the script executable (if not already):
    ```bash
@@ -57,7 +67,7 @@ scripts\windows\build.bat --release --server --run
    sudo ./scripts/linux/setup.sh
    ```
 
-#### Building
+#### Building Components
 
 First, make the script executable if not already:
 ```bash
@@ -74,11 +84,19 @@ Options:
 - `--debug` - Build in debug mode
 - `--server` - Build only the server component
 - `--client` - Build only the client component
+- `--service` - Build only the service component
+- `--cli` - Build only the CLI component
+- `--api` - Build only the API component
+- `--desk` - Build only the Desk interface component
 - `--ws-bridge` - Build only the WebSocket bridge component
 - `--all` - Build all components (default)
 - `--run` - Run the server after building
 - `--run-server` - Run the server after building
 - `--run-client` - Run the client after building
+- `--run-service` - Run the service after building
+- `--run-cli` - Run the CLI after building
+- `--run-api` - Run the API after building
+- `--run-desk` - Run the Desk interface after building
 - `--run-ws-bridge` - Run the WebSocket bridge after building
 
 Example:
@@ -88,7 +106,7 @@ Example:
 
 ### macOS
 
-#### Setup
+#### Setup Development Environment
 
 1. Make the script executable (if not already):
    ```bash
@@ -105,7 +123,7 @@ Example:
    source ~/.zshrc
    ```
 
-#### Building
+#### Building Components
 
 First, make the script executable if not already:
 ```bash
@@ -122,16 +140,56 @@ Options:
 - `--debug` - Build in debug mode
 - `--server` - Build only the server component
 - `--client` - Build only the client component
+- `--service` - Build only the service component
+- `--cli` - Build only the CLI component
+- `--api` - Build only the API component
+- `--desk` - Build only the Desk interface component
 - `--ws-bridge` - Build only the WebSocket bridge component
 - `--all` - Build all components (default)
 - `--run` - Run the server after building
 - `--run-server` - Run the server after building
 - `--run-client` - Run the client after building
+- `--run-service` - Run the service after building
+- `--run-cli` - Run the CLI after building
+- `--run-api` - Run the API after building
+- `--run-desk` - Run the Desk interface after building
 - `--run-ws-bridge` - Run the WebSocket bridge after building
 
 Example:
 ```bash
 ./scripts/macos/build.sh --release --ws-bridge --run-ws-bridge
+```
+
+## Quick Reference - Common Tasks
+
+### Build All Components (Debug)
+```bash
+# Windows
+scripts\windows\build.bat --all
+
+# Linux/macOS
+./scripts/linux/build.sh --all
+./scripts/macos/build.sh --all
+```
+
+### Build and Run Service
+```bash
+# Windows
+scripts\windows\build.bat --service --run
+
+# Linux/macOS
+./scripts/linux/build.sh --service --run
+./scripts/macos/build.sh --service --run
+```
+
+### Build Release Version of Desk UI
+```bash
+# Windows
+scripts\windows\build.bat --release --desk
+
+# Linux/macOS
+./scripts/linux/build.sh --release --desk
+./scripts/macos/build.sh --release --desk
 ```
 
 ## Note for Repository Maintainers
@@ -143,3 +201,12 @@ chmod +x scripts/linux/*.sh scripts/macos/*.sh
 ```
 
 This should be done before running any scripts.
+
+## Troubleshooting
+
+If you encounter build issues:
+
+1. Ensure all dependencies are installed (run the setup script)
+2. Check that your Rust toolchain is up-to-date (`rustup update`)
+3. Try cleaning the build with `cargo clean` before rebuilding
+4. For platform-specific issues, see the README files in each platform directory
