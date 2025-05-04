@@ -14,6 +14,7 @@
 - 🔐 **Authentication layer** (pre-shared keys or public-key auth)
 - 📦 **Modular protocol structure** for easy extension
 - 📁 **Future support**: clipboard, file transfer, remote shell
+- 🔗 **SSH-like connection strings** for simple client connections
 
 ---
 
@@ -79,6 +80,41 @@ cargo build -p rcp-server
 ./target/debug/rcp-server
 ```
 
+### 🔌 Connecting to a Server
+
+The RCP client supports several methods for connecting to a server:
+
+#### Using SSH-like Connection Strings
+
+Connect with a single, convenient connection string:
+
+```bash
+# Connect using SSH-like string format: [user[:pass]@]host[:port][/path]
+./target/debug/rcp-client connect admin:secretkey@192.168.1.100:8716
+```
+
+#### Using Command-Line Parameters
+
+Connect using traditional command-line flags:
+
+```bash
+# Connect using command-line parameters
+./target/debug/rcp-client -H 192.168.1.100 -p 8716 connect -k secretkey
+```
+
+#### Programmatic Connection
+
+```rust
+// Create a client using connection string
+let client = Client::builder()
+    .connection_string("user:password@host:8716")
+    .unwrap()
+    .build();
+
+// Connect and authenticate
+client.connect_and_authenticate().await?;
+```
+
 ---
 
 ## 🧱 Roadmap
@@ -86,6 +122,7 @@ cargo build -p rcp-server
 * [x] Define core protocol
 * [x] TCP socket server/client
 * [x] Launch & control remote apps
+* [x] SSH-like connection strings
 * [ ] Screen streaming (shared memory or framebuffer)
 * [ ] Browser client via WebSocket bridge
 * [ ] Clipboard & file share support

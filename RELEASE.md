@@ -12,6 +12,16 @@ RCP follows [Semantic Versioning](https://semver.org/) (SemVer):
 
 Example: `v1.2.3`
 
+## Component-Specific Configuration Files
+
+When building release packages, configuration files are handled differently for each component:
+
+- **Server package**: Includes the `config.toml` configuration file which contains server settings such as binding address, port, TLS configuration, and authentication parameters.
+- **Client package**: Does not include `config.toml` as clients use command-line parameters or connection strings to connect to servers.
+- **Bridge package**: Includes the `config.toml` configuration file as it needs connection settings to relay traffic.
+
+This ensures that each package only contains the necessary configuration files for its operation.
+
 ## Pre-Release Checklist
 
 Before creating a new release:
@@ -95,6 +105,14 @@ After a successful release:
 1. Announce the new version in GitHub Discussions
 2. Update documentation if necessary
 3. Notify users through appropriate channels
+
+## Key Features to Highlight in Releases
+
+When announcing releases, be sure to highlight these key features:
+
+1. **SSH-like Connection Strings**: The client supports an SSH-like connection string format (`user:pass@host:port/path`) for easier connection setup.
+2. **Component-Specific Configuration**: Each component only includes configuration files it actually needs.
+3. **Improved Client CLI**: Command-line interface supports both traditional flag-based parameters and connection strings.
 
 ---
 

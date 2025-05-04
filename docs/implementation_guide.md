@@ -85,6 +85,59 @@ async fn example_client() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
+### SSH-Like Connection Strings
+
+RCP now supports SSH-like connection string formatting for easier client connection setup. This allows you to specify all connection parameters in a single string using a familiar format:
+
+```
+[user[:password]@]host[:port][/path]
+```
+
+**Examples:**
+
+```
+localhost:8716                  # Connect to localhost on port 8716
+user:pass@192.168.1.100:8716    # Connect with username/password
+admin:secretkey@server.example.com:8716/custom-path
+```
+
+**Client usage with connection string:**
+
+```rust
+use rcp_client::{Client, ServiceType};
+
+async fn connect_with_string() -> Result<(), Box<dyn std::error::Error>> {
+    // Create client using connection string
+    let client = Client::builder()
+        .connection_string("user:password@host:8716")
+        .unwrap()
+        .build();
+    
+    // Connect and authenticate in one step
+    client.connect_and_authenticate().await?;
+    
+    // Start the client message processor
+    client.start().await?;
+    
+    // Use the client...
+    
+    // Disconnect when done
+    client.disconnect().await?;
+    
+    Ok(())
+}
+```
+
+**Command line usage:**
+
+```bash
+# Connect using an SSH-like connection string
+rcp-client connect user:pass@host:8716
+
+# Execute a command using connection string
+rcp-client execute user:pass@host:8716 my_command arg1 arg2
+```
+
 ### Working with Services
 
 ```rust
