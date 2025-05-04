@@ -3,9 +3,9 @@ use std::str::FromStr;
 use url::Url;
 
 /// Represents a parsed RCP connection string in the format:
-/// rcp://[user[:password]@]host[:port][/path]
+/// rcp://\[user\[:password\]@\]host\[:port\]\[/path\]
 /// or the SSH-like format:
-/// [user[:password]@]host[:port][/path]
+/// \[user\[:password\]@\]host\[:port\]\[/path\]
 #[derive(Debug, Clone)]
 pub struct ConnectionString {
     /// Username for authentication
