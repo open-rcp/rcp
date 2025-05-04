@@ -2,22 +2,12 @@
 name = "rcp-examples"
 version.workspace = true
 edition.workspace = true
-authors = ["Akash Shah <akash@devstroop.com>", "Devstroop Technologies <info@devstroop.com>"]
-license = "MIT OR Apache-2.0"
-repository = "https://github.com/open-rcp/rcp"
-homepage = "https://github.com/open-rcp/rcp"
-publish = false
+authors.workspace = true
+license.workspace = true
 
 [dependencies]
-rcp-client = { path = "../../rcp-client" }
-rcp-core = { path = "../../rcp-core" }
-anyhow = "1.0"
-tokio = { version = "1.0", features = ["full"] }
-env_logger = "0.10"
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-uuid = { version = "1.0", features = ["v4", "serde"] }
-futures-util = "0.3"
+rcp-client = { path = "../rcp-client" }
+rcp-core = { path = "../rcp-core" }
 
 [[bin]]
 name = "client-example"
@@ -26,3 +16,6 @@ path = "src/client_example.rs"
 [[bin]]
 name = "app-launch-example"
 path = "src/app_launch_example.rs"
+
+[build-dependencies]
+# Add any build dependencies needed
