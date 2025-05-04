@@ -1,5 +1,4 @@
 use surrealdb::engine::local::{Db, RocksDb, Mem};
-use surrealdb::opt::auth::Root;
 use surrealdb::Surreal;
 use std::sync::Arc;
 use tracing::info;
@@ -32,8 +31,9 @@ pub async fn init_database() -> Result<Surreal<Db>, Box<dyn std::error::Error>> 
     let username = std::env::var("DB_USER").unwrap_or_else(|_| "root".to_string());
     let password = std::env::var("DB_PASS").unwrap_or_else(|_| "root".to_string());
     
-    // Authenticate to the database
-    db.signin(Root {
+    // Authenticate to the database (API changed in 2.3.0)
+    // Fix: Pass string references instead of owned Strings
+    db.signin(surrealdb::opt::auth::Root {
         username: &username,
         password: &password,
     }).await?;
@@ -50,7 +50,7 @@ pub async fn init_database() -> Result<Surreal<Db>, Box<dyn std::error::Error>> 
 
 /// Set up the database schema and initial data if needed
 async fn init_database_schema(db: &Surreal<Db>) -> Result<(), Box<dyn std::error::Error>> {
-    // Define tables and their schemas
+    // Define tables and their schemas (SurrealQL syntax)
     let schema_queries = vec![
         // Users table
         "DEFINE TABLE user SCHEMAFULL;",
@@ -89,7 +89,7 @@ async fn init_database_schema(db: &Surreal<Db>) -> Result<(), Box<dyn std::error
             IF NOT EXISTS;",
     ];
     
-    // Execute each query to set up the schema
+    // Execute each query to set up the schema (API changed in 2.3.0)
     for query in schema_queries {
         db.query(query).await?;
     }
@@ -104,8 +104,9 @@ mod tests {
     #[tokio::test]
     async fn test_db_connection() {
         let db = init_database().await.expect("Failed to connect to database");
-        // Verify connection by running a simple query
-        let result: Vec<surrealdb::sql::Thing> = db.select("user").await.expect("Failed to query");
-        println!("Found {} users", result.len());
+        
+        // Verify connection by running a simple query (API changed in 2.3.0)
+        let result: Vec<surrealdb::opt::RecordId> = db.select("user").await.expect("Failed to query users");
+        tracing::info!("Found {} users", result.len());
     }
 }

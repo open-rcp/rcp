@@ -11,18 +11,14 @@ pub async fn login(
     State(state): State<Arc<AppState>>,
     Json(credentials): Json<LoginCredentials>,
 ) -> ApiResult<Json<TokenResponse>> {
-    // Query the user by username
-    let query = "SELECT * FROM user WHERE username = $username LIMIT 1";
-    let mut result = state
-        .db
-        .query(query)
+    // Query the user by username (updated for SurrealDB 2.3.0)
+    let result = state.db.query("SELECT * FROM user WHERE username = $username LIMIT 1")
         .bind(("username", credentials.username.clone()))
         .await
         .map_err(|e| ApiError::Database(format!("Database error: {}", e)))?;
 
     // Extract the user from the query result
-    let users: Vec<User> = result
-        .take(0)
+    let users: Vec<User> = result.take(0)
         .map_err(|_| ApiError::Authentication("Invalid username or password".to_string()))?;
 
     let user = users
@@ -72,20 +68,16 @@ pub async fn get_current_user(
     State(state): State<Arc<AppState>>,
     user: crate::auth::AuthUser,
 ) -> ApiResult<Json<serde_json::Value>> {
-    // Query the user by ID to get the full profile
+    // Query the user by ID to get the full profile (updated for SurrealDB 2.3.0)
     let user_id = format!("user:{}", user.user_id);
     
-    let query = "SELECT id, username, email, role, created_at FROM user WHERE id = $id LIMIT 1";
-    let mut result = state
-        .db
-        .query(query)
+    let result = state.db.query("SELECT id, username, email, role, created_at FROM user WHERE id = $id LIMIT 1")
         .bind(("id", user_id))
         .await
         .map_err(|e| ApiError::Database(format!("Database error: {}", e)))?;
 
     // Extract the user profile from the query result
-    let profile: serde_json::Value = result
-        .take(0)
+    let profile: serde_json::Value = result.take(0)
         .map_err(|_| ApiError::NotFound("User profile not found".to_string()))?;
 
     Ok(Json(profile))

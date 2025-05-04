@@ -1,12 +1,12 @@
 use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
-use surrealdb::sql::Thing;
+use surrealdb::opt::RecordId;
 use crate::auth::WithId;
 
 // User model for database and API
 #[derive(Debug, Serialize, Deserialize)]
 pub struct User {
-    pub id: Option<Thing>,
+    pub id: Option<RecordId>,
     pub username: String,
     #[serde(skip_serializing)]
     pub password_hash: String,
@@ -34,7 +34,7 @@ pub struct TokenResponse {
 // Server model
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Server {
-    pub id: Option<Thing>,
+    pub id: Option<RecordId>,
     pub name: String,
     pub host: String,
     pub port: i32,
@@ -62,8 +62,8 @@ pub struct UpdateServerRequest {
 // Session model
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Session {
-    pub id: Option<Thing>,
-    pub server_id: Thing,
+    pub id: Option<RecordId>,
+    pub server_id: RecordId,
     pub client_id: String,
     pub client_ip: String,
     pub started_at: Option<OffsetDateTime>,
@@ -84,18 +84,18 @@ pub struct StatsOverview {
 // Helper trait implementation for models to get their ID as a string
 impl WithId for User {
     fn get_id(&self) -> Option<String> {
-        self.id.as_ref().map(|thing| thing.to_string())
+        self.id.as_ref().map(|record_id| record_id.to_string())
     }
 }
 
 impl WithId for Server {
     fn get_id(&self) -> Option<String> {
-        self.id.as_ref().map(|thing| thing.to_string())
+        self.id.as_ref().map(|record_id| record_id.to_string())
     }
 }
 
 impl WithId for Session {
     fn get_id(&self) -> Option<String> {
-        self.id.as_ref().map(|thing| thing.to_string())
+        self.id.as_ref().map(|record_id| record_id.to_string())
     }
 }

@@ -30,13 +30,13 @@ pub enum ApiError {
     RcpServer(String),
 }
 
-// Implement conversions from SurrealDB errors to our ApiError
+// Implement conversions from SurrealDB errors to our ApiError (updated for 2.3.0)
 impl From<surrealdb::Error> for ApiError {
     fn from(err: surrealdb::Error) -> Self {
         match err {
             surrealdb::Error::Db(msg) => ApiError::Database(format!("Database error: {}", msg)),
+            surrealdb::Error::Query(msg, _) => ApiError::Database(format!("Query error: {}", msg)),
             surrealdb::Error::Api(msg) => ApiError::Internal(format!("API error: {}", msg)),
-            surrealdb::Error::Auth(msg) => ApiError::Authentication(format!("Auth error: {}", msg)),
             _ => ApiError::Internal(format!("Unexpected SurrealDB error: {}", err))
         }
     }
