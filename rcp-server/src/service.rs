@@ -636,7 +636,7 @@ pub mod services {
             #[cfg(target_os = "windows")]
             {
                 // Redirect to Notepad on Windows
-                return self.launch_notepad();
+                self.launch_notepad()
             }
 
             #[cfg(not(target_os = "windows"))]
