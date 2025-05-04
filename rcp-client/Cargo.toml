@@ -8,6 +8,15 @@ repository.workspace = true
 homepage.workspace = true
 description = "Client library for the Rust Control Protocol (RCP)"
 
+# Explicitly define both lib and bin targets
+[[bin]]
+name = "rcp-client"
+path = "src/main.rs"
+
+[lib]
+name = "rcp_client"
+path = "src/lib.rs"
+
 [dependencies]
 rcp-core = { workspace = true }
 tokio = { workspace = true }
