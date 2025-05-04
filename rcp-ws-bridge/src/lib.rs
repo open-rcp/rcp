@@ -165,7 +165,9 @@ async fn handle_connection(stream: TcpStream, rcp_host: String, rcp_port: u16) -
                                                                     )
                                                                     .unwrap_or_default();
                                                                 if let Err(e) = to_ws_tx
-                                                                    .send(Message::Text(json_str.into()))
+                                                                    .send(Message::Text(
+                                                                        json_str.into(),
+                                                                    ))
                                                                     .await
                                                                 {
                                                                     error!(
@@ -190,7 +192,9 @@ async fn handle_connection(stream: TcpStream, rcp_host: String, rcp_port: u16) -
                                                                 serde_json::to_string(&response)
                                                                     .unwrap_or_default();
                                                             if let Err(e) = to_ws_tx
-                                                                .send(Message::Text(json_str.into()))
+                                                                .send(Message::Text(
+                                                                    json_str.into(),
+                                                                ))
                                                                 .await
                                                             {
                                                                 error!(
@@ -212,7 +216,9 @@ async fn handle_connection(stream: TcpStream, rcp_host: String, rcp_port: u16) -
                                                                 serde_json::to_string(&response)
                                                                     .unwrap_or_default();
                                                             if let Err(e) = to_ws_tx
-                                                                .send(Message::Text(json_str.into()))
+                                                                .send(Message::Text(
+                                                                    json_str.into(),
+                                                                ))
                                                                 .await
                                                             {
                                                                 error!(
@@ -237,8 +243,9 @@ async fn handle_connection(stream: TcpStream, rcp_host: String, rcp_port: u16) -
                                                     };
                                                     let json_str = serde_json::to_string(&response)
                                                         .unwrap_or_default();
-                                                    if let Err(e) =
-                                                        to_ws_tx.send(Message::Text(json_str.into())).await
+                                                    if let Err(e) = to_ws_tx
+                                                        .send(Message::Text(json_str.into()))
+                                                        .await
                                                     {
                                                         error!(
                                                             "Failed to send connection error: {}",
@@ -265,8 +272,9 @@ async fn handle_connection(stream: TcpStream, rcp_host: String, rcp_port: u16) -
                                                 };
                                                 let json_str = serde_json::to_string(&response)
                                                     .unwrap_or_default();
-                                                if let Err(e) =
-                                                    to_ws_tx.send(Message::Text(json_str.into())).await
+                                                if let Err(e) = to_ws_tx
+                                                    .send(Message::Text(json_str.into()))
+                                                    .await
                                                 {
                                                     error!(
                                                         "Failed to send command response: {}",
@@ -281,8 +289,9 @@ async fn handle_connection(stream: TcpStream, rcp_host: String, rcp_port: u16) -
                                                 };
                                                 let json_str = serde_json::to_string(&response)
                                                     .unwrap_or_default();
-                                                if let Err(e) =
-                                                    to_ws_tx.send(Message::Text(json_str.into())).await
+                                                if let Err(e) = to_ws_tx
+                                                    .send(Message::Text(json_str.into()))
+                                                    .await
                                                 {
                                                     error!("Failed to send auth error: {}", e);
                                                 }
@@ -296,7 +305,10 @@ async fn handle_connection(stream: TcpStream, rcp_host: String, rcp_port: u16) -
                                             };
                                             let json_str = serde_json::to_string(&response)
                                                 .unwrap_or_default();
-                                            to_ws_tx.send(Message::Text(json_str.into())).await.ok();
+                                            to_ws_tx
+                                                .send(Message::Text(json_str.into()))
+                                                .await
+                                                .ok();
                                         }
                                     }
                                 }
@@ -308,7 +320,9 @@ async fn handle_connection(stream: TcpStream, rcp_host: String, rcp_port: u16) -
                                     };
                                     let json_str =
                                         serde_json::to_string(&response).unwrap_or_default();
-                                    if let Err(e) = to_ws_tx.send(Message::Text(json_str.into())).await {
+                                    if let Err(e) =
+                                        to_ws_tx.send(Message::Text(json_str.into())).await
+                                    {
                                         error!("Failed to send error response: {}", e);
                                     }
                                 }
