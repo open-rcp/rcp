@@ -166,9 +166,9 @@ RCP provides comprehensive documentation to help you understand, implement, and 
 - [RCP Desk](docs/rcp-desk.md) - Documentation for the unified admin interface
 
 ### Development Resources
-- [BUILD Guide](BUILD.md) - Instructions for building and developing RCP
+- [BUILD](BUILD.md) - Instructions for building and developing RCP
 - [Roadmap (Legacy)](docs/roadmap-legacy.md) - Project milestones and development plans
-- [Contributing Guide](CONTRIBUTING.md) - Guidelines for contributors
+- [Contributing](CONTRIBUTING.md) - Guidelines for contributors
 - [Release Notes](RELEASE.md) - Version history and release information
 
 ---
