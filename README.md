@@ -155,9 +155,9 @@ RCP provides comprehensive documentation to help you understand, implement, and 
 
 ### Core Documentation
 - [Project Architecture](docs/architecture.md) - Detailed architecture and components overview
-- [Protocol Specification](docs/spec.md) - Technical specification of the RCP protocol
-- [Implementation Guide](docs/implementation_guide.md) - Guide for implementing RCP in applications
-- [Project Outline](docs/project_outline.md) - Project structure and development guidelines
+- [Protocol Specification](docs/protocol-specification.md) - Technical specification of the RCP protocol
+- [Development Guidelines](docs/development-guidelines.md) - Guide for implementing RCP in applications
+- [Project Outline](docs/project-outline.md) - Project structure and development guidelines
 
 ### Component Documentation
 - [RCP Service](docs/rcp-service.md) - Documentation for the runtime service component
