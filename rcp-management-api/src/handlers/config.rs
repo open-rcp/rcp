@@ -89,7 +89,7 @@ pub async fn update_config(
 
     // In a real implementation, we would update the actual server configuration
     info!("Updating server configuration");
-    
+
     // Just log the new config for now
     info!("New server host: {}", config.server.host);
     info!("New server port: {}", config.server.port);

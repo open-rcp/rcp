@@ -11,26 +11,26 @@ pub mod utils;
 
 // Re-export commonly used types
 pub use app::AppState;
+pub use config::Config;
 pub use db::init_database;
 pub use error::{ApiError, ApiResult};
-pub use config::Config;
 
-use std::net::SocketAddr;
-use actix_web::{web, App, HttpServer};
 use actix_cors::Cors;
 use actix_files as fs;
+use actix_web::{web, App, HttpServer};
 use log::info;
-use surrealdb::Surreal;
+use std::net::SocketAddr;
 use surrealdb::engine::local::Db;
+use surrealdb::Surreal;
 
 /// Run the management API server with the provided configuration
 pub async fn run_server(config: Config) -> Result<(), Box<dyn std::error::Error>> {
     // Initialize database connection
     let db_pool = init_database(&config.database_url).await?;
-    
+
     // Initialize SurrealDB as a fallback
     let surreal_db = db::init_surrealdb().await?;
-    
+
     // Create shared application state
     let app_state = web::Data::new(AppState {
         db: surreal_db,
@@ -38,15 +38,18 @@ pub async fn run_server(config: Config) -> Result<(), Box<dyn std::error::Error>
         server_handle: config.server_handle,
         jwt_secret: config.jwt_secret.clone(),
     });
-    
+
     // Set up address
     let addr = SocketAddr::new(
         config.host.parse().unwrap_or("127.0.0.1".parse().unwrap()),
         config.port,
     );
-    
-    info!("Starting RCP Management API server at http://{}:{}", config.host, config.port);
-    
+
+    info!(
+        "Starting RCP Management API server at http://{}:{}",
+        config.host, config.port
+    );
+
     // Build and start the server
     HttpServer::new(move || {
         // Configure CORS for frontend access
@@ -70,6 +73,6 @@ pub async fn run_server(config: Config) -> Result<(), Box<dyn std::error::Error>
     .bind(addr)?
     .run()
     .await?;
-    
+
     Ok(())
 }

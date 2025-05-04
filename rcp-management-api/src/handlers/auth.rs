@@ -1,6 +1,6 @@
 use crate::{ApiResult, AppState};
 use actix_web::{web, HttpResponse};
-use jsonwebtoken::{encode, Header, EncodingKey};
+use jsonwebtoken::{encode, EncodingKey, Header};
 use log::{error, info};
 use serde::{Deserialize, Serialize};
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -43,7 +43,8 @@ pub async fn login(
         let expiration = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap()
-            .as_secs() + 24 * 3600; // 24 hours
+            .as_secs()
+            + 24 * 3600; // 24 hours
 
         let claims = Claims {
             sub: "1".to_string(),

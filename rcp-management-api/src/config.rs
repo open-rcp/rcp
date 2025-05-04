@@ -1,7 +1,7 @@
+use crate::error::ApiResult;
 use serde::Deserialize;
 use std::sync::{Arc, OnceLock};
 use tokio::sync::Mutex;
-use crate::error::ApiResult;
 
 static CONFIG: OnceLock<AppConfig> = OnceLock::new();
 
@@ -67,7 +67,10 @@ pub fn load_config() -> &'static AppConfig {
         match load_from_file() {
             Ok(config) => config,
             Err(e) => {
-                eprintln!("Failed to load config from file: {}, using default configuration", e);
+                eprintln!(
+                    "Failed to load config from file: {}, using default configuration",
+                    e
+                );
                 load_from_env().unwrap_or_default()
             }
         }
@@ -79,37 +82,37 @@ fn load_from_env() -> Result<AppConfig, Box<dyn std::error::Error>> {
     // In a real application, we would use a crate like envy to deserialize
     // environment variables directly into our config structure.
     // For now, we'll just create a default config and override specific values.
-    
+
     let mut config = AppConfig::default();
-    
+
     if let Ok(port) = std::env::var("RCP_MANAGEMENT_PORT") {
         if let Ok(port) = port.parse::<u16>() {
             config.server.port = port;
         }
     }
-    
+
     if let Ok(db_url) = std::env::var("DATABASE_URL") {
         config.database.url = db_url;
     }
-    
+
     if let Ok(jwt_secret) = std::env::var("JWT_SECRET") {
         config.auth.jwt_secret = jwt_secret;
     }
-    
+
     if let Ok(log_level) = std::env::var("LOG_LEVEL") {
         config.logging.level = log_level;
     }
-    
+
     Ok(config)
 }
 
 /// Load configuration from a TOML file
 fn load_from_file() -> Result<AppConfig, Box<dyn std::error::Error>> {
     let config_path = std::env::var("CONFIG_PATH").unwrap_or_else(|_| "config.toml".to_string());
-    
+
     let config_content = std::fs::read_to_string(config_path)?;
     let config: AppConfig = toml::from_str(&config_content)?;
-    
+
     Ok(config)
 }
 

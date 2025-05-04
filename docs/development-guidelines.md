@@ -1,4 +1,4 @@
-# RCP Implementation Guide
+# RCP Implementation Guidelines
 
 This guide provides detailed instructions for implementing and using the Rust Control Protocol (RCP) in your applications.
 

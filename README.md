@@ -149,47 +149,27 @@ cargo run -p rcp-desk
 
 ---
 
-## 🧱 Roadmap
+## 📚 Documentation
 
-* [x] Define core protocol
-* [x] TCP socket server/client
-* [x] Launch & control remote apps
-* [x] SSH-like connection strings
-* [ ] Runtime service architecture
-* [ ] CLI management tool
-* [ ] Screen streaming (shared memory or framebuffer)
-* [ ] Tauri-based management UI
-* [ ] RESTful management API
-* [ ] Browser client via WebSocket bridge
-* [ ] Clipboard & file share support
-* [ ] WebAssembly interface for frontend
+RCP provides comprehensive documentation to help you understand, implement, and extend the protocol:
 
----
+### Core Documentation
+- [Project Architecture](docs/architecture.md) - Detailed architecture and components overview
+- [Protocol Specification](docs/spec.md) - Technical specification of the RCP protocol
+- [Implementation Guide](docs/implementation_guide.md) - Guide for implementing RCP in applications
+- [Project Outline](docs/project_outline.md) - Project structure and development guidelines
 
-## 📄 License
+### Component Documentation
+- [RCP Service](docs/rcp-service.md) - Documentation for the runtime service component
+- [RCP CLI](docs/rcp-cli.md) - Documentation for the command-line interface
+- [RCP API](docs/rcp-api.md) - Documentation for the RESTful API
+- [RCP Desk](docs/rcp-desk.md) - Documentation for the unified admin interface
 
-RCP (Rust Control Protocol) is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
-
-```
-Copyright (c) 2024-2025 Akash Shah, Devstroop Technologies
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-```
-
-The Apache License 2.0 is a permissive license that allows you to freely use, modify, distribute, and sell your software based on RCP, with some important protections:
-
-- Patent protection: Contributors explicitly grant patent rights to users
-- Trademark protection: The RCP name and logo are protected
-- Attribution requirement: You must retain copyright notices and provide attribution
+### Development Resources
+- [BUILD Guide](BUILD.md) - Instructions for building and developing RCP
+- [Milestone Roadmap](docs/milestone_roadmap.md) - Project milestones and development plans
+- [Contributing Guide](CONTRIBUTING.md) - Guidelines for contributors
+- [Release Notes](RELEASE.md) - Version history and release information
 
 ---
 

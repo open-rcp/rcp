@@ -59,7 +59,7 @@ pub async fn get_session(
     path: web::Path<String>,
 ) -> ApiResult<HttpResponse> {
     let session_id = path.into_inner();
-    
+
     let server_handle = match &app_state.server_handle {
         Some(handle) => handle,
         None => {
@@ -91,7 +91,7 @@ pub async fn terminate_session(
     path: web::Path<String>,
 ) -> ApiResult<HttpResponse> {
     let session_id = path.into_inner();
-    
+
     let server_handle = match &app_state.server_handle {
         Some(handle) => handle,
         None => {

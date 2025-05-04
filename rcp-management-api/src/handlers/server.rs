@@ -39,25 +39,25 @@ pub async fn get_status(app_state: web::Data<AppState>) -> ApiResult<HttpRespons
 
     // Acquire a lock on the server
     let server = server_handle.lock().await;
-    
+
     // Get server status
     let is_running = server.is_running();
-    
+
     let status = if is_running { "running" } else { "stopped" };
-    
+
     // Get server stats if it's running
     let stats = if is_running {
         let active_sessions = server.active_session_count();
         let connected_clients = server.connected_client_count();
         let uptime = server.uptime_formatted();
-        
+
         // In a real implementation, we would get actual CPU and memory usage
         // Here we're just providing sample values
         Some(ServerStats {
             active_sessions,
             connected_clients,
             uptime,
-            cpu_usage: 5.2,  // Example value
+            cpu_usage: 5.2, // Example value
             memory_usage: "128 MB".to_string(),
             memory_usage_percent: 8.5,
         })
@@ -148,7 +148,7 @@ pub async fn restart_server(app_state: web::Data<AppState>) -> ApiResult<HttpRes
     tokio::spawn(async move {
         let mut server = server_arc.lock().await;
         info!("Restarting RCP server from management API");
-        
+
         // Stop the server if it's running
         if server.is_running() {
             if let Err(e) = server.stop().await {
@@ -156,7 +156,7 @@ pub async fn restart_server(app_state: web::Data<AppState>) -> ApiResult<HttpRes
                 return;
             }
         }
-        
+
         // Start the server again
         if let Err(e) = server.start().await {
             error!("Failed to start RCP server during restart: {}", e);

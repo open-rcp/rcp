@@ -83,7 +83,7 @@ impl Auth {
     pub fn generate_challenge() -> AuthChallenge {
         let mut challenge = vec![0u8; CHALLENGE_LENGTH];
         let mut salt = vec![0u8; SALT_LENGTH];
-        
+
         let mut rng = rand::rng();
         rng.fill_bytes(&mut challenge);
         rng.fill_bytes(&mut salt);

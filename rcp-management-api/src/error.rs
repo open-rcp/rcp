@@ -1,33 +1,33 @@
+use actix_web::{HttpResponse, ResponseError};
 use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
     Json,
 };
 use serde_json::json;
-use thiserror::Error;
-use actix_web::{HttpResponse, ResponseError};
 use std::fmt;
+use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum ApiError {
     #[error("Authentication error: {0}")]
     Authentication(String),
-    
+
     #[error("Authorization error: {0}")]
     Authorization(String),
-    
+
     #[error("Resource not found: {0}")]
     NotFound(String),
-    
+
     #[error("Invalid input: {0}")]
     BadRequest(String),
-    
+
     #[error("Database error: {0}")]
     Database(String),
-    
+
     #[error("Internal server error: {0}")]
     Internal(String),
-    
+
     #[error("RCP server error: {0}")]
     RcpServer(String),
 }
@@ -38,13 +38,16 @@ impl From<surrealdb::Error> for ApiError {
         match err {
             // Check for specific error types by matching on the string representation
             // This is more resilient to API changes in SurrealDB
-            err if err.to_string().contains("Database error") => 
-                ApiError::Database(format!("Database error: {}", err)),
-            err if err.to_string().contains("Query error") => 
-                ApiError::Database(format!("Query error: {}", err)),
-            err if err.to_string().contains("Api error") => 
-                ApiError::Internal(format!("API error: {}", err)),
-            _ => ApiError::Internal(format!("Unexpected SurrealDB error: {}", err))
+            err if err.to_string().contains("Database error") => {
+                ApiError::Database(format!("Database error: {}", err))
+            }
+            err if err.to_string().contains("Query error") => {
+                ApiError::Database(format!("Query error: {}", err))
+            }
+            err if err.to_string().contains("Api error") => {
+                ApiError::Internal(format!("API error: {}", err))
+            }
+            _ => ApiError::Internal(format!("Unexpected SurrealDB error: {}", err)),
         }
     }
 }
@@ -85,13 +88,14 @@ impl ResponseError for ApiError {
             Self::RcpServer(msg) => (StatusCode::SERVICE_UNAVAILABLE, msg),
         };
 
-        HttpResponse::build(actix_web::http::StatusCode::from_u16(status.as_u16()).unwrap())
-            .json(json!({
+        HttpResponse::build(actix_web::http::StatusCode::from_u16(status.as_u16()).unwrap()).json(
+            json!({
                 "error": {
                     "message": error_message,
                     "code": status.as_u16()
                 }
-            }))
+            }),
+        )
     }
 
     fn status_code(&self) -> actix_web::http::StatusCode {

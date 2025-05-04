@@ -2,10 +2,10 @@ use crate::{config::ServerConfig, error::Result, session::Session};
 use log::{debug, error, info};
 use std::collections::HashMap;
 use std::sync::Arc;
+use std::time::{Duration, Instant};
 use tokio::net::TcpListener;
 use tokio::sync::Mutex;
 use uuid::Uuid;
-use std::time::{Duration, Instant};
 
 /// The main RCP server that accepts connections and manages sessions
 #[derive(Clone)]
@@ -18,7 +18,7 @@ pub struct Server {
 
     /// Server state
     running: Arc<Mutex<bool>>,
-    
+
     /// Server start time
     start_time: Arc<Mutex<Option<Instant>>>,
 }
@@ -40,12 +40,12 @@ impl Server {
         info!("Starting RCP server on {}", addr);
 
         let listener = TcpListener::bind(&addr).await?;
-        
+
         // Mark server as running and set start time
         {
             let mut running_guard = self.running.lock().await;
             *running_guard = true;
-            
+
             let mut start_time_guard = self.start_time.lock().await;
             *start_time_guard = Some(Instant::now());
         }
@@ -132,25 +132,25 @@ impl Server {
 
         result
     }
-    
+
     // -- Management API methods --
-    
+
     /// Check if the server is currently running
     pub async fn is_running(&self) -> bool {
         *self.running.lock().await
     }
-    
+
     /// Get the number of active sessions
     pub async fn active_session_count(&self) -> usize {
         self.sessions.lock().await.len()
     }
-    
+
     /// Get the number of connected clients
     pub async fn connected_client_count(&self) -> usize {
         // In this implementation, each session corresponds to one client
         self.active_session_count().await
     }
-    
+
     /// Get the uptime of the server in seconds
     pub async fn uptime(&self) -> u64 {
         let start_time_guard = self.start_time.lock().await;
@@ -159,7 +159,7 @@ impl Server {
             None => 0,
         }
     }
-    
+
     /// Get the uptime of the server as a formatted string
     pub async fn uptime_formatted(&self) -> String {
         let secs = self.uptime().await;
@@ -167,7 +167,7 @@ impl Server {
         let hours = (secs % 86400) / 3600;
         let minutes = (secs % 3600) / 60;
         let seconds = secs % 60;
-        
+
         if days > 0 {
             format!("{}d {}h {}m {}s", days, hours, minutes, seconds)
         } else if hours > 0 {
@@ -178,7 +178,7 @@ impl Server {
             format!("{}s", seconds)
         }
     }
-    
+
     /// Stop the server
     pub async fn stop(&self) -> Result<()> {
         info!("Stopping server...");
@@ -186,39 +186,39 @@ impl Server {
         *running_guard = false;
         Ok(())
     }
-    
+
     /// Start the server (if not already running)
     pub async fn start(&self) -> Result<()> {
         let already_running = *self.running.lock().await;
-        
+
         if already_running {
             info!("Server is already running");
             return Ok(());
         }
-        
+
         // Clone self to pass to new task
         let server_clone = self.clone();
-        
+
         // Spawn a task to run the server
         tokio::spawn(async move {
             if let Err(e) = server_clone.run().await {
                 error!("Error running server: {}", e);
             }
         });
-        
+
         Ok(())
     }
-    
+
     /// Restart the server
     pub async fn restart(&self) -> Result<()> {
         info!("Restarting server...");
-        
+
         // Stop server
         self.stop().await?;
-        
+
         // Wait a moment for connections to close
         tokio::time::sleep(Duration::from_millis(500)).await;
-        
+
         // Start server again
         self.start().await
     }

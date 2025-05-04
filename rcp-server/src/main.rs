@@ -35,7 +35,7 @@ struct Cli {
     /// Management API port
     #[clap(long, default_value = "8081")]
     mgmt_port: u16,
-    
+
     /// Disable management API
     #[clap(long)]
     no_mgmt: bool,
@@ -74,7 +74,7 @@ async fn main() -> Result<()> {
     // Initialize server
     let server = Server::new(config);
     let server_handle = Arc::new(Mutex::new(server));
-    
+
     // Start management API server if enabled
     if !cli.no_mgmt {
         #[cfg(feature = "management-api")]
@@ -87,7 +87,7 @@ async fn main() -> Result<()> {
                 }
             });
         }
-        
+
         #[cfg(not(feature = "management-api"))]
         {
             info!("Management API requested but the feature is not enabled. Build with --features management-api to enable it.");
@@ -111,19 +111,16 @@ async fn main() -> Result<()> {
 }
 
 #[cfg(feature = "management-api")]
-async fn run_management_api_server(
-    server_handle: Arc<Mutex<Server>>, 
-    port: u16
-) -> Result<()> {
+async fn run_management_api_server(server_handle: Arc<Mutex<Server>>, port: u16) -> Result<()> {
     use log::error;
-    
+
     // Create management API configuration
     let mgmt_config = rcp_management_api::Config::new()
         .with_port(port)
         .with_server_handle(server_handle);
-    
+
     // Run the management API server
-    rcp_management_api::run_server(mgmt_config).await.map_err(|e| {
-        error::Error::Other(format!("Management API server error: {}", e))
-    })
+    rcp_management_api::run_server(mgmt_config)
+        .await
+        .map_err(|e| error::Error::Other(format!("Management API server error: {}", e)))
 }

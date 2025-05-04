@@ -1,8 +1,8 @@
 use crate::{ApiResult, AppState};
 use actix_web::{web, HttpResponse};
+use chrono::{DateTime, Utc};
 use log::info;
 use serde::{Deserialize, Serialize};
-use chrono::{DateTime, Utc};
 
 #[derive(Serialize)]
 pub struct LogEntry {
@@ -26,9 +26,11 @@ pub async fn get_logs(
     query: web::Query<LogQueryParams>,
 ) -> ApiResult<HttpResponse> {
     // In a real implementation, we would fetch logs from the server or log storage
-    info!("Fetching logs with filters: level={:?}, limit={:?}", 
-          query.level, query.limit);
-    
+    info!(
+        "Fetching logs with filters: level={:?}, limit={:?}",
+        query.level, query.limit
+    );
+
     // Generate some sample log entries for demonstration
     let logs = vec![
         LogEntry {
@@ -56,7 +58,7 @@ pub async fn get_logs(
             source: Some("rcp_server::config".to_string()),
         },
     ];
-    
+
     // Apply level filter if specified
     let filtered_logs = if let Some(ref level) = query.level {
         logs.into_iter()
@@ -65,7 +67,7 @@ pub async fn get_logs(
     } else {
         logs
     };
-    
+
     // Apply limit if specified
     let limited_logs = if let Some(limit) = query.limit {
         filtered_logs.into_iter().take(limit).collect::<Vec<_>>()

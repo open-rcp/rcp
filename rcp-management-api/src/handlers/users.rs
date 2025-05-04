@@ -63,7 +63,7 @@ pub async fn get_user(
     path: web::Path<String>,
 ) -> ApiResult<HttpResponse> {
     let user_id = path.into_inner();
-    
+
     // In a real implementation, we would fetch the user from the database
     let user = User {
         id: user_id,
@@ -84,10 +84,10 @@ pub async fn create_user(
 ) -> ApiResult<HttpResponse> {
     // In a real implementation, we would validate and store the user in the database
     info!("Creating new user: {}", user_req.username);
-    
+
     // Generate a random ID for the new user
     let user_id = Uuid::new_v4().to_string();
-    
+
     let user = User {
         id: user_id,
         username: user_req.username.clone(),
@@ -107,14 +107,17 @@ pub async fn update_user(
     user_req: web::Json<UpdateUserRequest>,
 ) -> ApiResult<HttpResponse> {
     let user_id = path.into_inner();
-    
+
     // In a real implementation, we would update the user in the database
     info!("Updating user with ID: {}", user_id);
-    
+
     let user = User {
         id: user_id,
         username: "admin".to_string(),
-        email: user_req.email.clone().unwrap_or_else(|| "admin@example.com".to_string()),
+        email: user_req
+            .email
+            .clone()
+            .unwrap_or_else(|| "admin@example.com".to_string()),
         role: user_req.role.clone().unwrap_or_else(|| "admin".to_string()),
         active: user_req.active.unwrap_or(true),
         password_hash: None,
@@ -129,7 +132,7 @@ pub async fn delete_user(
     path: web::Path<String>,
 ) -> ApiResult<HttpResponse> {
     let user_id = path.into_inner();
-    
+
     // In a real implementation, we would delete or deactivate the user in the database
     info!("Deleting user with ID: {}", user_id);
 

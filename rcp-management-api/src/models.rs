@@ -1,7 +1,7 @@
-use serde::{Deserialize, Serialize};
-use time::OffsetDateTime;
-use surrealdb::opt::RecordId;
 use crate::auth::WithId;
+use serde::{Deserialize, Serialize};
+use surrealdb::opt::RecordId;
+use time::OffsetDateTime;
 
 // User model for database and API
 #[derive(Debug, Serialize, Deserialize)]

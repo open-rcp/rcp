@@ -24,6 +24,9 @@ community include:
   and learning from the experience
 * Focusing on what is best not just for us as individuals, but for the
   overall community
+* Being supportive of newcomers and helping them navigate the codebase
+* Writing constructive, helpful documentation and comments
+* Practicing patience and understanding during technical discussions
 
 Examples of unacceptable behavior include:
 
@@ -35,6 +38,9 @@ Examples of unacceptable behavior include:
   address, without their explicit permission
 * Other conduct which could reasonably be considered inappropriate in a
   professional setting
+* Repeatedly criticizing work without offering constructive feedback
+* Repeatedly changing requirements without consideration for those implementing them
+* Dismissing security concerns or best practices
 
 ## Enforcement Responsibilities
 
@@ -50,17 +56,35 @@ decisions when appropriate.
 
 ## Scope
 
-This Code of Conduct applies within all community spaces, and also applies when
-an individual is officially representing the community in public spaces.
+This Code of Conduct applies within all community spaces, including:
+- GitHub repositories, issues, pull requests, and discussions
+- Official RCP communication channels
+- Project documentation and wikis
+- Community forums and mailing lists
+- RCP-related events and meetups
+- Social media conversations that mention the RCP project
+
+This Code of Conduct also applies when an individual is officially representing the community in public spaces.
 Examples of representing our community include using an official e-mail address,
 posting via an official social media account, or acting as an appointed
 representative at an online or offline event.
+
+## Technical Conduct
+
+In addition to personal conduct, we expect contributors to follow these technical guidelines:
+
+* Write tests for new code, and ensure all tests pass before submitting pull requests
+* Follow the established code style for the project (where defined)
+* Document public APIs and significant functionality
+* Keep security in mind when developing and report potential vulnerabilities
+* Respect backward compatibility when making changes
+* Be mindful of performance implications when submitting code
 
 ## Enforcement
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be
 reported to the community leaders responsible for enforcement at
-hi@devstroop.com.
+security@rcp-project.dev or by contacting project team members directly.
 All complaints will be reviewed and investigated promptly and fairly.
 
 All community leaders are obligated to respect the privacy and security of the
@@ -106,7 +130,7 @@ Violating these terms may lead to a permanent ban.
 ### 4. Permanent Ban
 
 **Community Impact**: Demonstrating a pattern of violation of community
-standards, including sustained inappropriate behavior,  harassment of an
+standards, including sustained inappropriate behavior, harassment of an
 individual, or aggression toward or disparagement of classes of individuals.
 
 **Consequence**: A permanent ban from any sort of public interaction within
@@ -126,3 +150,13 @@ enforcement ladder](https://github.com/mozilla/diversity).
 For answers to common questions about this code of conduct, see the FAQ at
 https://www.contributor-covenant.org/faq. Translations are available at
 https://www.contributor-covenant.org/translations.
+
+## RCP Project Specifics
+
+The RCP project is committed to providing a secure and robust remote control protocol 
+implementation. As such, we take concerns related to security, privacy, and code 
+quality particularly seriously. Contributors are encouraged to familiarize themselves
+with the security guidelines in our [SECURITY.md](./SECURITY.md) document.
+
+For questions about this Code of Conduct, please contact the RCP project team at
+community@rcp-project.dev.

@@ -6,15 +6,15 @@ pub mod sessions;
 pub mod users;
 
 use actix_web::{HttpResponse, Result};
-use std::path::Path;
 use std::fs;
+use std::path::Path;
 
 /// Handler for the SPA frontend - serves index.html for any path that doesn't match an API endpoint
 /// This enables client-side routing to work properly
 pub async fn spa_index_handler() -> Result<HttpResponse> {
     // Path to the index.html file
     let index_path = Path::new("./static/index.html");
-    
+
     // Read index.html content
     if let Ok(content) = fs::read_to_string(index_path) {
         Ok(HttpResponse::Ok()

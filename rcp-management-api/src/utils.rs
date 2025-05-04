@@ -19,6 +19,5 @@ pub fn hash_password(password: &str) -> Result<String, String> {
 
 /// Verify a password against a hash
 pub fn verify_password(password: &str, hash: &str) -> Result<bool, String> {
-    bcrypt::verify(password, hash)
-        .map_err(|e| format!("Password verification error: {}", e))
+    bcrypt::verify(password, hash).map_err(|e| format!("Password verification error: {}", e))
 }
