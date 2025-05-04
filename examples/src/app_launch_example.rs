@@ -1,5 +1,5 @@
 use anyhow::Result;
-use rcp_client::{Client, ClientBuilder, service::ServiceType};
+use rcp_client::{service::ServiceType, ClientBuilder};
 use rcp_core::{AuthMethod, CommandId, Frame};
 use serde::{Deserialize, Serialize};
 use std::io::{self, Write};
@@ -42,26 +42,26 @@ async fn main() -> Result<()> {
         .build();
 
     println!("Connecting to RCP server...");
-    
+
     // Connect to the server
     client.connect().await?;
     println!("Connected! Authenticating...");
-    
+
     // Authenticate
     client.authenticate().await?;
     println!("Authentication successful!");
 
     // Start command processing
     client.start().await?;
-    
+
     // Subscribe to the app service
     let app_service = client.subscribe_service(ServiceType::App).await?;
     println!("Subscribed to app service!");
-    
+
     // Main menu loop
     loop {
         print_menu();
-        
+
         match get_user_choice() {
             1 => launch_app(&app_service, APP_NOTEPAD, None).await?,
             2 => launch_app(&app_service, APP_TEXTEDIT, None).await?,
@@ -71,25 +71,29 @@ async fn main() -> Result<()> {
             6 => {
                 println!("Enter the path to the application:");
                 let path = get_user_input();
-                
+
                 println!("Enter any arguments (or leave empty for none):");
                 let args = get_user_input();
-                let args = if args.trim().is_empty() { None } else { Some(args) };
-                
+                let args = if args.trim().is_empty() {
+                    None
+                } else {
+                    Some(args)
+                };
+
                 launch_app(&app_service, &path, args).await?;
-            },
+            }
             0 => break,
             _ => println!("Invalid selection, please try again."),
         }
-        
+
         // Brief pause to see results
         tokio::time::sleep(Duration::from_secs(2)).await;
     }
-    
+
     println!("Disconnecting...");
     client.disconnect().await?;
     println!("Disconnected. Goodbye!");
-    
+
     Ok(())
 }
 
@@ -121,23 +125,27 @@ fn get_user_input() -> String {
 }
 
 /// Launch an application with optional arguments
-async fn launch_app(service: &rcp_client::service::Service, app_path: &str, args: Option<String>) -> Result<()> {
+async fn launch_app(
+    service: &rcp_client::service::ServiceClient,
+    app_path: &str,
+    args: Option<String>,
+) -> Result<()> {
     // Create the launch command
     let command = LaunchAppCommand {
-        flags: 0,  // Default flags
+        flags: 0, // Default flags
         application_path: app_path.to_string(),
         args,
     };
 
     // Serialize the command to binary format
     let payload = serde_json::to_vec(&command)?;
-    
+
     // Create frame for the launch command
     let frame = Frame::new(CommandId::LaunchApp as u8, payload);
-    
+
     // Send the frame to the server using the service
     service.send_fire_and_forget(frame).await?;
-    
+
     println!("Launch command sent to server!");
 
     Ok(())

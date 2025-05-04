@@ -1056,7 +1056,7 @@ dependencies = [
  "futures-util",
  "rcp-client",
  "rcp-core",
- "rcp-server",
+ "serde",
  "serde_json",
  "tokio",
  "uuid",

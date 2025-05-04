@@ -29,11 +29,11 @@ pub mod services {
     use crate::error::Error;
     use log::{error, info};
     use rcp_core::{CommandId, Frame, LaunchAppCommand};
-    use std::time::Duration;
+    use serde_json;
     use std::process::Command;
+    use std::time::Duration;
     use tokio::sync::mpsc::{self, Receiver, Sender};
     use uuid::Uuid;
-    use serde_json;
 
     /// Display service for screen sharing
     #[derive(Debug)]
@@ -376,7 +376,7 @@ pub mod services {
         /// Launch an application based on the command
         async fn launch_application(&self, cmd: LaunchAppCommand) -> Result<()> {
             info!("Launching application: {}", cmd.application_path);
-            
+
             // Check if this is a default application or custom path
             if cmd.application_path.starts_with("default:") {
                 let app_type = cmd.application_path.trim_start_matches("default:");
@@ -386,7 +386,7 @@ pub mod services {
                 self.launch_custom_app(&cmd.application_path, cmd.args.as_deref())
             }
         }
-        
+
         /// Launch a system default application based on type
         fn launch_default_app(&self, app_type: &str) -> Result<()> {
             match app_type {
@@ -395,22 +395,28 @@ pub mod services {
                 "calculator" => self.launch_calculator(),
                 "browser" => self.launch_browser(),
                 "terminal" => self.launch_terminal(),
-                _ => Err(Error::Service(format!("Unknown default app type: {}", app_type)))
+                _ => Err(Error::Service(format!(
+                    "Unknown default app type: {}",
+                    app_type
+                ))),
             }
         }
 
         /// Launch custom application with arguments
         fn launch_custom_app(&self, path: &str, args: Option<&str>) -> Result<()> {
-            info!("Launching custom application: {} with args: {:?}", path, args);
-            
+            info!(
+                "Launching custom application: {} with args: {:?}",
+                path, args
+            );
+
             let mut command = Command::new(path);
-            
+
             if let Some(args_str) = args {
                 // Split args by space, respecting quotes
                 let mut args_vec = Vec::new();
                 let mut current_arg = String::new();
                 let mut in_quotes = false;
-                
+
                 for c in args_str.chars() {
                     match c {
                         '"' => in_quotes = !in_quotes,
@@ -419,84 +425,101 @@ pub mod services {
                                 args_vec.push(current_arg);
                                 current_arg = String::new();
                             }
-                        },
+                        }
                         _ => current_arg.push(c),
                     }
                 }
-                
+
                 if !current_arg.is_empty() {
                     args_vec.push(current_arg);
                 }
-                
+
                 command.args(&args_vec);
             }
-            
+
             match command.spawn() {
                 Ok(_) => {
                     info!("Successfully launched application: {}", path);
                     Ok(())
-                },
+                }
                 Err(e) => {
                     error!("Failed to launch application: {}", e);
-                    Err(Error::Service(format!("Failed to launch application: {}", e)))
+                    Err(Error::Service(format!(
+                        "Failed to launch application: {}",
+                        e
+                    )))
                 }
             }
         }
-        
+
         /// Launch Windows Notepad
         #[cfg(target_os = "windows")]
         fn launch_notepad(&self) -> Result<()> {
             info!("Launching Notepad");
             match Command::new("notepad.exe").spawn() {
                 Ok(_) => Ok(()),
-                Err(e) => Err(Error::Service(format!("Failed to launch Notepad: {}", e)))
+                Err(e) => Err(Error::Service(format!("Failed to launch Notepad: {}", e))),
             }
         }
-        
+
         /// Launch macOS TextEdit
         #[cfg(target_os = "macos")]
         fn launch_textedit(&self) -> Result<()> {
             info!("Launching TextEdit");
             match Command::new("open").arg("-a").arg("TextEdit").spawn() {
                 Ok(_) => Ok(()),
-                Err(e) => Err(Error::Service(format!("Failed to launch TextEdit: {}", e)))
+                Err(e) => Err(Error::Service(format!("Failed to launch TextEdit: {}", e))),
             }
         }
-        
+
         /// Launch Linux text editor (gedit, nano, etc.)
         #[cfg(target_os = "linux")]
         fn launch_textedit(&self) -> Result<()> {
             info!("Launching text editor");
             // Try several common editors
-            for editor in &["gedit", "kate", "kwrite", "mousepad", "leafpad", "nano", "vim", "vi"] {
+            for editor in &[
+                "gedit", "kate", "kwrite", "mousepad", "leafpad", "nano", "vim", "vi",
+            ] {
                 match Command::new(editor).spawn() {
                     Ok(_) => return Ok(()),
                     Err(_) => continue,
                 }
             }
-            Err(Error::Service("Failed to find a text editor to launch".to_string()))
+            Err(Error::Service(
+                "Failed to find a text editor to launch".to_string(),
+            ))
         }
-        
+
         /// Launch calculator application
         fn launch_calculator(&self) -> Result<()> {
             info!("Launching Calculator");
-            
+
             #[cfg(target_os = "windows")]
             {
                 match Command::new("calc.exe").spawn() {
                     Ok(_) => return Ok(()),
-                    Err(e) => return Err(Error::Service(format!("Failed to launch Calculator: {}", e)))
+                    Err(e) => {
+                        return Err(Error::Service(format!(
+                            "Failed to launch Calculator: {}",
+                            e
+                        )))
+                    }
                 }
             }
-            
+
             #[cfg(target_os = "macos")]
             {
                 match Command::new("open").arg("-a").arg("Calculator").spawn() {
                     Ok(_) => return Ok(()),
-                    Err(e) => return Err(Error::Service(format!("Failed to launch Calculator: {}", e)))
+                    Err(e) => {
+                        return Err(Error::Service(format!(
+                            "Failed to launch Calculator: {}",
+                            e
+                        )))
+                    }
                 }
             }
-            
+
             #[cfg(target_os = "linux")]
             {
                 // Try several common calculators
@@ -506,69 +529,91 @@ pub mod services {
                         Err(_) => continue,
                     }
                 }
-                return Err(Error::Service("Failed to find a calculator to launch".to_string()));
+                return Err(Error::Service(
+                    "Failed to find a calculator to launch".to_string(),
+                ));
             }
-            
+
             #[cfg(not(any(target_os = "windows", target_os = "macos", target_os = "linux")))]
             {
-                return Err(Error::Service("Calculator launch not supported on this platform".to_string()));
+                return Err(Error::Service(
+                    "Calculator launch not supported on this platform".to_string(),
+                ));
             }
         }
-        
+
         /// Launch web browser
         fn launch_browser(&self) -> Result<()> {
             info!("Launching Web Browser");
-            
+
             #[cfg(target_os = "windows")]
             {
-                match Command::new("explorer").arg("https://www.google.com").spawn() {
+                match Command::new("explorer")
+                    .arg("https://www.google.com")
+                    .spawn()
+                {
                     Ok(_) => return Ok(()),
-                    Err(e) => return Err(Error::Service(format!("Failed to launch browser: {}", e)))
+                    Err(e) => {
+                        return Err(Error::Service(format!("Failed to launch browser: {}", e)))
+                    }
                 }
             }
-            
+
             #[cfg(target_os = "macos")]
             {
                 match Command::new("open").arg("https://www.google.com").spawn() {
                     Ok(_) => return Ok(()),
-                    Err(e) => return Err(Error::Service(format!("Failed to launch browser: {}", e)))
+                    Err(e) => {
+                        return Err(Error::Service(format!("Failed to launch browser: {}", e)))
+                    }
                 }
             }
-            
+
             #[cfg(target_os = "linux")]
             {
-                match Command::new("xdg-open").arg("https://www.google.com").spawn() {
+                match Command::new("xdg-open")
+                    .arg("https://www.google.com")
+                    .spawn()
+                {
                     Ok(_) => return Ok(()),
-                    Err(e) => return Err(Error::Service(format!("Failed to launch browser: {}", e)))
+                    Err(e) => {
+                        return Err(Error::Service(format!("Failed to launch browser: {}", e)))
+                    }
                 }
             }
-            
+
             #[cfg(not(any(target_os = "windows", target_os = "macos", target_os = "linux")))]
             {
-                return Err(Error::Service("Browser launch not supported on this platform".to_string()));
+                return Err(Error::Service(
+                    "Browser launch not supported on this platform".to_string(),
+                ));
             }
         }
-        
+
         /// Launch terminal emulator
         fn launch_terminal(&self) -> Result<()> {
             info!("Launching Terminal");
-            
+
             #[cfg(target_os = "windows")]
             {
                 match Command::new("cmd.exe").spawn() {
                     Ok(_) => return Ok(()),
-                    Err(e) => return Err(Error::Service(format!("Failed to launch terminal: {}", e)))
+                    Err(e) => {
+                        return Err(Error::Service(format!("Failed to launch terminal: {}", e)))
+                    }
                 }
             }
-            
+
             #[cfg(target_os = "macos")]
             {
                 match Command::new("open").arg("-a").arg("Terminal").spawn() {
                     Ok(_) => return Ok(()),
-                    Err(e) => return Err(Error::Service(format!("Failed to launch terminal: {}", e)))
+                    Err(e) => {
+                        return Err(Error::Service(format!("Failed to launch terminal: {}", e)))
+                    }
                 }
             }
-            
+
             #[cfg(target_os = "linux")]
             {
                 // Try several common terminals
@@ -578,21 +623,27 @@ pub mod services {
                         Err(_) => continue,
                     }
                 }
-                return Err(Error::Service("Failed to find a terminal to launch".to_string()));
+                return Err(Error::Service(
+                    "Failed to find a terminal to launch".to_string(),
+                ));
             }
-            
+
             #[cfg(not(any(target_os = "windows", target_os = "macos", target_os = "linux")))]
             {
-                return Err(Error::Service("Terminal launch not supported on this platform".to_string()));
+                return Err(Error::Service(
+                    "Terminal launch not supported on this platform".to_string(),
+                ));
             }
         }
-        
+
         // Add stubs for methods that might not be needed on all platforms
         #[cfg(not(target_os = "windows"))]
         fn launch_notepad(&self) -> Result<()> {
-            Err(Error::Service("Notepad is only available on Windows".to_string()))
+            Err(Error::Service(
+                "Notepad is only available on Windows".to_string(),
+            ))
         }
-        
+
         #[cfg(not(any(target_os = "macos", target_os = "linux")))]
         fn launch_textedit(&self) -> Result<()> {
             #[cfg(target_os = "windows")]
@@ -600,10 +651,12 @@ pub mod services {
                 // Redirect to Notepad on Windows
                 return self.launch_notepad();
             }
-            
+
             #[cfg(not(target_os = "windows"))]
             {
-                Err(Error::Service("TextEdit alternative not available on this platform".to_string()))
+                Err(Error::Service(
+                    "TextEdit alternative not available on this platform".to_string(),
+                ))
             }
         }
     }
@@ -643,27 +696,27 @@ pub mod services {
                 cmd if cmd == CommandId::LaunchApp as u8 => {
                     // Deserialize the command
                     let launch_cmd = serde_json::from_slice::<LaunchAppCommand>(frame.payload())
-                        .map_err(|e| Error::Protocol(format!("Invalid LaunchApp command: {}", e)))?;
-                    
+                        .map_err(|e| {
+                            Error::Protocol(format!("Invalid LaunchApp command: {}", e))
+                        })?;
+
                     info!("Received launch app request: {:?}", launch_cmd);
-                    
+
                     // Launch the application
                     self.launch_application(launch_cmd).await?;
-                    
+
                     // Send acknowledgement
                     let ack_frame = Frame::new(CommandId::Ack as u8, Vec::new());
                     self.frame_sender.send(ack_frame).await.map_err(|e| {
                         Error::Service(format!("Failed to send acknowledgement: {}", e))
                     })?;
-                    
+
                     Ok(())
-                },
-                _ => {
-                    Err(Error::Protocol(format!(
-                        "App service: Unsupported command: {:02x}",
-                        frame.command_id()
-                    )))
                 }
+                _ => Err(Error::Protocol(format!(
+                    "App service: Unsupported command: {:02x}",
+                    frame.command_id()
+                ))),
             }
         }
 

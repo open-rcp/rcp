@@ -1,7 +1,7 @@
 use crate::{
     config::ServerConfig,
     error::{Error, Result},
-    service::{Service, services::ServiceFactory},
+    service::{services::ServiceFactory, Service},
 };
 use log::{debug, error, info, warn};
 use rcp_core::{
