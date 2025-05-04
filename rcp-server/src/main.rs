@@ -77,36 +77,50 @@ async fn main() -> Result<()> {
     
     // Start management API server if enabled
     if !cli.no_mgmt {
-        let api_server_handle = server_handle.clone();
-        tokio::spawn(async move {
-            info!("Starting management API server on port {}", cli.mgmt_port);
-            if let Err(e) = run_management_api_server(api_server_handle, cli.mgmt_port).await {
-                log::error!("Management API server error: {}", e);
-            }
-        });
+        #[cfg(feature = "management-api")]
+        {
+            let api_server_handle = server_handle.clone();
+            tokio::spawn(async move {
+                info!("Starting management API server on port {}", cli.mgmt_port);
+                if let Err(e) = run_management_api_server(api_server_handle, cli.mgmt_port).await {
+                    log::error!("Management API server error: {}", e);
+                }
+            });
+        }
+        
+        #[cfg(not(feature = "management-api"))]
+        {
+            info!("Management API requested but the feature is not enabled. Build with --features management-api to enable it.");
+        }
     }
 
     // Run RCP server
     {
-        let mut server = server_handle.lock().await;
-        server.run().await?;
+        // Get a lock on the server
+        let server_guard = server_handle.lock().await;
+        // Clone the server to avoid ownership issues
+        let server_instance = server_guard.clone();
+        // Drop the guard to release the lock
+        drop(server_guard);
+        // Run the server
+        server_instance.run().await?;
     }
 
     info!("Server shutdown complete");
     Ok(())
 }
 
+#[cfg(feature = "management-api")]
 async fn run_management_api_server(
     server_handle: Arc<Mutex<Server>>, 
     port: u16
 ) -> Result<()> {
+    use log::error;
+    
     // Create management API configuration
-    let mgmt_config = rcp_management_api::Config {
-        port,
-        server_handle: Some(server_handle),
-        // Add other configuration options as needed
-        ..Default::default()
-    };
+    let mgmt_config = rcp_management_api::Config::new()
+        .with_port(port)
+        .with_server_handle(server_handle);
     
     // Run the management API server
     rcp_management_api::run_server(mgmt_config).await.map_err(|e| {

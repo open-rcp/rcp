@@ -7,6 +7,7 @@ use tokio::sync::Mutex;
 use uuid::Uuid;
 
 /// The main RCP server that accepts connections and manages sessions
+#[derive(Clone)]
 pub struct Server {
     /// Server configuration
     config: ServerConfig,
