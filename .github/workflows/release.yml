@@ -54,37 +54,43 @@ jobs:
     
     - name: Create Release
       id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: actions/github-script@v7
       with:
-        tag_name: ${{ steps.get_version.outputs.version }}
-        release_name: Release ${{ steps.get_version.outputs.version }}
-        draft: true
-        prerelease: false
-        body: |
-          ## RCP ${{ steps.get_version.outputs.version }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const { data: release } = await github.rest.repos.createRelease({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            tag_name: '${{ steps.get_version.outputs.version }}',
+            name: 'Release ${{ steps.get_version.outputs.version }}',
+            draft: true,
+            prerelease: false,
+            body: `## RCP ${{ steps.get_version.outputs.version }}
+            
+            Please refer to [CHANGELOG.md](https://github.com/open-rcp/rcp/blob/main/CHANGELOG.md) for detailed changes.
+            
+            ### Downloads
+            
+            Each package includes the binary and necessary configuration files.
+            
+            #### Windows
+            - \`rcp-server-windows.zip\`
+            - \`rcp-client-windows.zip\`
+            - \`rcp-bridge-windows.zip\`
+            
+            #### Linux
+            - \`rcp-server-linux.tar.gz\`
+            - \`rcp-client-linux.tar.gz\`
+            - \`rcp-bridge-linux.tar.gz\`
+            
+            #### macOS
+            - \`rcp-server-macos.tar.gz\`
+            - \`rcp-client-macos.tar.gz\`
+            - \`rcp-bridge-macos.tar.gz\``
+          });
           
-          Please refer to [CHANGELOG.md](https://github.com/open-rcp/rcp/blob/main/CHANGELOG.md) for detailed changes.
-          
-          ### Downloads
-          
-          Each package includes the binary and necessary configuration files.
-          
-          #### Windows
-          - `rcp-server-windows.zip`
-          - `rcp-client-windows.zip`
-          - `rcp-bridge-windows.zip`
-          
-          #### Linux
-          - `rcp-server-linux.tar.gz`
-          - `rcp-client-linux.tar.gz`
-          - `rcp-bridge-linux.tar.gz`
-          
-          #### macOS
-          - `rcp-server-macos.tar.gz`
-          - `rcp-client-macos.tar.gz`
-          - `rcp-bridge-macos.tar.gz`
+          core.setOutput('upload_url', release.upload_url);
+          return release;
 
   build:
     name: Build for ${{ matrix.os }}
@@ -228,35 +234,65 @@ jobs:
       shell: bash
     
     # Upload assets
-    - name: Upload Server Release Asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Upload Release Assets
+      uses: actions/github-script@v7
       with:
-        upload_url: ${{ needs.create_release.outputs.upload_url }}
-        asset_path: ./rcp-server-${{ matrix.platform }}.${{ matrix.archive_ext }}
-        asset_name: rcp-server-${{ matrix.platform }}.${{ matrix.archive_ext }}
-        asset_content_type: ${{ matrix.platform == 'windows' && 'application/zip' || 'application/gzip' }}
-    
-    - name: Upload Client Release Asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ needs.create_release.outputs.upload_url }}
-        asset_path: ./rcp-client-${{ matrix.platform }}.${{ matrix.archive_ext }}
-        asset_name: rcp-client-${{ matrix.platform }}.${{ matrix.archive_ext }}
-        asset_content_type: ${{ matrix.platform == 'windows' && 'application/zip' || 'application/gzip' }}
-    
-    - name: Upload Bridge Release Asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ needs.create_release.outputs.upload_url }}
-        asset_path: ./rcp-bridge-${{ matrix.platform }}.${{ matrix.archive_ext }}
-        asset_name: rcp-bridge-${{ matrix.platform }}.${{ matrix.archive_ext }}
-        asset_content_type: ${{ matrix.platform == 'windows' && 'application/zip' || 'application/gzip' }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const fs = require('fs');
+          const path = require('path');
+          
+          // Define the asset files based on platform
+          const platform = '${{ matrix.platform }}';
+          const ext = platform === 'windows' ? 'zip' : 'tar.gz';
+          const contentType = platform === 'windows' ? 'application/zip' : 'application/gzip';
+          
+          // Assets to upload
+          const assets = [
+            { name: `rcp-server-${platform}.${ext}`, path: `./rcp-server-${platform}.${ext}` },
+            { name: `rcp-client-${platform}.${ext}`, path: `./rcp-client-${platform}.${ext}` },
+            { name: `rcp-bridge-${platform}.${ext}`, path: `./rcp-bridge-${platform}.${ext}` }
+          ];
+          
+          // Get release by tag
+          const { data: releases } = await github.rest.repos.listReleases({
+            owner: context.repo.owner,
+            repo: context.repo.repo
+          });
+          
+          const release = releases.find(r => r.tag_name === '${{ needs.create_release.outputs.version }}');
+          
+          if (!release) {
+            core.setFailed(`No release found with tag: ${{ needs.create_release.outputs.version }}`);
+            return;
+          }
+          
+          // Upload each asset
+          for (const asset of assets) {
+            console.log(`Uploading ${asset.name}...`);
+            
+            try {
+              // Read file as binary
+              const fileContent = fs.readFileSync(asset.path);
+              
+              await github.rest.repos.uploadReleaseAsset({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                release_id: release.id,
+                name: asset.name,
+                data: fileContent,
+                headers: {
+                  'content-type': contentType,
+                  'content-length': fs.statSync(asset.path).size
+                }
+              });
+              
+              console.log(`Successfully uploaded ${asset.name}`);
+            } catch (error) {
+              console.error(`Failed to upload ${asset.name}: ${error.message}`);
+              core.warning(`Failed to upload ${asset.name}: ${error.message}`);
+            }
+          }
 
   publish:
     name: Publish Release
