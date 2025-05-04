@@ -20,6 +20,7 @@ Before creating a new release:
 2. Update version numbers in all `Cargo.toml` files
 3. Update CHANGELOG.md with all notable changes
 4. Merge all planned changes into the main branch
+5. If publishing to crates.io, ensure the CRATES_IO_TOKEN secret is set in your GitHub repository settings
 
 ## Creating a Release
 
@@ -48,7 +49,7 @@ The GitHub Actions workflow will:
 1. Create a new GitHub Release as a draft
 2. Build the components for each platform (Windows, Linux, macOS)
 3. Upload the build artifacts to the GitHub Release
-4. Publish the packages to crates.io
+4. Publish the packages to crates.io (if CRATES_IO_TOKEN is configured)
 5. Finalize the GitHub Release (changing it from draft to published)
 
 ### 3. Verify the Release
@@ -58,6 +59,17 @@ After the workflow completes:
 1. Verify that all artifacts are properly uploaded to the GitHub Release
 2. Check that all packages are available on crates.io
 3. Verify that the GitHub Release is no longer in draft state
+
+## Setting Up crates.io Publishing
+
+To enable automatic publishing to crates.io during releases:
+
+1. Log in to crates.io and get your API token from https://crates.io/me
+2. In your GitHub repository, go to Settings > Secrets and variables > Actions
+3. Create a new repository secret:
+   - Name: `CRATES_IO_TOKEN`
+   - Value: Your crates.io API token
+4. This token will be used securely by the GitHub Actions workflow
 
 ## Manual Release (if needed)
 
