@@ -1,0 +1,22 @@
+[package]
+name = "rcp-service"
+version = "0.1.0"
+edition = "2021"
+authors = ["Akash Shah"]
+description = "Runtime service for managing RCP server instances and applications"
+
+[dependencies]
+rcp-core = { path = "../rcp-core" }
+rcp-server = { path = "../rcp-server" }
+clap = { version = "3.2", features = ["derive"] }
+tokio = { version = "1.0", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+toml = "0.5"
+log = "0.4"
+env_logger = "0.9"
+anyhow = "1.0"
+thiserror = "1.0"
+daemonize = "0.4"
+dirs = "4.0"
+uuid = { version = "1.0", features = ["v4"] }
