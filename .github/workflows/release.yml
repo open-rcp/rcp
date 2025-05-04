@@ -68,9 +68,23 @@ jobs:
           Please refer to [CHANGELOG.md](https://github.com/open-rcp/rcp/blob/main/CHANGELOG.md) for detailed changes.
           
           ### Downloads
-          - Windows: `rcp-server-windows.exe`, `rcp-client-windows.exe`, `rcp-ws-bridge-windows.exe`
-          - Linux: `rcp-server-linux`, `rcp-client-linux`, `rcp-ws-bridge-linux`
-          - macOS: `rcp-server-macos`, `rcp-client-macos`, `rcp-ws-bridge-macos`
+          
+          Each package includes the binary and necessary configuration files.
+          
+          #### Windows
+          - `rcp-server-windows.zip`
+          - `rcp-client-windows.zip`
+          - `rcp-bridge-windows.zip`
+          
+          #### Linux
+          - `rcp-server-linux.tar.gz`
+          - `rcp-client-linux.tar.gz`
+          - `rcp-bridge-linux.tar.gz`
+          
+          #### macOS
+          - `rcp-server-macos.tar.gz`
+          - `rcp-client-macos.tar.gz`
+          - `rcp-bridge-macos.tar.gz`
 
   build:
     name: Build for ${{ matrix.os }}
@@ -83,12 +97,18 @@ jobs:
           - os: ubuntu-latest
             platform: linux
             target: x86_64-unknown-linux-gnu
+            archive_ext: tar.gz
+            archive_cmd: tar -czf
           - os: windows-latest
             platform: windows
             target: x86_64-pc-windows-msvc
+            archive_ext: zip
+            archive_cmd: zip -r
           - os: macos-latest
             platform: macos
             target: x86_64-apple-darwin
+            archive_ext: tar.gz
+            archive_cmd: tar -czf
     
     steps:
     - uses: actions/checkout@v4
@@ -108,7 +128,7 @@ jobs:
       if: matrix.platform == 'linux'
       run: |
         sudo apt-get update
-        sudo apt-get install -y libssl-dev pkg-config
+        sudo apt-get install -y libssl-dev pkg-config zip unzip
     
     - name: Build Server
       run: cargo build --release --package rcp-server --target ${{ matrix.target }}
@@ -119,45 +139,103 @@ jobs:
     - name: Build WebSocket Bridge
       run: cargo build --release --package rcp-ws-bridge --target ${{ matrix.target }}
     
-    - name: Prepare Server artifact (Windows)
+    # Server package preparation
+    - name: Create Server Package Directory
+      run: mkdir -p rcp-server-pkg
+      shell: bash
+    
+    - name: Copy Server Binary (Windows)
       if: matrix.platform == 'windows'
       run: |
-        cp target/${{ matrix.target }}/release/rcp-server.exe rcp-server-windows.exe
+        cp target/${{ matrix.target }}/release/rcp-server.exe rcp-server-pkg/rcp-server.exe
+        cp config.toml rcp-server-pkg/
+      shell: bash
     
-    - name: Prepare Client artifact (Windows)
+    - name: Copy Server Binary (Linux/macOS)
+      if: matrix.platform != 'windows'
+      run: |
+        cp target/${{ matrix.target }}/release/rcp-server rcp-server-pkg/rcp-server
+        cp config.toml rcp-server-pkg/
+      shell: bash
+    
+    - name: Package Server (Windows)
+      if: matrix.platform == 'windows'
+      run: Compress-Archive -Path rcp-server-pkg/* -DestinationPath rcp-server-windows.zip
+      shell: pwsh
+    
+    - name: Package Server (Linux/macOS)
+      if: matrix.platform != 'windows'
+      run: tar -czf rcp-server-${{ matrix.platform }}.${{ matrix.archive_ext }} -C rcp-server-pkg .
+      shell: bash
+    
+    # Client package preparation
+    - name: Create Client Package Directory
+      run: mkdir -p rcp-client-pkg
+      shell: bash
+    
+    - name: Copy Client Binary (Windows)
       if: matrix.platform == 'windows'
       run: |
-        cp target/${{ matrix.target }}/release/rcp-client.exe rcp-client-windows.exe
+        cp target/${{ matrix.target }}/release/rcp-client.exe rcp-client-pkg/rcp-client.exe
+        cp config.toml rcp-client-pkg/
+      shell: bash
     
-    - name: Prepare WS Bridge artifact (Windows)
+    - name: Copy Client Binary (Linux/macOS)
+      if: matrix.platform != 'windows'
+      run: |
+        cp target/${{ matrix.target }}/release/rcp-client rcp-client-pkg/rcp-client
+        cp config.toml rcp-client-pkg/
+      shell: bash
+    
+    - name: Package Client (Windows)
+      if: matrix.platform == 'windows'
+      run: Compress-Archive -Path rcp-client-pkg/* -DestinationPath rcp-client-windows.zip
+      shell: pwsh
+    
+    - name: Package Client (Linux/macOS)
+      if: matrix.platform != 'windows'
+      run: tar -czf rcp-client-${{ matrix.platform }}.${{ matrix.archive_ext }} -C rcp-client-pkg .
+      shell: bash
+    
+    # Bridge package preparation
+    - name: Create Bridge Package Directory
+      run: mkdir -p rcp-bridge-pkg
+      shell: bash
+    
+    - name: Copy Bridge Binary (Windows)
       if: matrix.platform == 'windows'
       run: |
-        cp target/${{ matrix.target }}/release/rcp-ws-bridge.exe rcp-ws-bridge-windows.exe
+        cp target/${{ matrix.target }}/release/rcp-ws-bridge.exe rcp-bridge-pkg/rcp-bridge.exe
+        cp config.toml rcp-bridge-pkg/
+      shell: bash
     
-    - name: Prepare Server artifact (Linux/macOS)
+    - name: Copy Bridge Binary (Linux/macOS)
       if: matrix.platform != 'windows'
       run: |
-        cp target/${{ matrix.target }}/release/rcp-server rcp-server-${{ matrix.platform }}
+        cp target/${{ matrix.target }}/release/rcp-ws-bridge rcp-bridge-pkg/rcp-bridge
+        cp config.toml rcp-bridge-pkg/
+      shell: bash
     
-    - name: Prepare Client artifact (Linux/macOS)
+    - name: Package Bridge (Windows)
+      if: matrix.platform == 'windows'
+      run: Compress-Archive -Path rcp-bridge-pkg/* -DestinationPath rcp-bridge-windows.zip
+      shell: pwsh
+    
+    - name: Package Bridge (Linux/macOS)
       if: matrix.platform != 'windows'
-      run: |
-        cp target/${{ matrix.target }}/release/rcp-client rcp-client-${{ matrix.platform }}
+      run: tar -czf rcp-bridge-${{ matrix.platform }}.${{ matrix.archive_ext }} -C rcp-bridge-pkg .
+      shell: bash
     
-    - name: Prepare WS Bridge artifact (Linux/macOS)
-      if: matrix.platform != 'windows'
-      run: |
-        cp target/${{ matrix.target }}/release/rcp-ws-bridge rcp-ws-bridge-${{ matrix.platform }}
-    
+    # Upload assets
     - name: Upload Server Release Asset
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ needs.create_release.outputs.upload_url }}
-        asset_path: ./rcp-server-${{ matrix.platform }}${{ matrix.platform == 'windows' && '.exe' || '' }}
-        asset_name: rcp-server-${{ matrix.platform }}${{ matrix.platform == 'windows' && '.exe' || '' }}
-        asset_content_type: application/octet-stream
+        asset_path: ./rcp-server-${{ matrix.platform }}.${{ matrix.archive_ext }}
+        asset_name: rcp-server-${{ matrix.platform }}.${{ matrix.archive_ext }}
+        asset_content_type: ${{ matrix.platform == 'windows' && 'application/zip' || 'application/gzip' }}
     
     - name: Upload Client Release Asset
       uses: actions/upload-release-asset@v1
@@ -165,19 +243,19 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ needs.create_release.outputs.upload_url }}
-        asset_path: ./rcp-client-${{ matrix.platform }}${{ matrix.platform == 'windows' && '.exe' || '' }}
-        asset_name: rcp-client-${{ matrix.platform }}${{ matrix.platform == 'windows' && '.exe' || '' }}
-        asset_content_type: application/octet-stream
+        asset_path: ./rcp-client-${{ matrix.platform }}.${{ matrix.archive_ext }}
+        asset_name: rcp-client-${{ matrix.platform }}.${{ matrix.archive_ext }}
+        asset_content_type: ${{ matrix.platform == 'windows' && 'application/zip' || 'application/gzip' }}
     
-    - name: Upload WS Bridge Release Asset
+    - name: Upload Bridge Release Asset
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ needs.create_release.outputs.upload_url }}
-        asset_path: ./rcp-ws-bridge-${{ matrix.platform }}${{ matrix.platform == 'windows' && '.exe' || '' }}
-        asset_name: rcp-ws-bridge-${{ matrix.platform }}${{ matrix.platform == 'windows' && '.exe' || '' }}
-        asset_content_type: application/octet-stream
+        asset_path: ./rcp-bridge-${{ matrix.platform }}.${{ matrix.archive_ext }}
+        asset_name: rcp-bridge-${{ matrix.platform }}.${{ matrix.archive_ext }}
+        asset_content_type: ${{ matrix.platform == 'windows' && 'application/zip' || 'application/gzip' }}
 
   publish:
     name: Publish Release
