@@ -1,0 +1,16 @@
+[package]
+name = "rust-rcp-client"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+rcp-client = { path = "../../rcp-client" }
+rcp-core = { path = "../../rcp-core" }
+tokio = { workspace = true }
+anyhow = { workspace = true }
+log = { workspace = true }
+env_logger = { workspace = true }
+clap = { version = "4.3", features = ["derive"] }
+futures-util = { workspace = true }
