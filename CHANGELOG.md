@@ -1,3 +1,15 @@
+## v0.1.0-pre (2025-05-04)
+
+### Features
+* feat: add initial implementation of RCP service with command-line interface and service management features
+* feat: update release workflow to use GitHub Script for creating and uploading release assets
+
+### Bug Fixes
+
+### Improvements
+
+### Documentation
+
 ## v0.1.0+7 (2025-05-04)
 
 ### Features
