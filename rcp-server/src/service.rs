@@ -411,6 +411,14 @@ pub mod services {
             );
 
             let mut command = Command::new(path);
+            
+            // Make sure the process is visible by explicitly setting create_no_window to false
+            #[cfg(target_os = "windows")]
+            {
+                use std::os::windows::process::CommandExt;
+                // CREATE_NEW_CONSOLE = 0x00000010
+                command.creation_flags(0x00000010);
+            }
 
             if let Some(args_str) = args {
                 // Split args by space, respecting quotes
@@ -439,8 +447,8 @@ pub mod services {
             }
 
             match command.spawn() {
-                Ok(_) => {
-                    info!("Successfully launched application: {}", path);
+                Ok(child) => {
+                    info!("Successfully launched application: {} with PID: {:?}", path, child.id());
                     Ok(())
                 }
                 Err(e) => {
@@ -457,8 +465,18 @@ pub mod services {
         #[cfg(target_os = "windows")]
         fn launch_notepad(&self) -> Result<()> {
             info!("Launching Notepad");
-            match Command::new("notepad.exe").spawn() {
-                Ok(_) => Ok(()),
+            let mut command = Command::new("notepad.exe");
+            
+            // Ensure the window is visible
+            use std::os::windows::process::CommandExt;
+            // CREATE_NEW_CONSOLE = 0x00000010
+            command.creation_flags(0x00000010);
+            
+            match command.spawn() {
+                Ok(child) => {
+                    info!("Successfully launched Notepad with PID: {:?}", child.id());
+                    Ok(())
+                }
                 Err(e) => Err(Error::Service(format!("Failed to launch Notepad: {}", e))),
             }
         }
@@ -497,8 +515,18 @@ pub mod services {
 
             #[cfg(target_os = "windows")]
             {
-                match Command::new("calc.exe").spawn() {
-                    Ok(_) => Ok(()),
+                let mut command = Command::new("calc.exe");
+                
+                // Ensure the window is visible
+                use std::os::windows::process::CommandExt;
+                // CREATE_NEW_CONSOLE = 0x00000010
+                command.creation_flags(0x00000010);
+                
+                match command.spawn() {
+                    Ok(child) => {
+                        info!("Successfully launched Calculator with PID: {:?}", child.id());
+                        Ok(())
+                    }
                     Err(e) => Err(Error::Service(format!(
                         "Failed to launch Calculator: {}",
                         e
@@ -545,11 +573,19 @@ pub mod services {
 
             #[cfg(target_os = "windows")]
             {
-                match Command::new("explorer")
-                    .arg("https://www.google.com")
-                    .spawn()
-                {
-                    Ok(_) => Ok(()),
+                let mut command = Command::new("explorer");
+                command.arg("https://www.google.com");
+                
+                // Ensure the window is visible
+                use std::os::windows::process::CommandExt;
+                // CREATE_NEW_CONSOLE = 0x00000010
+                command.creation_flags(0x00000010);
+                
+                match command.spawn() {
+                    Ok(child) => {
+                        info!("Successfully launched browser with PID: {:?}", child.id());
+                        Ok(())
+                    }
                     Err(e) => Err(Error::Service(format!("Failed to launch browser: {}", e))),
                 }
             }
@@ -587,8 +623,18 @@ pub mod services {
 
             #[cfg(target_os = "windows")]
             {
-                match Command::new("cmd.exe").spawn() {
-                    Ok(_) => Ok(()),
+                let mut command = Command::new("cmd.exe");
+                
+                // Ensure the window is visible
+                use std::os::windows::process::CommandExt;
+                // CREATE_NEW_CONSOLE = 0x00000010
+                command.creation_flags(0x00000010);
+                
+                match command.spawn() {
+                    Ok(child) => {
+                        info!("Successfully launched terminal with PID: {:?}", child.id());
+                        Ok(())
+                    }
                     Err(e) => Err(Error::Service(format!("Failed to launch terminal: {}", e))),
                 }
             }

@@ -122,8 +122,19 @@ impl Session {
                     ));
                 }
 
-                // TODO: Implement app launching
-                warn!("Application launch not implemented yet");
+                // Make sure we have the app service
+                if !self.services.contains_key("app") {
+                    // Try to subscribe to app service if not already subscribed
+                    self.subscribe_service("app").await?;
+                }
+
+                // Forward the LaunchApp command to the app service
+                if let Some(service) = self.services.get_mut("app") {
+                    info!("Forwarding LaunchApp command to app service");
+                    service.process_frame(frame).await?;
+                } else {
+                    return Err(Error::Service("App service not available".to_string()));
+                }
             }
             cmd if cmd == CommandId::ServiceSubscribe as u8 => {
                 let service_name = String::from_utf8_lossy(frame.payload()).to_string();
@@ -378,6 +389,7 @@ impl Session {
             let permissions = vec![
                 "display".to_string(),
                 "input".to_string(),
+                "app".to_string(),  // Added app service permission
                 "app:launch".to_string(),
             ];
 

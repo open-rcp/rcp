@@ -628,14 +628,18 @@ impl Client {
                 return Ok(());
             }
 
-            // Update state
+            // Update state to trigger service handlers to stop
             *self.state.write().await = ClientState::Closing;
         }
 
-        // Close services
+        // Give the service handlers a moment to notice the state change
+        tokio::time::sleep(Duration::from_millis(100)).await;
+
+        // Clear services map to drop all service clients and channels
         {
-            let services = self.services.read().await;
+            let mut services = self.services.write().await;
             debug!("Shutting down {} services", services.len());
+            services.clear();
         }
 
         // Close connection

@@ -15,6 +15,8 @@ key_path = "key.pem"
 required = true
 psk = "customkey"
 allowed_clients = []
+# Grant permissions to services
+permissions = ["display", "input", "audio", "clipboard", "file-transfer", "app", "app:launch", "*"]
 
 [session]
 max_sessions = 10
