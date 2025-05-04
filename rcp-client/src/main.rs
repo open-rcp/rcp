@@ -10,7 +10,7 @@ use uuid::Uuid;
 #[command(author, version, about, long_about = None)]
 struct Cli {
     /// Server hostname or IP address
-    #[arg(short, long, default_value = "localhost")]
+    #[arg(short = 'H', long, default_value = "localhost")]
     host: String,
 
     /// Server port

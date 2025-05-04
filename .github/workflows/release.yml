@@ -148,14 +148,14 @@ jobs:
       if: matrix.platform == 'windows'
       run: |
         cp target/${{ matrix.target }}/release/rcp-server.exe rcp-server-pkg/rcp-server.exe
-        cp config.toml rcp-server-pkg/
+        cp config.toml rcp-server-pkg/config.toml
       shell: bash
     
     - name: Copy Server Binary (Linux/macOS)
       if: matrix.platform != 'windows'
       run: |
         cp target/${{ matrix.target }}/release/rcp-server rcp-server-pkg/rcp-server
-        cp config.toml rcp-server-pkg/
+        cp config.toml rcp-server-pkg/config.toml
       shell: bash
     
     - name: Package Server (Windows)
@@ -177,14 +177,12 @@ jobs:
       if: matrix.platform == 'windows'
       run: |
         cp target/${{ matrix.target }}/release/rcp-client.exe rcp-client-pkg/rcp-client.exe
-        cp config.toml rcp-client-pkg/
       shell: bash
     
     - name: Copy Client Binary (Linux/macOS)
       if: matrix.platform != 'windows'
       run: |
         cp target/${{ matrix.target }}/release/rcp-client rcp-client-pkg/rcp-client
-        cp config.toml rcp-client-pkg/
       shell: bash
     
     - name: Package Client (Windows)
@@ -206,14 +204,14 @@ jobs:
       if: matrix.platform == 'windows'
       run: |
         cp target/${{ matrix.target }}/release/rcp-ws-bridge.exe rcp-bridge-pkg/rcp-bridge.exe
-        cp config.toml rcp-bridge-pkg/
+        cp config.toml rcp-bridge-pkg/config.toml
       shell: bash
     
     - name: Copy Bridge Binary (Linux/macOS)
       if: matrix.platform != 'windows'
       run: |
         cp target/${{ matrix.target }}/release/rcp-ws-bridge rcp-bridge-pkg/rcp-bridge
-        cp config.toml rcp-bridge-pkg/
+        cp config.toml rcp-bridge-pkg/config.toml
       shell: bash
     
     - name: Package Bridge (Windows)
