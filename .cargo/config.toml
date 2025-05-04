@@ -9,7 +9,12 @@ ZSTD_SYS_USE_PKG_CONFIG = "0"
 ZSTD_SYS_STATIC = "1"
 RUST_BINDGEN_DISABLE = "1"
 ZSTD_SYS_USE_BINDGEN = "0"
-BINDGEN_EXTRA_CLANG_ARGS = "--no-system-headers"
+# Removed problematic flag: BINDGEN_EXTRA_CLANG_ARGS = "--no-system-headers"
+
+# AWS-LC system configuration to avoid CMake requirement
+AWS_LC_SYS_STATIC = "1"
+AWS_LC_SYS_USE_SHARED = "0"
+AWS_LC_SYS_VENDORED = "1"
 
 # Override the build and test environment configuration
 [build]
