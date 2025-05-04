@@ -98,17 +98,23 @@ Connect with a single, convenient connection string:
 Connect using host and port flags (must be specified before the connect command):
 
 ```bash
-# Connect using command-line parameters
+# Connect using command-line parameters (defaults to "test_key" as PSK)
 ./target/debug/rcp-client -H 127.0.0.1 -p 8716 connect
+
+# Connect with a custom PSK specified via --psk flag
+./target/debug/rcp-client -H 127.0.0.1 -p 8716 connect --psk customkey
 ```
 
 #### Using Pre-Shared Key Authentication
 
-When connection string doesn't include credentials, you'll need to add them in the string:
+PSK authentication can be provided in different ways:
 
 ```bash
-# Connect with PSK authentication
-./target/debug/rcp-client connect user:mypassword@127.0.0.1:8716
+# Connect with PSK embedded in connection string 
+./target/debug/rcp-client connect user:mysecretkey@127.0.0.1:8716
+
+# Connect with default PSK (when none is provided, "test_key" is used)
+./target/debug/rcp-client -H 127.0.0.1 -p 8716 connect
 ```
 
 #### Programmatic Connection
