@@ -12,7 +12,7 @@ fn main() {
 
     // No external libraries are currently being used
     println!("cargo:warning=No external libraries required");
-    
+
     // Uncomment the following line if you need to copy DLL files
     // let _ = copy_files(&_target_dir, &out_dir);
 }
