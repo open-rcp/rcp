@@ -738,7 +738,7 @@ pub mod services {
     impl ServiceFactory {
         /// Create a new service instance by name
         pub fn create(name: &str) -> Option<Box<dyn Service + Send>> {
-            use self::services::{ClipboardService, DisplayService, InputService, AppService};
+            use self::services::{AppService, ClipboardService, DisplayService, InputService};
 
             match name {
                 "display" => Some(Box::new(DisplayService::new())),
