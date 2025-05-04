@@ -3,7 +3,8 @@ members = [
     "rcp-core",
     "rcp-server",
     "rcp-client",
-    "rcp-ws-bridge"
+    "rcp-ws-bridge",
+    "examples/rust-rcp-client"
 ]
 resolver = "2"
 

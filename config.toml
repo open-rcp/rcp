@@ -13,8 +13,7 @@ key_path = "key.pem"
 
 [auth]
 required = true
-# Pre-shared key for testing purposes
-psk = "test_key"
+psk = "customkey"
 allowed_clients = []
 
 [session]
@@ -23,7 +22,8 @@ timeout_secs = 3600
 allow_resumption = true
 
 [application]
-allowed_apps = []
+# Allow all default applications
+allowed_apps = ["default:*"]
 denied_apps = []
 allow_elevated = false
 work_dir = "./apps"

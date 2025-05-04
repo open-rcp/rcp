@@ -9,8 +9,8 @@ homepage = "https://github.com/open-rcp/rcp"
 publish = false
 
 [dependencies]
-rcp-client = { path = "../rcp-client" }
-rcp-core = { path = "../rcp-core" }
+rcp-client = { path = "../../rcp-client" }
+rcp-core = { path = "../../rcp-core" }
 anyhow = "1.0"
 tokio = { version = "1.0", features = ["full"] }
 env_logger = "0.10"
