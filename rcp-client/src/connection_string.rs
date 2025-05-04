@@ -104,7 +104,11 @@ impl ConnectionString {
 
             if let Some(pass_idx) = creds.find(':') {
                 username = Some(creds[0..pass_idx].to_string());
-                password = Some(creds[pass_idx + 1..].to_string());
+                // Only set password if it's not empty
+                let pass_str = creds[pass_idx + 1..].to_string();
+                if !pass_str.is_empty() {
+                    password = Some(pass_str);
+                }
             } else {
                 username = Some(creds);
             }
