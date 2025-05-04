@@ -19,19 +19,19 @@ use uuid::Uuid;
 enum WsMessage {
     /// Authentication request from browser
     Auth { token: String },
-    
+
     /// RCP command from browser
     Command {
         service: String,
         data: serde_json::Value,
     },
-    
+
     /// Data update for browser
     Update {
         service: String,
         data: serde_json::Value,
     },
-    
+
     /// Error message for browser
     Error { code: String, message: String },
 }
@@ -41,13 +41,13 @@ enum WsMessage {
 pub struct BridgeConfig {
     /// Address to bind WebSocket server to
     pub ws_host: String,
-    
+
     /// Port to use for WebSocket server
     pub ws_port: u16,
-    
+
     /// RCP server hostname
     pub rcp_host: String,
-    
+
     /// RCP server port
     pub rcp_port: u16,
 }
@@ -92,11 +92,7 @@ impl WsBridge {
 }
 
 /// Handle a single WebSocket connection
-async fn handle_connection(
-    stream: TcpStream, 
-    rcp_host: String, 
-    rcp_port: u16
-) -> Result<()> {
+async fn handle_connection(stream: TcpStream, rcp_host: String, rcp_port: u16) -> Result<()> {
     // Accept the WebSocket connection
     let ws_stream = accept_async(stream).await?;
     let (mut ws_sender, mut ws_receiver) = ws_stream.split();
@@ -145,11 +141,17 @@ async fn handle_connection(
                                                     // Authenticate
                                                     match new_client.authenticate().await {
                                                         Ok(_) => {
-                                                            info!("Client authenticated successfully");
+                                                            info!(
+                                                                "Client authenticated successfully"
+                                                            );
 
                                                             // Start client message processor
-                                                            if let Err(e) = new_client.start().await {
-                                                                error!("Failed to start client: {}", e);
+                                                            if let Err(e) = new_client.start().await
+                                                            {
+                                                                error!(
+                                                                    "Failed to start client: {}",
+                                                                    e
+                                                                );
                                                                 let response = WsMessage::Error {
                                                                     code: "START_FAILED".to_string(),
                                                                     message: format!(
@@ -158,8 +160,10 @@ async fn handle_connection(
                                                                     ),
                                                                 };
                                                                 let json_str =
-                                                                    serde_json::to_string(&response)
-                                                                        .unwrap_or_default();
+                                                                    serde_json::to_string(
+                                                                        &response,
+                                                                    )
+                                                                    .unwrap_or_default();
                                                                 if let Err(e) = to_ws_tx
                                                                     .send(Message::Text(json_str))
                                                                     .await
@@ -182,10 +186,12 @@ async fn handle_connection(
                                                                 service: "auth".to_string(),
                                                                 data: serde_json::json!({"status": "success"}),
                                                             };
-                                                            let json_str = serde_json::to_string(&response)
-                                                                .unwrap_or_default();
-                                                            if let Err(e) =
-                                                                to_ws_tx.send(Message::Text(json_str)).await
+                                                            let json_str =
+                                                                serde_json::to_string(&response)
+                                                                    .unwrap_or_default();
+                                                            if let Err(e) = to_ws_tx
+                                                                .send(Message::Text(json_str))
+                                                                .await
                                                             {
                                                                 error!(
                                                                     "Failed to send auth response: {}",
@@ -202,18 +208,26 @@ async fn handle_connection(
                                                                     e
                                                                 ),
                                                             };
-                                                            let json_str = serde_json::to_string(&response)
-                                                                .unwrap_or_default();
-                                                            if let Err(e) =
-                                                                to_ws_tx.send(Message::Text(json_str)).await
+                                                            let json_str =
+                                                                serde_json::to_string(&response)
+                                                                    .unwrap_or_default();
+                                                            if let Err(e) = to_ws_tx
+                                                                .send(Message::Text(json_str))
+                                                                .await
                                                             {
-                                                                error!("Failed to send auth error: {}", e);
+                                                                error!(
+                                                                    "Failed to send auth error: {}",
+                                                                    e
+                                                                );
                                                             }
                                                         }
                                                     }
                                                 }
                                                 Err(e) => {
-                                                    error!("Failed to connect to RCP server: {}", e);
+                                                    error!(
+                                                        "Failed to connect to RCP server: {}",
+                                                        e
+                                                    );
                                                     let response = WsMessage::Error {
                                                         code: "CONNECTION_FAILED".to_string(),
                                                         message: format!(
@@ -226,7 +240,10 @@ async fn handle_connection(
                                                     if let Err(e) =
                                                         to_ws_tx.send(Message::Text(json_str)).await
                                                     {
-                                                        error!("Failed to send connection error: {}", e);
+                                                        error!(
+                                                            "Failed to send connection error: {}",
+                                                            e
+                                                        );
                                                     }
                                                 }
                                             }
@@ -246,11 +263,15 @@ async fn handle_connection(
                                                     service: service.clone(),
                                                     data: serde_json::json!({"status": "received"}),
                                                 };
-                                                let json_str =
-                                                    serde_json::to_string(&response).unwrap_or_default();
-                                                if let Err(e) = to_ws_tx.send(Message::Text(json_str)).await
+                                                let json_str = serde_json::to_string(&response)
+                                                    .unwrap_or_default();
+                                                if let Err(e) =
+                                                    to_ws_tx.send(Message::Text(json_str)).await
                                                 {
-                                                    error!("Failed to send command response: {}", e);
+                                                    error!(
+                                                        "Failed to send command response: {}",
+                                                        e
+                                                    );
                                                 }
                                             } else {
                                                 // Client not authenticated
@@ -258,9 +279,10 @@ async fn handle_connection(
                                                     code: "NOT_AUTHENTICATED".to_string(),
                                                     message: "Not authenticated".to_string(),
                                                 };
-                                                let json_str =
-                                                    serde_json::to_string(&response).unwrap_or_default();
-                                                if let Err(e) = to_ws_tx.send(Message::Text(json_str)).await
+                                                let json_str = serde_json::to_string(&response)
+                                                    .unwrap_or_default();
+                                                if let Err(e) =
+                                                    to_ws_tx.send(Message::Text(json_str)).await
                                                 {
                                                     error!("Failed to send auth error: {}", e);
                                                 }
@@ -272,7 +294,8 @@ async fn handle_connection(
                                                 code: "INVALID_MESSAGE_TYPE".to_string(),
                                                 message: "Unsupported message type".to_string(),
                                             };
-                                            let json_str = serde_json::to_string(&response).unwrap_or_default();
+                                            let json_str = serde_json::to_string(&response)
+                                                .unwrap_or_default();
                                             to_ws_tx.send(Message::Text(json_str)).await.ok();
                                         }
                                     }
@@ -283,7 +306,8 @@ async fn handle_connection(
                                         code: "INVALID_MESSAGE".to_string(),
                                         message: format!("Invalid message format: {}", e),
                                     };
-                                    let json_str = serde_json::to_string(&response).unwrap_or_default();
+                                    let json_str =
+                                        serde_json::to_string(&response).unwrap_or_default();
                                     if let Err(e) = to_ws_tx.send(Message::Text(json_str)).await {
                                         error!("Failed to send error response: {}", e);
                                     }

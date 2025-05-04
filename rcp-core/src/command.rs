@@ -23,14 +23,14 @@ pub enum CommandId {
     Error = 0xF1,
     Auth = 0xFE,
     Heartbeat = 0xFF,
-    
+
     // Additional service subscription commands
     SubscribeDisplay = 0x20,
     SubscribeInput = 0x21,
     SubscribeAudio = 0x22,
     SubscribeClipboard = 0x23,
     SubscribeFileTransfer = 0x24,
-    
+
     // Response types
     Ack = 0xE0,
 }
@@ -73,12 +73,14 @@ impl TryFrom<u8> for CommandId {
 pub trait Command {
     /// Returns the command ID for this command
     fn command_id(&self) -> CommandId;
-    
+
     /// Serializes the command to bytes
     fn serialize(&self) -> Result<Vec<u8>>;
-    
+
     /// Parses a command from bytes
-    fn parse(payload: &[u8]) -> Result<Self> where Self: Sized;
+    fn parse(payload: &[u8]) -> Result<Self>
+    where
+        Self: Sized;
 }
 
 /// LaunchApp command payload
@@ -86,10 +88,10 @@ pub trait Command {
 pub struct LaunchAppCommand {
     /// Launch flags
     pub flags: u32,
-    
+
     /// Application path to launch
     pub application_path: String,
-    
+
     /// Command line arguments, if any
     pub args: Option<String>,
 }
@@ -113,13 +115,13 @@ pub enum MouseEventType {
 pub struct MouseEvent {
     /// Type of mouse event
     pub event_type: MouseEventType,
-    
+
     /// X position
     pub x: i32,
-    
+
     /// Y position
     pub y: i32,
-    
+
     /// Wheel delta (for MouseEventType::Wheel)
     pub wheel_delta: i16,
 }
@@ -129,14 +131,14 @@ pub struct MouseEvent {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum KeyCode {
     Unknown = 0,
-    
+
     // Letters
     A = 0x0041,
     B = 0x0042,
     C = 0x0043,
     // ... other letters ...
     Z = 0x005A,
-    
+
     // Numbers
     N0 = 0x0030,
     N1 = 0x0031,
@@ -148,7 +150,7 @@ pub enum KeyCode {
     N7 = 0x0037,
     N8 = 0x0038,
     N9 = 0x0039,
-    
+
     // Function keys
     F1 = 0x0070,
     F2 = 0x0071,
@@ -162,7 +164,7 @@ pub enum KeyCode {
     F10 = 0x0079,
     F11 = 0x007A,
     F12 = 0x007B,
-    
+
     // Control keys
     Backspace = 0x0008,
     Tab = 0x0009,
@@ -185,7 +187,7 @@ pub enum KeyCode {
     PrintScreen = 0x002C,
     Insert = 0x002D,
     Delete = 0x002E,
-    
+
     // Numpad
     NumLock = 0x0090,
     NumPad0 = 0x0060,
@@ -229,10 +231,10 @@ pub const MODIFIER_NUM_LOCK: ModifierFlags = 0x20;
 pub struct KeyEvent {
     /// Key code
     pub key_code: KeyCode,
-    
+
     /// Key state
     pub state: KeyState,
-    
+
     /// Active modifiers
     pub modifiers: ModifierFlags,
 }
@@ -272,22 +274,22 @@ pub const FRAME_FLAG_PARTIAL: FrameFlags = 0x0004;
 pub struct StreamFrameCommand {
     /// Frame width
     pub width: u32,
-    
+
     /// Frame height
     pub height: u32,
-    
+
     /// Display ID
     pub display_id: u32,
-    
+
     /// Frame format
     pub format: FrameFormat,
-    
+
     /// Frame flags
     pub flags: FrameFlags,
-    
+
     /// Video quality (0-100)
     pub quality: u16,
-    
+
     /// Encoded frame data
     #[serde(with = "serde_bytes")]
     pub data: Vec<u8>,

@@ -18,7 +18,7 @@ pub enum Error {
     /// Authentication error
     #[error("Authentication error: {0}")]
     Auth(String),
-    
+
     /// Authentication error (alias used in code)
     #[error("Authentication error: {0}")]
     Authentication(String),
@@ -30,7 +30,7 @@ pub enum Error {
     /// Service error
     #[error("Service error: {0}")]
     Service(String),
-    
+
     /// Session error
     #[error("Session error: {0}")]
     Session(String),

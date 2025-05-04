@@ -1,20 +1,14 @@
 use crate::{
     error::{Error, Result},
     service::{Service, ServiceClient, ServiceFactory, ServiceMessage, ServiceType},
-    DEFAULT_CONNECTION_TIMEOUT_SECS,
-    DEFAULT_KEEP_ALIVE_SECS,
-    DEFAULT_RECONNECT_DELAY_MS,
+    DEFAULT_CONNECTION_TIMEOUT_SECS, DEFAULT_KEEP_ALIVE_SECS, DEFAULT_RECONNECT_DELAY_MS,
 };
 use log::{debug, error, info, trace, warn};
 use rcp_core::{
-    Auth, AuthChallenge, AuthMethod, AuthPayload, AuthResponse, CommandId, ConnectionState,
-    Frame, Protocol, SessionInfo, DEFAULT_PORT,
+    Auth, AuthChallenge, AuthMethod, AuthPayload, AuthResponse, CommandId, ConnectionState, Frame,
+    Protocol, SessionInfo, DEFAULT_PORT,
 };
-use std::{
-    collections::HashMap,
-    sync::Arc,
-    time::Duration,
-};
+use std::{collections::HashMap, sync::Arc, time::Duration};
 use tokio::{
     net::TcpStream,
     sync::{mpsc, Mutex, RwLock},
@@ -27,31 +21,31 @@ use uuid::Uuid;
 pub struct ClientConfig {
     /// Server hostname or IP address
     pub host: String,
-    
+
     /// Server port
     pub port: u16,
-    
+
     /// Client name/description
     pub client_name: String,
-    
+
     /// Client ID (auto-generated if None)
     pub client_id: Option<Uuid>,
-    
+
     /// Authentication method to use
     pub auth_method: AuthMethod,
-    
+
     /// Pre-shared key for authentication
     pub auth_psk: Option<String>,
-    
+
     /// Reconnect automatically on disconnection
     pub auto_reconnect: bool,
-    
+
     /// Delay before reconnection attempt (ms)
     pub reconnect_delay_ms: u64,
-    
+
     /// Keep-alive interval in seconds
     pub keep_alive_secs: u64,
-    
+
     /// Connection timeout in seconds
     pub connection_timeout_secs: u64,
 }
@@ -87,67 +81,67 @@ impl ClientBuilder {
             config: ClientConfig::default(),
         }
     }
-    
+
     /// Set the server host
     pub fn host(mut self, host: impl Into<String>) -> Self {
         self.config.host = host.into();
         self
     }
-    
+
     /// Set the server port
     pub fn port(mut self, port: u16) -> Self {
         self.config.port = port;
         self
     }
-    
+
     /// Set the client name
     pub fn client_name(mut self, name: impl Into<String>) -> Self {
         self.config.client_name = name.into();
         self
     }
-    
+
     /// Set the client ID
     pub fn client_id(mut self, id: Uuid) -> Self {
         self.config.client_id = Some(id);
         self
     }
-    
+
     /// Set the authentication method
     pub fn auth_method(mut self, method: AuthMethod) -> Self {
         self.config.auth_method = method;
         self
     }
-    
+
     /// Set the pre-shared key for authentication
     pub fn auth_psk(mut self, psk: impl Into<String>) -> Self {
         self.config.auth_psk = Some(psk.into());
         self
     }
-    
+
     /// Enable or disable automatic reconnection
     pub fn auto_reconnect(mut self, enable: bool) -> Self {
         self.config.auto_reconnect = enable;
         self
     }
-    
+
     /// Set the reconnection delay
     pub fn reconnect_delay(mut self, delay_ms: u64) -> Self {
         self.config.reconnect_delay_ms = delay_ms;
         self
     }
-    
+
     /// Set the keep-alive interval
     pub fn keep_alive_interval(mut self, seconds: u64) -> Self {
         self.config.keep_alive_secs = seconds;
         self
     }
-    
+
     /// Set the connection timeout
     pub fn connection_timeout(mut self, seconds: u64) -> Self {
         self.config.connection_timeout_secs = seconds;
         self
     }
-    
+
     /// Build the client
     pub fn build(self) -> Client {
         Client::new(self.config)
@@ -159,19 +153,19 @@ impl ClientBuilder {
 pub enum ClientState {
     /// Disconnected
     Disconnected,
-    
+
     /// Connecting
     Connecting,
-    
+
     /// Connected but not authenticated
     Connected,
-    
+
     /// Authenticating
     Authenticating,
-    
+
     /// Authenticated and ready
     Ready,
-    
+
     /// Closing
     Closing,
 }
@@ -193,16 +187,16 @@ impl From<ConnectionState> for ClientState {
 pub struct Client {
     /// Client configuration
     config: ClientConfig,
-    
+
     /// Client state
     state: Arc<RwLock<ClientState>>,
-    
+
     /// Session info
     session_info: Arc<RwLock<Option<SessionInfo>>>,
-    
+
     /// Protocol handler
     protocol: Arc<Mutex<Option<Protocol<TcpStream>>>>,
-    
+
     /// Services
     services: Arc<RwLock<HashMap<ServiceType, ServiceClient>>>,
 }
@@ -218,34 +212,36 @@ impl Client {
             services: Arc::new(RwLock::new(HashMap::new())),
         }
     }
-    
+
     /// Create a new client builder
     pub fn builder() -> ClientBuilder {
         ClientBuilder::new()
     }
-    
+
     /// Get the current client state
     pub async fn state(&self) -> ClientState {
         *self.state.read().await
     }
-    
+
     /// Connect to the server
     pub async fn connect(&self) -> Result<()> {
         // Check if already connected
         {
             let state = *self.state.read().await;
             if state != ClientState::Disconnected {
-                return Err(Error::Connection("Already connected or connecting".to_string()));
+                return Err(Error::Connection(
+                    "Already connected or connecting".to_string(),
+                ));
             }
-            
+
             // Update state
             *self.state.write().await = ClientState::Connecting;
         }
-        
+
         // Connect to server with timeout
         let server_addr = format!("{}:{}", self.config.host, self.config.port);
         debug!("Connecting to {}", server_addr);
-        
+
         let stream = match time::timeout(
             Duration::from_secs(self.config.connection_timeout_secs),
             TcpStream::connect(&server_addr),
@@ -265,19 +261,19 @@ impl Client {
                 )));
             }
         };
-        
+
         debug!("Connected to {}", server_addr);
-        
+
         // Create protocol handler
         let protocol = Protocol::new(stream);
         *self.protocol.lock().await = Some(protocol);
-        
+
         // Update state
         *self.state.write().await = ClientState::Connected;
-        
+
         Ok(())
     }
-    
+
     /// Authenticate with the server
     pub async fn authenticate(&self) -> Result<()> {
         // Check state
@@ -289,11 +285,11 @@ impl Client {
                     state
                 )));
             }
-            
+
             // Update state
             *self.state.write().await = ClientState::Authenticating;
         }
-        
+
         let mut protocol = self.protocol.lock().await;
         let protocol = match protocol.as_mut() {
             Some(p) => p,
@@ -302,9 +298,9 @@ impl Client {
                 return Err(Error::Connection("Not connected".to_string()));
             }
         };
-        
+
         protocol.set_state(ConnectionState::Authenticating);
-        
+
         // Create authentication payload
         let auth_payload = AuthPayload {
             client_id: self.config.client_id.unwrap_or_else(Uuid::new_v4),
@@ -312,12 +308,12 @@ impl Client {
             auth_method: self.config.auth_method,
             auth_data: Vec::new(),
         };
-        
+
         // Serialize and send
         let auth_data = rcp_core::utils::to_bytes(&auth_payload)?;
         let auth_frame = Frame::new(CommandId::Auth as u8, auth_data);
         protocol.write_frame(&auth_frame).await?;
-        
+
         // Wait for challenge
         let challenge_frame = match protocol.read_frame().await? {
             Some(frame) if frame.command_id() == CommandId::Auth as u8 => frame,
@@ -327,13 +323,15 @@ impl Client {
             }
             None => {
                 *self.state.write().await = ClientState::Disconnected;
-                return Err(Error::Connection("Connection closed during authentication".to_string()));
+                return Err(Error::Connection(
+                    "Connection closed during authentication".to_string(),
+                ));
             }
         };
-        
+
         // Parse challenge
         let challenge: AuthChallenge = rcp_core::utils::from_bytes(&challenge_frame.payload())?;
-        
+
         // Handle challenge based on auth method
         match self.config.auth_method {
             AuthMethod::PreSharedKey => {
@@ -344,14 +342,15 @@ impl Client {
                         return Err(Error::Authentication("PSK not configured".to_string()));
                     }
                 };
-                
+
                 // Generate response
-                let response_data = Auth::compute_psk_response(psk, &challenge.challenge, &challenge.salt);
+                let response_data =
+                    Auth::compute_psk_response(psk, &challenge.challenge, &challenge.salt);
                 let auth_response = AuthResponse {
                     client_id: self.config.client_id.unwrap_or_else(Uuid::new_v4),
                     response: response_data,
                 };
-                
+
                 // Send response
                 let response_data = rcp_core::utils::to_bytes(&auth_response)?;
                 let response_frame = Frame::new(CommandId::Auth as u8, response_data);
@@ -365,7 +364,7 @@ impl Client {
                 )));
             }
         }
-        
+
         // Wait for result (session info)
         let session_frame = match protocol.read_frame().await? {
             Some(frame) if frame.command_id() == CommandId::Auth as u8 => frame,
@@ -375,59 +374,58 @@ impl Client {
             }
             None => {
                 *self.state.write().await = ClientState::Disconnected;
-                return Err(Error::Connection("Connection closed during authentication".to_string()));
+                return Err(Error::Connection(
+                    "Connection closed during authentication".to_string(),
+                ));
             }
         };
-        
+
         // Parse session info
         let session_info: SessionInfo = rcp_core::utils::from_bytes(&session_frame.payload())?;
-        
+
         // Store session info
         *self.session_info.write().await = Some(session_info);
-        
+
         // Update state
         protocol.set_state(ConnectionState::Authenticated);
         *self.state.write().await = ClientState::Ready;
-        
+
         info!("Authentication successful");
         Ok(())
     }
-    
+
     /// Connect and authenticate in one step
     pub async fn connect_and_authenticate(&self) -> Result<()> {
         self.connect().await?;
         self.authenticate().await?;
         Ok(())
     }
-    
+
     /// Start the client message processing loop
     pub async fn start(&self) -> Result<()> {
         // Check state
         {
             let state = *self.state.read().await;
             if state != ClientState::Ready {
-                return Err(Error::Session(format!(
-                    "Cannot start in state {:?}",
-                    state
-                )));
+                return Err(Error::Session(format!("Cannot start in state {:?}", state)));
             }
         }
-        
+
         // Set up background tasks for message handling
         let state = Arc::clone(&self.state);
         let protocol_lock = Arc::clone(&self.protocol);
         let services = Arc::clone(&self.services);
-        
+
         // Message processor task
         tokio::spawn(async move {
             debug!("Starting client message processor");
-            
+
             loop {
                 // Check state
                 if *state.read().await != ClientState::Ready {
                     break;
                 }
-                
+
                 // Process incoming messages
                 let frame_result = {
                     let mut protocol_guard = protocol_lock.lock().await;
@@ -437,7 +435,7 @@ impl Client {
                         break;
                     }
                 };
-                
+
                 match frame_result {
                     Ok(Some(frame)) => {
                         // Process frame
@@ -459,13 +457,13 @@ impl Client {
                     }
                 }
             }
-            
+
             debug!("Client message processor stopped");
         });
-        
+
         Ok(())
     }
-    
+
     /// Subscribe to a service
     pub async fn subscribe_service(&self, service_type: ServiceType) -> Result<ServiceClient> {
         // Check if already subscribed
@@ -475,7 +473,7 @@ impl Client {
                 return Ok(services[&service_type].clone());
             }
         }
-        
+
         // Check state
         {
             let state = *self.state.read().await;
@@ -486,17 +484,17 @@ impl Client {
                 )));
             }
         }
-        
+
         debug!("Subscribing to service: {:?}", service_type);
-        
+
         // Create service instance
         let service = ServiceFactory::create(service_type)
             .ok_or_else(|| Error::Service(format!("Service {:?} not implemented", service_type)))?;
-        
+
         // Send subscription request
         let service_name = service_type.as_str().as_bytes().to_vec();
         let frame = Frame::new(service_type.subscription_command(), service_name);
-        
+
         // Send the frame
         {
             let mut protocol_guard = self.protocol.lock().await;
@@ -506,52 +504,49 @@ impl Client {
                 return Err(Error::Connection("Not connected".to_string()));
             }
         }
-        
+
         // Create service channels
         let (tx, mut rx) = mpsc::channel::<ServiceMessage>(100);
-        
+
         // Create service client
-        let service_client = ServiceClient::new(
-            service_type,
-            service_type.as_str().to_string(),
-            tx.clone(),
-        );
-        
+        let service_client =
+            ServiceClient::new(service_type, service_type.as_str().to_string(), tx.clone());
+
         // Store service client
         {
             let mut services = self.services.write().await;
             services.insert(service_type, service_client.clone());
         }
-        
+
         // Start service handling in background
         let protocol_lock = Arc::clone(&self.protocol);
         let state = Arc::clone(&self.state);
         let mut service = service;
-        
+
         tokio::spawn(async move {
             debug!("Starting service handler for {:?}", service_type);
-            
+
             // Start the service
             if let Err(e) = service.start().await {
                 error!("Failed to start service {:?}: {}", service_type, e);
                 return;
             }
-            
+
             // Process service messages
             while let Some(msg) = rx.recv().await {
                 // Check if client is still connected
                 if *state.read().await != ClientState::Ready {
                     break;
                 }
-                
+
                 trace!("Received service message: {:?}", msg.id);
-                
+
                 // Process message
                 if let Err(e) = service.handle_message(msg.clone()).await {
                     error!("Error handling service message: {}", e);
                     continue;
                 }
-                
+
                 // Send message to server if needed
                 if let Some(protocol) = protocol_lock.lock().await.as_mut() {
                     if let Err(e) = protocol.write_frame(&msg.frame).await {
@@ -559,40 +554,43 @@ impl Client {
                     }
                 }
             }
-            
+
             debug!("Service handler for {:?} stopped", service_type);
-            
+
             // Stop the service
             if let Err(e) = service.stop().await {
                 error!("Error stopping service {:?}: {}", service_type, e);
             }
         });
-        
+
         Ok(service_client)
     }
-    
+
     /// Get a service client if already subscribed
     pub async fn get_service(&self, service_type: ServiceType) -> Option<ServiceClient> {
         let services = self.services.read().await;
         services.get(&service_type).cloned()
     }
-    
+
     /// Get or create a service client
-    pub async fn get_or_subscribe_service(&self, service_type: ServiceType) -> Result<ServiceClient> {
+    pub async fn get_or_subscribe_service(
+        &self,
+        service_type: ServiceType,
+    ) -> Result<ServiceClient> {
         // Check if already subscribed
         if let Some(service) = self.get_service(service_type).await {
             return Ok(service);
         }
-        
+
         // Subscribe to the service
         self.subscribe_service(service_type).await
     }
-    
+
     /// Get the session info
     pub async fn session_info(&self) -> Option<SessionInfo> {
         self.session_info.read().await.clone()
     }
-    
+
     /// Disconnect from the server
     pub async fn disconnect(&self) -> Result<()> {
         // Check state
@@ -601,17 +599,17 @@ impl Client {
             if state == ClientState::Disconnected {
                 return Ok(());
             }
-            
+
             // Update state
             *self.state.write().await = ClientState::Closing;
         }
-        
+
         // Close services
         {
             let services = self.services.read().await;
             debug!("Shutting down {} services", services.len());
         }
-        
+
         // Close connection
         {
             let mut protocol_guard = self.protocol.lock().await;
@@ -622,17 +620,17 @@ impl Client {
             }
             *protocol_guard = None;
         }
-        
+
         // Clear session info
         *self.session_info.write().await = None;
-        
+
         // Update state
         *self.state.write().await = ClientState::Disconnected;
-        
+
         debug!("Disconnected from server");
         Ok(())
     }
-    
+
     /// Check if the client is connected
     pub async fn is_connected(&self) -> bool {
         matches!(
@@ -640,7 +638,7 @@ impl Client {
             ClientState::Connected | ClientState::Authenticating | ClientState::Ready
         )
     }
-    
+
     /// Check if the client is authenticated
     pub async fn is_authenticated(&self) -> bool {
         *self.state.read().await == ClientState::Ready
@@ -674,7 +672,7 @@ async fn process_frame(
                     frame: frame.clone(),
                     response_tx: None,
                 };
-                
+
                 // Send message to service
                 // Use fire and forget since this is streaming data
                 let _ = service.send_fire_and_forget(frame).await;
@@ -691,7 +689,7 @@ async fn process_frame(
                     frame: frame.clone(),
                     response_tx: None,
                 };
-                
+
                 // Send message to service
                 let _ = service.send_fire_and_forget(frame).await;
             }

@@ -1,7 +1,7 @@
-use serde::{Deserialize, Serialize};
 use crate::error::Result;
-use std::path::Path;
 use rcp_core::DEFAULT_PORT;
+use serde::{Deserialize, Serialize};
+use std::path::Path;
 
 /// Configuration for the RCP server
 #[derive(Debug, Clone, Serialize, Deserialize)]

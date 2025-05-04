@@ -2,20 +2,20 @@
 //
 // Main library entry point that exports all components
 
+mod auth;
+mod command;
 mod error;
 mod frame;
 mod header;
 mod protocol;
-mod auth;
-mod command;
 pub mod utils;
 
+pub use auth::{Auth, AuthChallenge, AuthMethod, AuthPayload, AuthResponse, SessionInfo};
+pub use command::{Command, CommandId};
 pub use error::{Error, Result};
 pub use frame::Frame;
 pub use header::Header;
-pub use protocol::{Protocol, ConnectionState};
-pub use auth::{Auth, AuthMethod, AuthChallenge, AuthPayload, AuthResponse, SessionInfo};
-pub use command::{Command, CommandId};
+pub use protocol::{ConnectionState, Protocol};
 
 /// Current protocol version
 pub const PROTOCOL_VERSION: u8 = 0x01;

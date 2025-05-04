@@ -10,19 +10,19 @@ use uuid::Uuid;
 pub enum ServiceType {
     /// Display service for screen sharing
     Display,
-    
+
     /// Input service for sending keyboard/mouse events
     Input,
-    
+
     /// Audio service for streaming audio
     Audio,
-    
+
     /// Clipboard service for clipboard synchronization
     Clipboard,
-    
+
     /// File transfer service
     FileTransfer,
-    
+
     /// Custom service
     Custom(u8),
 }
@@ -39,7 +39,7 @@ impl ServiceType {
             Self::Custom(_) => "custom",
         }
     }
-    
+
     /// Get the command ID for subscribing to this service
     pub fn subscription_command(&self) -> u8 {
         match self {
@@ -51,7 +51,7 @@ impl ServiceType {
             Self::Custom(id) => *id,
         }
     }
-    
+
     /// Get a service type from a string
     pub fn from_str(s: &str) -> Option<Self> {
         match s.to_lowercase().as_str() {
@@ -76,10 +76,10 @@ impl fmt::Display for ServiceType {
 pub struct ServiceMessage {
     /// Message ID
     pub id: Uuid,
-    
+
     /// Frame containing the message
     pub frame: Frame,
-    
+
     /// Response channel
     pub response_tx: Option<oneshot::Sender<Result<Frame>>>,
 }
@@ -99,10 +99,10 @@ impl Clone for ServiceMessage {
 pub trait Service: Send + Sync {
     /// Start the service
     async fn start(&mut self) -> Result<()>;
-    
+
     /// Stop the service
     async fn stop(&mut self) -> Result<()>;
-    
+
     /// Handle an incoming message
     async fn handle_message(&mut self, message: ServiceMessage) -> Result<()>;
 }
@@ -112,10 +112,10 @@ pub trait Service: Send + Sync {
 pub struct ServiceClient {
     /// Service type
     service_type: ServiceType,
-    
+
     /// Service name
     service_name: String,
-    
+
     /// Message sender channel
     tx: mpsc::Sender<ServiceMessage>,
 }
@@ -133,17 +133,17 @@ impl ServiceClient {
             tx,
         }
     }
-    
+
     /// Get the service type
     pub fn service_type(&self) -> ServiceType {
         self.service_type
     }
-    
+
     /// Get the service name
     pub fn service_name(&self) -> &str {
         &self.service_name
     }
-    
+
     /// Send a message and get a response
     pub async fn send_request(&self, frame: Frame) -> Result<Frame> {
         let (tx, rx) = oneshot::channel();
@@ -152,22 +152,28 @@ impl ServiceClient {
             frame,
             response_tx: Some(tx),
         };
-        
+
         // Send the message to the service handler
         trace!("Sending request message to service {}", self.service_name);
         self.tx.send(msg).await.map_err(|_| {
-            Error::Service(format!("Failed to send message to service {}", self.service_name))
+            Error::Service(format!(
+                "Failed to send message to service {}",
+                self.service_name
+            ))
         })?;
-        
+
         // Wait for the response
         trace!("Waiting for response from service {}", self.service_name);
         let response = rx.await.map_err(|_| {
-            Error::Service(format!("Failed to receive response from service {}", self.service_name))
+            Error::Service(format!(
+                "Failed to receive response from service {}",
+                self.service_name
+            ))
         })??;
-        
+
         Ok(response)
     }
-    
+
     /// Send a message without expecting a response
     pub async fn send_fire_and_forget(&self, frame: Frame) -> Result<()> {
         let msg = ServiceMessage {
@@ -175,13 +181,19 @@ impl ServiceClient {
             frame,
             response_tx: None,
         };
-        
+
         // Send the message to the service handler
-        trace!("Sending fire-and-forget message to service {}", self.service_name);
+        trace!(
+            "Sending fire-and-forget message to service {}",
+            self.service_name
+        );
         self.tx.send(msg).await.map_err(|_| {
-            Error::Service(format!("Failed to send message to service {}", self.service_name))
+            Error::Service(format!(
+                "Failed to send message to service {}",
+                self.service_name
+            ))
         })?;
-        
+
         Ok(())
     }
 }
@@ -205,32 +217,32 @@ impl ServiceFactory {
 /// Built-in service implementations
 pub mod builtin {
     use super::*;
-    
+
     /// Display service implementation
     pub struct DisplayService {}
-    
+
     impl DisplayService {
         /// Create a new display service
         pub fn new() -> Self {
             Self {}
         }
     }
-    
+
     #[async_trait::async_trait]
     impl Service for DisplayService {
         async fn start(&mut self) -> Result<()> {
             debug!("Starting display service");
             Ok(())
         }
-        
+
         async fn stop(&mut self) -> Result<()> {
             debug!("Stopping display service");
             Ok(())
         }
-        
+
         async fn handle_message(&mut self, message: ServiceMessage) -> Result<()> {
             trace!("Display service handling message: {:?}", message.id);
-            
+
             // Process message based on command ID
             match message.frame.command_id() {
                 cmd if cmd == CommandId::DisplayInfo as u8 => {
@@ -246,119 +258,123 @@ pub mod builtin {
                     // No response needed for streaming data
                 }
                 _ => {
-                    debug!("Unknown command for display service: {:02x}", message.frame.command_id());
+                    debug!(
+                        "Unknown command for display service: {:02x}",
+                        message.frame.command_id()
+                    );
                     if let Some(tx) = message.response_tx {
-                        let response = Frame::new(CommandId::Error as u8, b"Unknown command".to_vec());
+                        let response =
+                            Frame::new(CommandId::Error as u8, b"Unknown command".to_vec());
                         let _ = tx.send(Ok(response));
                     }
                 }
             }
-            
+
             Ok(())
         }
     }
-    
+
     /// Input service implementation
     pub struct InputService {}
-    
+
     impl InputService {
         /// Create a new input service
         pub fn new() -> Self {
             Self {}
         }
     }
-    
+
     #[async_trait::async_trait]
     impl Service for InputService {
         async fn start(&mut self) -> Result<()> {
             debug!("Starting input service");
             Ok(())
         }
-        
+
         async fn stop(&mut self) -> Result<()> {
             debug!("Stopping input service");
             Ok(())
         }
-        
+
         async fn handle_message(&mut self, message: ServiceMessage) -> Result<()> {
             trace!("Input service handling message: {:?}", message.id);
-            
+
             // Basic acknowledgment for now
             if let Some(tx) = message.response_tx {
                 let response = Frame::new(CommandId::Ack as u8, Vec::new());
                 let _ = tx.send(Ok(response));
             }
-            
+
             Ok(())
         }
     }
-    
+
     /// Clipboard service implementation
     pub struct ClipboardService {}
-    
+
     impl ClipboardService {
         /// Create a new clipboard service
         pub fn new() -> Self {
             Self {}
         }
     }
-    
+
     #[async_trait::async_trait]
     impl Service for ClipboardService {
         async fn start(&mut self) -> Result<()> {
             debug!("Starting clipboard service");
             Ok(())
         }
-        
+
         async fn stop(&mut self) -> Result<()> {
             debug!("Stopping clipboard service");
             Ok(())
         }
-        
+
         async fn handle_message(&mut self, message: ServiceMessage) -> Result<()> {
             trace!("Clipboard service handling message: {:?}", message.id);
-            
+
             // Basic acknowledgment for now
             if let Some(tx) = message.response_tx {
                 let response = Frame::new(CommandId::Ack as u8, Vec::new());
                 let _ = tx.send(Ok(response));
             }
-            
+
             Ok(())
         }
     }
-    
+
     /// File transfer service implementation
     pub struct FileTransferService {}
-    
+
     impl FileTransferService {
         /// Create a new file transfer service
         pub fn new() -> Self {
             Self {}
         }
     }
-    
+
     #[async_trait::async_trait]
     impl Service for FileTransferService {
         async fn start(&mut self) -> Result<()> {
             debug!("Starting file transfer service");
             Ok(())
         }
-        
+
         async fn stop(&mut self) -> Result<()> {
             debug!("Stopping file transfer service");
             Ok(())
         }
-        
+
         async fn handle_message(&mut self, message: ServiceMessage) -> Result<()> {
             trace!("File transfer service handling message: {:?}", message.id);
-            
+
             // Basic acknowledgment for now
             if let Some(tx) = message.response_tx {
                 let response = Frame::new(CommandId::Ack as u8, Vec::new());
                 let _ = tx.send(Ok(response));
             }
-            
+
             Ok(())
         }
     }
