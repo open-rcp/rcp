@@ -182,7 +182,7 @@ jobs:
           cd ../rcp-client && cargo publish
           cd ../rcp-server && cargo publish
           cd ../rcp-ws-bridge && cargo publish
-        if: ${{ github.event_name == 'push' && github.event.ref_type == 'tag' && secrets.CRATES_IO_TOKEN != '' }}
+        if: ${{ github.event_name == 'push' && github.event.ref_type == 'tag' && github.event.inputs.CRATES_IO_TOKEN != '' }}
       
       - name: Finalize GitHub Release
         uses: actions/github-script@v7
