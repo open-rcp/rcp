@@ -10,16 +10,16 @@ use url::Url;
 pub struct ConnectionString {
     /// Username for authentication
     pub username: Option<String>,
-    
+
     /// Password/PSK for authentication
     pub password: Option<String>,
-    
+
     /// Host to connect to
     pub host: String,
-    
+
     /// Port to connect to
     pub port: Option<u16>,
-    
+
     /// Optional path
     pub path: Option<String>,
 }
@@ -31,11 +31,11 @@ impl ConnectionString {
         if let Ok(url) = Self::parse_as_url(input) {
             return Ok(url);
         }
-        
+
         // Fall back to SSH-style parsing
         Self::parse_ssh_style(input)
     }
-    
+
     /// Parse as a URL (rcp://user:pass@host:port/path)
     fn parse_as_url(input: &str) -> Result<Self> {
         let input = if input.starts_with("rcp://") {
@@ -43,23 +43,30 @@ impl ConnectionString {
         } else {
             format!("rcp://{}", input)
         };
-        
+
         match Url::parse(&input) {
             Ok(url) => {
-                let host = url.host_str()
-                    .ok_or_else(|| Error::Connection("Invalid host in connection string".to_string()))?
+                let host = url
+                    .host_str()
+                    .ok_or_else(|| {
+                        Error::Connection("Invalid host in connection string".to_string())
+                    })?
                     .to_string();
-                
+
                 let port = url.port();
                 let username = if url.username().is_empty() {
                     None
                 } else {
                     Some(url.username().to_string())
                 };
-                
+
                 let password = url.password().map(|s| s.to_string());
-                let path = if url.path() == "/" { None } else { Some(url.path().to_string()) };
-                
+                let path = if url.path() == "/" {
+                    None
+                } else {
+                    Some(url.path().to_string())
+                };
+
                 Ok(Self {
                     username,
                     password,
@@ -67,11 +74,13 @@ impl ConnectionString {
                     port,
                     path,
                 })
-            },
-            Err(_) => Err(Error::Connection("Invalid connection string format".to_string())),
+            }
+            Err(_) => Err(Error::Connection(
+                "Invalid connection string format".to_string(),
+            )),
         }
     }
-    
+
     /// Parse as SSH style (user:pass@host:port/path)
     fn parse_ssh_style(input: &str) -> Result<Self> {
         // Create a mutable copy of the input string
@@ -81,35 +90,35 @@ impl ConnectionString {
         let mut port = None;
         let mut path = None;
         let mut host;
-        
+
         // Extract path if present
         if let Some(path_idx) = input_str.find('/') {
             path = Some(input_str[path_idx..].to_string());
             input_str.truncate(path_idx);
         }
-        
+
         // Extract username:password if present
         if let Some(creds_idx) = input_str.find('@') {
             let creds = input_str[0..creds_idx].to_string();
-            input_str = input_str[creds_idx+1..].to_string();
-            
+            input_str = input_str[creds_idx + 1..].to_string();
+
             if let Some(pass_idx) = creds.find(':') {
                 username = Some(creds[0..pass_idx].to_string());
-                password = Some(creds[pass_idx+1..].to_string());
+                password = Some(creds[pass_idx + 1..].to_string());
             } else {
                 username = Some(creds);
             }
         }
-        
+
         // Extract port if present
         host = input_str.clone();
         if let Some(port_idx) = input_str.rfind(':') {
-            if let Ok(port_num) = input_str[port_idx+1..].parse::<u16>() {
+            if let Ok(port_num) = input_str[port_idx + 1..].parse::<u16>() {
                 port = Some(port_num);
                 host = input_str[0..port_idx].to_string();
             }
         }
-        
+
         Ok(Self {
             username,
             password,
@@ -122,7 +131,7 @@ impl ConnectionString {
 
 impl FromStr for ConnectionString {
     type Err = Error;
-    
+
     fn from_str(s: &str) -> Result<Self> {
         ConnectionString::parse(s)
     }
@@ -131,7 +140,7 @@ impl FromStr for ConnectionString {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn test_parse_ssh_style() {
         let cs = ConnectionString::parse("user:pass@host:8716/path").unwrap();
@@ -140,14 +149,14 @@ mod tests {
         assert_eq!(cs.host, "host");
         assert_eq!(cs.port, Some(8716));
         assert_eq!(cs.path, Some("/path".to_string()));
-        
+
         let cs = ConnectionString::parse("host:8716").unwrap();
         assert_eq!(cs.username, None);
         assert_eq!(cs.password, None);
         assert_eq!(cs.host, "host");
         assert_eq!(cs.port, Some(8716));
         assert_eq!(cs.path, None);
-        
+
         let cs = ConnectionString::parse("user@host").unwrap();
         assert_eq!(cs.username, Some("user".to_string()));
         assert_eq!(cs.password, None);
@@ -155,7 +164,7 @@ mod tests {
         assert_eq!(cs.port, None);
         assert_eq!(cs.path, None);
     }
-    
+
     #[test]
     fn test_parse_url_style() {
         let cs = ConnectionString::parse("rcp://user:pass@host:8716/path").unwrap();

@@ -75,15 +75,19 @@ async fn main() -> Result<()> {
 
     // Process command
     match &cli.command {
-        Some(Commands::Connect { connection_string, psk }) => {
+        Some(Commands::Connect {
+            connection_string,
+            psk,
+        }) => {
             // Create client builder based on connection string or command line arguments
             let mut builder = Client::builder();
-            
+
             if let Some(conn_str) = connection_string {
                 // Use connection string
-                builder = builder.connection_string(conn_str)
+                builder = builder
+                    .connection_string(conn_str)
                     .context("Failed to parse connection string")?;
-                
+
                 // Log connection details from the parsed connection string
                 tracing::info!("Connecting using connection string: {}", conn_str);
             } else {
@@ -92,19 +96,19 @@ async fn main() -> Result<()> {
                     .host(cli.host.clone())
                     .port(cli.port)
                     .client_name(cli.client_name.clone());
-                
+
                 tracing::info!("Connecting to server at {}:{}", cli.host, cli.port);
             }
-            
+
             // Set authentication method and PSK if provided
             builder = builder
                 .client_id(Uuid::new_v4())
                 .auth_method(AuthMethod::PreSharedKey);
-                
+
             if let Some(auth_psk) = psk {
                 builder = builder.auth_psk(auth_psk);
             }
-            
+
             // Build the client
             let client = builder.build();
 
@@ -127,15 +131,20 @@ async fn main() -> Result<()> {
             tracing::info!("Disconnected successfully");
         }
 
-        Some(Commands::Execute { connection_string, command, args }) => {
+        Some(Commands::Execute {
+            connection_string,
+            command,
+            args,
+        }) => {
             // Create client builder based on connection string or command line arguments
             let mut builder = Client::builder();
-            
+
             if let Some(conn_str) = connection_string {
                 // Use connection string
-                builder = builder.connection_string(conn_str)
+                builder = builder
+                    .connection_string(conn_str)
                     .context("Failed to parse connection string")?;
-                
+
                 // Log connection details from the parsed connection string
                 tracing::info!("Connecting using connection string: {}", conn_str);
             } else {
@@ -144,15 +153,15 @@ async fn main() -> Result<()> {
                     .host(cli.host.clone())
                     .port(cli.port)
                     .client_name(cli.client_name.clone());
-                
+
                 tracing::info!("Connecting to server at {}:{}", cli.host, cli.port);
             }
-            
+
             // Set authentication method
             builder = builder
                 .client_id(Uuid::new_v4())
                 .auth_method(AuthMethod::PreSharedKey);
-                
+
             // Build the client
             let client = builder.build();
 

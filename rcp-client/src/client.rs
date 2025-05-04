@@ -90,23 +90,23 @@ impl ClientBuilder {
 
         // Set host
         self.config.host = conn.host;
-        
+
         // Set port if specified
         if let Some(port) = conn.port {
             self.config.port = port;
         }
-        
+
         // Set username if specified
         if let Some(username) = conn.username {
             // Use username as client name if no other client name has been set
             self.config.client_name = username;
         }
-        
+
         // Set password as PSK if specified
         if let Some(password) = conn.password {
             self.config.auth_psk = Some(password);
         }
-        
+
         Ok(self)
     }
 
