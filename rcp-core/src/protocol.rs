@@ -185,7 +185,7 @@ pub type SharedProtocol<T> = Arc<tokio::sync::Mutex<Protocol<T>>>;
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tokio::io::{duplex, AsyncWriteExt};
+    use tokio::io::duplex;
 
     #[tokio::test]
     async fn test_protocol_read_write() {

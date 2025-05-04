@@ -1,16 +1,16 @@
 mod error;
 
-use error::{Error, Result};
+use error::Result;
 use futures_util::{SinkExt, StreamExt};
 use log::{debug, error, info};
-use rcp_client::{Client, ClientBuilder};
-use rcp_core::{AuthMethod, Frame};
+use rcp_client::ClientBuilder;
+use rcp_core::AuthMethod;
 use serde::{Deserialize, Serialize};
 use std::net::SocketAddr;
 use std::sync::Arc;
 use tokio::net::{TcpListener, TcpStream};
 use tokio::sync::{mpsc, Mutex};
-use tokio_tungstenite::{accept_async, tungstenite::Message, WebSocketStream};
+use tokio_tungstenite::{accept_async, tungstenite::Message};
 use uuid::Uuid;
 
 /// Messages exchanged with the WebSocket client
@@ -251,7 +251,7 @@ async fn handle_connection(stream: TcpStream, rcp_host: String, rcp_port: u16) -
                                         WsMessage::Command { service, data } => {
                                             debug!("Received command for service: {}", service);
                                             let mut client_guard = client_clone.lock().await;
-                                            if let Some(client) = client_guard.as_mut() {
+                                            if let Some(_client) = client_guard.as_mut() {
                                                 // TODO: Implement command forwarding to appropriate service
                                                 debug!(
                                                     "Forwarding command to service {}: {:?}",
