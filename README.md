@@ -13,6 +13,10 @@
 - 📤 **Input & screen stream support**
 - 🔐 **Authentication layer** (pre-shared keys or public-key auth)
 - 📦 **Modular protocol structure** for easy extension
+- 🛠️ **Dynamic configuration** of applications via cli/api/desk
+- 🎛️ **CLI tooling** for streamlined administration
+- 🖥️ **Tauri-based management UI** for cross-platform administration
+- 📡 **RESTful management API** for integration with existing systems
 - 📁 **Future support**: clipboard, file transfer, remote shell
 - 🔗 **SSH-like connection strings** for simple client connections
 
@@ -21,13 +25,17 @@
 ## 📁 Repository Structure
 
 ```
-open-rcp/
-├── rcp-core/       # Protocol definitions, frame parsers, commands
-├── rcp-server/     # RCP listener, app session manager
-├── rcp-client/     # TCP client, app control interface
-├── rcp-ws-bridge/  # (optional) WebSocket proxy for browser clients
-├── examples/       # Minimal demos (spawn notepad, etc.)
-└── docs/           # Protocol spec & diagrams
+rcp/
+├── rcp-core/               # Protocol definitions, frame parsers, commands
+├── rcp-server/             # RCP listener, app session manager
+├── rcp-client/             # RCP client, app control interface
+├── rcp-service/            # Runtime service with app lifecycle management
+├── rcp-cli/                # Command-line interface for management/control/service
+├── rcp-api/                # RESTful API for remote management
+├── rcp-desk/               # Unified admin interface (SvelteKit+Tauri, Web+Desktop)
+├── rcp-ws-bridge/          # (optional) WebSocket proxy for browser clients
+├── examples/               # Minimal demos (spawn notepad, etc.)
+└── docs/                   # Protocol spec & architecture documentation
 ```
 
 ---
@@ -73,11 +81,14 @@ struct RcpHeader {
 git clone https://github.com/open-rcp/rcp.git
 cd rcp
 
-# Build server
-cargo build -p rcp-server
+# Build the complete stack
+cargo build
 
-# Run server
-./target/debug/rcp-server
+# Run the service
+cargo run -p rcp-service
+
+# Use the CLI to manage the service
+cargo run -p rcp-cli -- status
 ```
 
 ### 🔌 Connecting to a Server
@@ -105,30 +116,19 @@ Connect using host and port flags (must be specified before the connect command)
 ./target/debug/rcp-client -H 127.0.0.1 -p 8716 connect --psk customkey
 ```
 
-#### Using Pre-Shared Key Authentication
-
-PSK authentication can be provided in different ways:
+### 🖥️ Using the Management UI
 
 ```bash
-# Connect with PSK embedded in connection string 
-./target/debug/rcp-client connect user:mysecretkey@127.0.0.1:8716
-
-# Connect with default PSK (when none is provided, "test_key" is used)
-./target/debug/rcp-client -H 127.0.0.1 -p 8716 connect
+# Start the management interface (Tauri-based)
+cargo run -p rcp-management-ui
 ```
 
-#### Programmatic Connection
-
-```rust
-// Create a client using connection string
-let client = Client::builder()
-    .connection_string("user:password@host:8716")
-    .unwrap()
-    .build();
-
-// Connect and authenticate
-client.connect_and_authenticate().await?;
-```
+The management UI provides a complete interface for:
+- Managing server configurations
+- Monitoring active sessions
+- Configuring application access
+- Viewing analytics and logs
+- User management
 
 ---
 
@@ -138,7 +138,11 @@ client.connect_and_authenticate().await?;
 * [x] TCP socket server/client
 * [x] Launch & control remote apps
 * [x] SSH-like connection strings
+* [ ] Runtime service architecture
+* [ ] CLI management tool
 * [ ] Screen streaming (shared memory or framebuffer)
+* [ ] Tauri-based management UI
+* [ ] RESTful management API
 * [ ] Browser client via WebSocket bridge
 * [ ] Clipboard & file share support
 * [ ] WebAssembly interface for frontend
@@ -157,7 +161,6 @@ you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
     http://www.apache.org/licenses/LICENSE-2.0
-
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.

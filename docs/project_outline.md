@@ -9,14 +9,11 @@ This document outlines the Remote Control Protocol (RCP) project structure, comp
 - **RCP Core**: Protocol definitions, framing, authentication mechanisms
 - **RCP Server**: Server implementation for handling client connections
 - **RCP Client**: Client libraries for connecting to RCP servers
+- **RCP Service**: Runtime service for managing application lifecycle
+- **RCP CLI**: Command-line interface for management and configuration
+- **RCP API**: RESTful API for remote management of RCP servers
+- **RCP Desk**: Unified admin interface (SvelteKit+Tauri, Web+Desktop)
 - **RCP WebSocket Bridge**: WebSocket proxy for browser-based clients
-
-### New Components
-
-- **Management API**: REST API for remote management of RCP servers and connections
-- **Management Dashboard**: Web interface for monitoring and controlling RCP deployments
-- **Flutter Client**: Cross-platform mobile/desktop client using the Flutter framework
-- **FFI Integration**: Foreign Function Interface to use RCP client from other languages
 
 ## Development Roadmap
 
@@ -25,21 +22,28 @@ This document outlines the Remote Control Protocol (RCP) project structure, comp
 3. ✅ Service Architecture
 4. ✅ Authentication System
 5. ✅ WebSocket Bridge
-6. 🔄 Management API
+6. 🔄 RCP Service
+   - Runtime management of applications
+   - Configuration persistence
+   - System integration
+   - Monitoring and metrics collection
+7. 🔄 RCP CLI
+   - Service management commands
+   - User administration
+   - Configuration utility
+   - Diagnostics tools
+8. 🔄 RCP API
    - REST endpoints for system control
    - Authentication and authorization
    - Configuration management
    - Statistics and monitoring
-7. 🔄 Management Dashboard
+9. 🔄 RCP Desk
+   - SvelteKit-based web interface
+   - Tauri integration for desktop app
    - Real-time connection monitoring
    - User management interface
    - Service configuration
    - Analytics visualization
-8. 🔄 Flutter Client 
-   - Cross-platform UI
-   - FFI integration with RCP client
-   - Optimized mobile experience
-   - Offline operation support
 
 ## Architecture
 
@@ -48,7 +52,11 @@ RCP follows a modular architecture with these core components:
 1. **rcp-core**: Protocol definitions, frame handling, authentication, and common utilities
 2. **rcp-server**: The server application that accepts connections and manages sessions
 3. **rcp-client**: Client library for connecting to RCP servers and controlling applications
-4. **rcp-ws-bridge**: Optional WebSocket bridge for browser clients
+4. **rcp-service**: Runtime service managing the application lifecycle and configuration
+5. **rcp-cli**: Command-line tool for service and configuration management
+6. **rcp-api**: RESTful API for remote management and integration
+7. **rcp-desk**: Unified admin interface for web and desktop
+8. **rcp-ws-bridge**: Optional WebSocket bridge for browser clients
 
 ## Codebase Structure
 
@@ -73,11 +81,21 @@ rcp/
 │       ├── service.rs  # Service interface
 │       └── session.rs  # Client session handling
 ├── rcp-client/         # Client library
-│   └── src/            # (TBD)
+│   └── src/            # Client implementation
+├── rcp-service/        # Runtime service
+│   └── src/            # Service implementation
+├── rcp-cli/            # Command line interface
+│   └── src/            # CLI implementation
+├── rcp-api/            # RESTful management API
+│   └── src/            # API implementation
+├── rcp-desk/           # Unified management interface
+│   ├── src/            # Shared components
+│   ├── web/            # Web interface (SvelteKit)
+│   └── app/            # Desktop app (Tauri)
 ├── rcp-ws-bridge/      # WebSocket bridge
-│   └── src/            # (TBD)
+│   └── src/            # Bridge implementation
 ├── examples/           # Example code
-│   └── src/            # (TBD)
+│   └── src/            # Example implementations
 └── docs/               # Documentation
 ```
 
@@ -94,9 +112,10 @@ rcp/
 - Service implementations (display, input, clipboard)
 - Application launch and control
 - Client library
-- Management API
-- Management Dashboard
-- Flutter Client
+- Runtime service architecture
+- CLI management tool
+- RESTful management API
+- Desk admin interface
 
 ### Planned
 - Advanced authentication (public key)
@@ -104,6 +123,8 @@ rcp/
 - File transfer service
 - Audio streaming service
 - Client examples
+- Performance optimizations
+- Multi-platform packaging
 
 ## Development Guidelines
 
@@ -168,26 +189,35 @@ To add a new service:
 
 ## Project Roadmap
 
-### Phase 1: Core Protocol (Current)
+### Phase 1: Core Protocol (Complete)
 - Complete core protocol implementation
 - Implement server with basic services
 - Basic client library
 
-### Phase 2: Feature Expansion
+### Phase 2: Feature Expansion (Current)
 - Complete all core services (display, input, clipboard, file transfer)
 - Application launching and control
 - WebSocket bridge for browser clients
+- Runtime service architecture
+- CLI management tools
 
-### Phase 3: Advanced Features
+### Phase 3: Management Layer
+- RESTful management API
+- Unified desk interface (web & desktop)
+- Authentication and permission system
+- Configuration management
+- Logs and monitoring
+
+### Phase 4: Advanced Features
 - Audio/video streaming optimization
 - Compression and performance tuning
 - Multiple session management
 - Load balancing capabilities
+- Security hardening
 
-### Phase 4: Extra Integrations
-- Browser-based client
-- Mobile client library
+### Phase 5: Integration & Deployment
+- Platform-specific packaging
 - Integration with popular remote access protocols
-- Management API
-- Management Dashboard
-- Flutter Client
+- Enterprise deployment models
+- Cloud-native deployment options
+- Advanced monitoring and analytics

@@ -5,19 +5,22 @@
 The Rust Control Protocol (RCP) is organized as a modular service-oriented system with several components that work together:
 
 ```
-┌───────────────┐     ┌───────────────┐
-│  RCP Client   │◄────┤  RCP Server   │
-└───────┬───────┘     └───────┬───────┘
-        │                     │
-┌───────▼───────┐     ┌───────▼───────┐
-│  Application  │     │ Session Mgr   │
-│    Control    │     │               │
-└───────────────┘     └──────┬────────┘
-                             │
-                      ┌──────▼────────┐
-                      │  Application  │
-                      │   Processes   │
-                      └───────────────┘
+┌─────────────┐     ┌─────────────┐       ┌─────────────┐
+│  RCP Client │◄────┤ RCP Server  │◄──────┤ RCP Service │
+└─────┬───────┘     └─────┬───────┘       └──────┬──────┘
+      │                   │                      │
+┌─────▼───────┐     ┌─────▼───────┐       ┌──────▼──────┐
+│ Application │     │ Session Mgr │◄──────┤  RCP CLI    │
+│   Control   │     └─────────────┘       └─────────────┘
+└─────────────┘             │                    ▲
+                    ┌───────▼────────┐    ┌──────┴──────┐
+                    │  Application   │    │   RCP API   │
+                    │   Processes    │    └──────┬──────┘
+                    └────────────────┘           │
+                                          ┌──────▼──────┐
+                                          │   RCP Desk  │
+                                          │ (Web/Tauri) │
+                                          └─────────────┘
 ```
 
 ## Core Components
@@ -52,7 +55,46 @@ The foundation of the RCP system providing:
 - Handles user input
 - Processes and displays streamed frames
 
-### 4. WebSocket Bridge (`rcp-ws-bridge`)
+### 4. RCP Service (`rcp-service`)
+
+- Long-running daemon/service that manages RCP server instances
+- Application lifecycle management
+- Configuration handling and persistence
+- System integration (startup service, user permissions)
+- Logs and monitoring
+- Communication channel with CLI and API
+
+### 5. RCP CLI (`rcp-cli`)
+
+- Command-line interface for server/service management
+- Administrative tasks (user management, configuration)
+- Server control (start/stop/restart)
+- Session monitoring and management
+- Status reporting and diagnostics
+- Service installation/uninstallation
+
+### 6. RCP API (`rcp-api`)
+
+- RESTful API for remote management
+- Authentication and authorization for admin access
+- Server monitoring and management endpoints
+- User and permission management
+- Configuration management
+- Session information and metrics
+- Integration point for third-party systems
+
+### 7. RCP Desk (`rcp-desk`)
+
+- Unified administrative interface
+- Built with SvelteKit for the web component
+- Desktop application built with Tauri
+- Server management and monitoring
+- User management
+- Session monitoring and control
+- Configuration interface
+- Analytics and reporting
+
+### 8. WebSocket Bridge (`rcp-ws-bridge`)
 
 An optional component that bridges RCP protocol to WebSockets for browser clients:
 
@@ -95,6 +137,37 @@ Server → Client Flow:
 │ App       │ → │ Server  │ → │ Client    │ → │ Display  │
 │ Output    │   │ Session │   │ Rendering │   │          │
 └───────────┘    └────────┘    └──────────┘    └─────────┘
+
+Management Flow:
+┌─────────┐    ┌──────┐    ┌────────────┐    ┌──────────┐
+│ RCP Desk │ → │ API  │ → │ RCP Service │ → │ RCP Server│
+│         │   │      │   │            │   │          │
+└─────────┘    └──────┘    └────────────┘    └──────────┘
+```
+
+## Runtime Service Architecture
+
+The RCP Service provides a runtime management layer that orchestrates the overall system:
+
+```
+┌────────────────────────────────────────────────────────┐
+│                     RCP Service                        │
+│                                                        │
+│  ┌─────────────┐  ┌────────────┐  ┌────────────────┐   │
+│  │ Config      │  │ Server     │  │ App Lifecycle  │   │
+│  │ Management  │  │ Management │  │ Management     │   │
+│  └─────────────┘  └────────────┘  └────────────────┘   │
+│                                                        │
+│  ┌─────────────┐  ┌────────────┐  ┌────────────────┐   │
+│  │ User        │  │ Session    │  │ Logging &      │   │
+│  │ Management  │  │ Management │  │ Monitoring     │   │
+│  └─────────────┘  └────────────┘  └────────────────┘   │
+└────────────────────────────────────────────────────────┘
+           ▲              ▲                 ▲
+           │              │                 │
+    ┌──────┴───────┐ ┌────┴─────┐    ┌─────┴─────┐
+    │  RCP CLI     │ │ RCP API  │    │  RCP Desk  │
+    └──────────────┘ └──────────┘    └───────────┘
 ```
 
 ## Connection Lifecycle
@@ -154,3 +227,5 @@ RCP is designed to be extensible:
 - Extensible frame types
 - Middleware support
 - Platform-specific adapters
+- API extensions for third-party integration
+- Plugin architecture for the RCP Desk interface
