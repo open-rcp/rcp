@@ -135,7 +135,7 @@ If you need help with anything, please:
 
 ## License
 
-By contributing to RCP, you agree that your contributions will be licensed under the project's MIT OR Apache-2.0 license.
+By contributing to RCP, you agree that your contributions will be licensed under the project's MIT/Apache-2.0 license.
 
 ---
 
