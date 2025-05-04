@@ -1,8 +1,8 @@
 mod config;
 mod error;
 mod server;
-mod session;
 mod service;
+mod session;
 
 use clap::Parser;
 use config::ServerConfig;
@@ -10,19 +10,19 @@ use error::Result;
 use log::{info, LevelFilter};
 use server::Server;
 
+/// RCP Server - Remote Control Protocol Server
 #[derive(Parser, Debug)]
-#[clap(name = "rcp-server", version = env!("CARGO_PKG_VERSION"))]
-/// RCP Server: Remote application control server using Rust Control Protocol
+#[clap(author, version, about, long_about = None)]
 struct Cli {
-    /// Path to the configuration file
+    /// Config file path
     #[clap(short, long, default_value = "config.toml")]
     config: String,
 
-    /// Server address to bind to
+    /// Server address
     #[clap(short, long)]
     address: Option<String>,
 
-    /// Server port to listen on
+    /// Server port
     #[clap(short, long)]
     port: Option<u16>,
 
@@ -34,37 +34,37 @@ struct Cli {
 #[tokio::main]
 async fn main() -> Result<()> {
     let cli = Cli::parse();
-    
+
     // Initialize logging
     let log_level = if cli.verbose {
         LevelFilter::Debug
     } else {
         LevelFilter::Info
     };
-    
+
     env_logger::Builder::new()
         .filter_level(log_level)
         .format_timestamp_millis()
         .init();
-    
+
     info!("RCP Server v{} starting...", env!("CARGO_PKG_VERSION"));
-    
+
     // Load configuration
     let mut config = ServerConfig::load(&cli.config)?;
-    
+
     // Override with command line options if provided
     if let Some(address) = cli.address {
         config.address = address;
     }
-    
+
     if let Some(port) = cli.port {
         config.port = port;
     }
-    
+
     // Initialize and run server
     let server = Server::new(config);
     server.run().await?;
-    
+
     info!("Server shutdown complete");
     Ok(())
 }

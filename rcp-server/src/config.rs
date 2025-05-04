@@ -9,23 +9,23 @@ pub struct ServerConfig {
     /// Server address to bind to
     #[serde(default = "default_address")]
     pub address: String,
-    
+
     /// Server port to listen on
     #[serde(default = "default_port")]
     pub port: u16,
-    
+
     /// TLS configuration
     #[serde(default)]
     pub tls: TlsConfig,
-    
+
     /// Authentication configuration
     #[serde(default)]
     pub auth: AuthConfig,
-    
+
     /// Session configuration
     #[serde(default)]
     pub session: SessionConfig,
-    
+
     /// Application configuration
     #[serde(default)]
     pub application: ApplicationConfig,
@@ -47,11 +47,11 @@ pub struct TlsConfig {
     /// Whether TLS is enabled
     #[serde(default)]
     pub enabled: bool,
-    
+
     /// Path to the certificate file
     #[serde(default)]
     pub cert_path: String,
-    
+
     /// Path to the key file
     #[serde(default)]
     pub key_path: String,
@@ -73,11 +73,11 @@ pub struct AuthConfig {
     /// Whether authentication is required
     #[serde(default = "default_auth_required")]
     pub required: bool,
-    
+
     /// Pre-shared key for authentication
     #[serde(default)]
     pub psk: Option<String>,
-    
+
     /// Allowed client IDs
     #[serde(default)]
     pub allowed_clients: Vec<String>,
@@ -103,11 +103,11 @@ pub struct SessionConfig {
     /// Maximum number of concurrent sessions
     #[serde(default = "default_max_sessions")]
     pub max_sessions: usize,
-    
+
     /// Session timeout in seconds
     #[serde(default = "default_session_timeout")]
     pub timeout_secs: u64,
-    
+
     /// Whether to allow session resumption
     #[serde(default = "default_allow_resumption")]
     pub allow_resumption: bool,
@@ -141,15 +141,15 @@ pub struct ApplicationConfig {
     /// Allowed applications
     #[serde(default)]
     pub allowed_apps: Vec<String>,
-    
+
     /// Denied applications
     #[serde(default)]
     pub denied_apps: Vec<String>,
-    
+
     /// Whether to allow elevated privileges
     #[serde(default)]
     pub allow_elevated: bool,
-    
+
     /// Working directory for applications
     #[serde(default = "default_work_dir")]
     pub work_dir: String,
@@ -178,10 +178,10 @@ impl ServerConfig {
             .add_source(config::Environment::with_prefix("RCP"))
             .build()?
             .try_deserialize()?;
-            
+
         Ok(config)
     }
-    
+
     /// Create a default configuration
     pub fn default() -> Self {
         Self {
@@ -193,7 +193,7 @@ impl ServerConfig {
             application: ApplicationConfig::default(),
         }
     }
-    
+
     /// Get the server address as a string
     pub fn server_addr(&self) -> String {
         format!("{}:{}", self.address, self.port)
