@@ -1,6 +1,6 @@
 use crate::error::Result;
 use async_trait::async_trait;
-use rcp_core::{Frame, LaunchAppCommand};
+use rcp_core::Frame;
 use std::fmt::Debug;
 
 /// Service trait for implementing different RCP services
@@ -341,6 +341,7 @@ pub mod services {
         name: String,
 
         /// Service ID
+        #[allow(dead_code)]
         id: Uuid,
 
         /// Sender for outgoing frames
@@ -497,26 +498,22 @@ pub mod services {
             #[cfg(target_os = "windows")]
             {
                 match Command::new("calc.exe").spawn() {
-                    Ok(_) => return Ok(()),
-                    Err(e) => {
-                        return Err(Error::Service(format!(
-                            "Failed to launch Calculator: {}",
-                            e
-                        )))
-                    }
+                    Ok(_) => Ok(()),
+                    Err(e) => Err(Error::Service(format!(
+                        "Failed to launch Calculator: {}",
+                        e
+                    ))),
                 }
             }
 
             #[cfg(target_os = "macos")]
             {
                 match Command::new("open").arg("-a").arg("Calculator").spawn() {
-                    Ok(_) => return Ok(()),
-                    Err(e) => {
-                        return Err(Error::Service(format!(
-                            "Failed to launch Calculator: {}",
-                            e
-                        )))
-                    }
+                    Ok(_) => Ok(()),
+                    Err(e) => Err(Error::Service(format!(
+                        "Failed to launch Calculator: {}",
+                        e
+                    ))),
                 }
             }
 
@@ -529,16 +526,16 @@ pub mod services {
                         Err(_) => continue,
                     }
                 }
-                return Err(Error::Service(
+                Err(Error::Service(
                     "Failed to find a calculator to launch".to_string(),
-                ));
+                ))
             }
 
             #[cfg(not(any(target_os = "windows", target_os = "macos", target_os = "linux")))]
             {
-                return Err(Error::Service(
+                Err(Error::Service(
                     "Calculator launch not supported on this platform".to_string(),
-                ));
+                ))
             }
         }
 
@@ -552,20 +549,16 @@ pub mod services {
                     .arg("https://www.google.com")
                     .spawn()
                 {
-                    Ok(_) => return Ok(()),
-                    Err(e) => {
-                        return Err(Error::Service(format!("Failed to launch browser: {}", e)))
-                    }
+                    Ok(_) => Ok(()),
+                    Err(e) => Err(Error::Service(format!("Failed to launch browser: {}", e))),
                 }
             }
 
             #[cfg(target_os = "macos")]
             {
                 match Command::new("open").arg("https://www.google.com").spawn() {
-                    Ok(_) => return Ok(()),
-                    Err(e) => {
-                        return Err(Error::Service(format!("Failed to launch browser: {}", e)))
-                    }
+                    Ok(_) => Ok(()),
+                    Err(e) => Err(Error::Service(format!("Failed to launch browser: {}", e))),
                 }
             }
 
@@ -575,18 +568,16 @@ pub mod services {
                     .arg("https://www.google.com")
                     .spawn()
                 {
-                    Ok(_) => return Ok(()),
-                    Err(e) => {
-                        return Err(Error::Service(format!("Failed to launch browser: {}", e)))
-                    }
+                    Ok(_) => Ok(()),
+                    Err(e) => Err(Error::Service(format!("Failed to launch browser: {}", e))),
                 }
             }
 
             #[cfg(not(any(target_os = "windows", target_os = "macos", target_os = "linux")))]
             {
-                return Err(Error::Service(
+                Err(Error::Service(
                     "Browser launch not supported on this platform".to_string(),
-                ));
+                ))
             }
         }
 
@@ -597,20 +588,16 @@ pub mod services {
             #[cfg(target_os = "windows")]
             {
                 match Command::new("cmd.exe").spawn() {
-                    Ok(_) => return Ok(()),
-                    Err(e) => {
-                        return Err(Error::Service(format!("Failed to launch terminal: {}", e)))
-                    }
+                    Ok(_) => Ok(()),
+                    Err(e) => Err(Error::Service(format!("Failed to launch terminal: {}", e))),
                 }
             }
 
             #[cfg(target_os = "macos")]
             {
                 match Command::new("open").arg("-a").arg("Terminal").spawn() {
-                    Ok(_) => return Ok(()),
-                    Err(e) => {
-                        return Err(Error::Service(format!("Failed to launch terminal: {}", e)))
-                    }
+                    Ok(_) => Ok(()),
+                    Err(e) => Err(Error::Service(format!("Failed to launch terminal: {}", e))),
                 }
             }
 
@@ -623,16 +610,16 @@ pub mod services {
                         Err(_) => continue,
                     }
                 }
-                return Err(Error::Service(
+                Err(Error::Service(
                     "Failed to find a terminal to launch".to_string(),
-                ));
+                ))
             }
 
             #[cfg(not(any(target_os = "windows", target_os = "macos", target_os = "linux")))]
             {
-                return Err(Error::Service(
+                Err(Error::Service(
                     "Terminal launch not supported on this platform".to_string(),
-                ));
+                ))
             }
         }
 
