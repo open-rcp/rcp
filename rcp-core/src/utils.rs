@@ -58,12 +58,12 @@ pub fn pad_to_block_size(data: &[u8], block_size: usize) -> Vec<u8> {
 
 /// Convert a struct to bytes using bincode serialization
 pub fn to_bytes<T: serde::Serialize>(value: &T) -> Result<Vec<u8>> {
-    bincode::serialize(value).map_err(Error::SerializationError)
+    bincode::serialize(&value).map_err(Error::SerializationError)
 }
 
 /// Convert bytes to a struct using bincode deserialization
 pub fn from_bytes<T: serde::de::DeserializeOwned>(bytes: &[u8]) -> Result<T> {
-    bincode::deserialize(bytes).map_err(Error::SerializationError)
+    bincode::deserialize::<T>(bytes).map_err(Error::SerializationError)
 }
 
 /// Get current time in seconds since UNIX epoch

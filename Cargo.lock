@@ -3957,7 +3957,7 @@ version = "0.1.0"
 dependencies = [
  "aes-gcm",
  "anyhow",
- "bincode 2.0.1",
+ "bincode 1.3.3",
  "byteorder",
  "bytes",
  "log",

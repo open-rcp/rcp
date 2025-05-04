@@ -2,6 +2,44 @@
 
 This document provides comprehensive instructions for building and developing the RCP (Rust Control Protocol) project across different operating systems. The guide includes setting up development environments, building various components, and running the project for testing.
 
+## Prerequisites
+
+Before you can build the RCP project, ensure you have the following dependencies installed on your system:
+
+### Common Dependencies
+- Rust toolchain (install via [rustup](https://rustup.rs/))
+- Git
+
+### Windows-Specific Dependencies
+- Visual Studio Build Tools with C++ toolchain
+- [pkg-config](https://chocolatey.org/packages/pkgconfiglite) (can be installed via Chocolatey: `choco install pkgconfiglite`)
+- [CMake](https://chocolatey.org/packages/cmake) (can be installed via Chocolatey: `choco install cmake`)
+
+### Linux-Specific Dependencies
+- build-essential package
+- pkg-config
+- libssl-dev
+- cmake
+
+**For Ubuntu/Debian:**
+```bash
+sudo apt-get update
+sudo apt-get install build-essential pkg-config libssl-dev cmake
+```
+
+**For Fedora/RHEL/CentOS:**
+```bash
+sudo dnf install gcc gcc-c++ make pkg-config openssl-devel cmake
+```
+
+### macOS-Specific Dependencies
+- Xcode Command Line Tools
+- [Homebrew](https://brew.sh/) (recommended)
+- pkg-config and cmake via Homebrew:
+```bash
+brew install pkg-config cmake
+```
+
 ## Build Scripts Location
 
 All build scripts are located in the `scripts/` directory with platform-specific subdirectories:
