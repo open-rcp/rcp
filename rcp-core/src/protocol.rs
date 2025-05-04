@@ -112,6 +112,7 @@ where
 }
 
 /// A framed protocol connection with buffered frames
+#[allow(dead_code)]
 pub struct FramedProtocol<T> {
     /// The underlying protocol handler
     protocol: Protocol<T>,
@@ -120,6 +121,7 @@ pub struct FramedProtocol<T> {
     send_queue: Vec<Frame>,
 }
 
+#[allow(dead_code)]
 impl<T> FramedProtocol<T>
 where
     T: AsyncRead + AsyncWrite + Unpin,
@@ -177,6 +179,7 @@ where
 }
 
 /// Thread-safe shared protocol for use across tasks
+#[allow(dead_code)]
 pub type SharedProtocol<T> = Arc<tokio::sync::Mutex<Protocol<T>>>;
 
 #[cfg(test)]

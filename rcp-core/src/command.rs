@@ -219,11 +219,17 @@ pub enum KeyState {
 pub type ModifierFlags = u8;
 
 /// Keyboard modifier keys bit flags
+#[allow(dead_code)]
 pub const MODIFIER_SHIFT: ModifierFlags = 0x01;
+#[allow(dead_code)]
 pub const MODIFIER_CONTROL: ModifierFlags = 0x02;
+#[allow(dead_code)]
 pub const MODIFIER_ALT: ModifierFlags = 0x04;
+#[allow(dead_code)]
 pub const MODIFIER_META: ModifierFlags = 0x08;
+#[allow(dead_code)]
 pub const MODIFIER_CAPS_LOCK: ModifierFlags = 0x10;
+#[allow(dead_code)]
 pub const MODIFIER_NUM_LOCK: ModifierFlags = 0x20;
 
 /// Keyboard input event
@@ -263,10 +269,13 @@ pub enum FrameFormat {
 pub type FrameFlags = u16;
 
 /// Frame is a keyframe
+#[allow(dead_code)]
 pub const FRAME_FLAG_KEYFRAME: FrameFlags = 0x0001;
 /// Frame contains cursor
+#[allow(dead_code)]
 pub const FRAME_FLAG_CURSOR: FrameFlags = 0x0002;
 /// Frame is a partial update
+#[allow(dead_code)]
 pub const FRAME_FLAG_PARTIAL: FrameFlags = 0x0004;
 
 /// Video frame payload

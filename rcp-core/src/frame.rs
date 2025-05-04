@@ -48,7 +48,7 @@ impl Frame {
         }
 
         // Now we can consume the header and payload
-        let _ = buffer.advance(crate::header::HEADER_SIZE);
+        buffer.advance(crate::header::HEADER_SIZE);
         let payload = buffer.split_to(header.payload_size as usize).to_vec();
 
         Ok(Some(Self { header, payload }))
