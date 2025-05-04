@@ -23,6 +23,7 @@ pub struct Session {
     config: ServerConfig,
 
     /// Peer address
+    #[allow(dead_code)]
     peer_addr: String,
 
     /// Session state
@@ -125,7 +126,7 @@ impl Session {
                 warn!("Application launch not implemented yet");
             }
             cmd if cmd == CommandId::ServiceSubscribe as u8 => {
-                let service_name = String::from_utf8_lossy(&frame.payload()).to_string();
+                let service_name = String::from_utf8_lossy(frame.payload()).to_string();
                 info!(
                     "Received service subscription request for {} from session {}",
                     service_name, self.id
@@ -280,7 +281,7 @@ impl Session {
         };
 
         // Parse authentication payload
-        let auth_payload: AuthPayload = rcp_core::utils::from_bytes(&auth_frame.payload())?;
+        let auth_payload: AuthPayload = rcp_core::utils::from_bytes(auth_frame.payload())?;
 
         self.client_id = Some(auth_payload.client_id);
         self.client_name = Some(auth_payload.client_name.clone());
@@ -358,7 +359,7 @@ impl Session {
         };
 
         // Parse response
-        let auth_response: AuthResponse = rcp_core::utils::from_bytes(&response_frame.payload())?;
+        let auth_response: AuthResponse = rcp_core::utils::from_bytes(response_frame.payload())?;
 
         // Verify response
         if Auth::verify_psk(

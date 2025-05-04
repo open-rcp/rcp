@@ -38,6 +38,7 @@ pub mod services {
         name: String,
 
         /// Service ID
+        #[allow(dead_code)]
         id: Uuid,
 
         /// Sender for outgoing frames
@@ -48,6 +49,12 @@ pub mod services {
 
         /// Whether the service is running
         running: bool,
+    }
+
+    impl Default for DisplayService {
+        fn default() -> Self {
+            Self::new()
+        }
     }
 
     impl DisplayService {
@@ -157,10 +164,17 @@ pub mod services {
         name: String,
 
         /// Service ID
+        #[allow(dead_code)]
         id: Uuid,
 
         /// Whether the service is running
         running: bool,
+    }
+
+    impl Default for InputService {
+        fn default() -> Self {
+            Self::new()
+        }
     }
 
     impl InputService {
@@ -235,10 +249,17 @@ pub mod services {
         name: String,
 
         /// Service ID
+        #[allow(dead_code)]
         id: Uuid,
 
         /// Whether the service is running
         running: bool,
+    }
+
+    impl Default for ClipboardService {
+        fn default() -> Self {
+            Self::new()
+        }
     }
 
     impl ClipboardService {

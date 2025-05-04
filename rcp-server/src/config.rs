@@ -182,8 +182,15 @@ impl ServerConfig {
         Ok(config)
     }
 
-    /// Create a default configuration
-    pub fn default() -> Self {
+    /// Get the server address as a string
+    pub fn server_addr(&self) -> String {
+        format!("{}:{}", self.address, self.port)
+    }
+}
+
+/// Implementation of Default trait for ServerConfig
+impl Default for ServerConfig {
+    fn default() -> Self {
         Self {
             address: default_address(),
             port: default_port(),
@@ -192,10 +199,5 @@ impl ServerConfig {
             session: SessionConfig::default(),
             application: ApplicationConfig::default(),
         }
-    }
-
-    /// Get the server address as a string
-    pub fn server_addr(&self) -> String {
-        format!("{}:{}", self.address, self.port)
     }
 }
