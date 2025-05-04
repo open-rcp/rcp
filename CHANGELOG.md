@@ -1,3 +1,20 @@
+## v0.1.0-beta (2025-05-04)
+
+### Features
+
+### Bug Fixes
+* fix: update documentation links for consistency in naming
+* fix: update documentation links for protocol specification and development guidelines
+
+### Improvements
+
+### Documentation
+* docs: update changelog for v0.1.0+7
+* docs: update changelog for v0.1.0+7
+* docs: update changelog for v0.1.0+7
+* docs: update changelog for v0.1.0+7
+* docs: update changelog for v0.1.0-pre
+
 ## v0.1.0-pre (2025-05-04)
 
 ### Features
