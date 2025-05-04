@@ -2,6 +2,7 @@ use crate::error::{Error, Result};
 use log::{debug, trace};
 use rcp_core::{CommandId, Frame};
 use std::fmt;
+use std::str::FromStr;
 use tokio::sync::{mpsc, oneshot};
 use uuid::Uuid;
 
@@ -51,16 +52,19 @@ impl ServiceType {
             Self::Custom(id) => *id,
         }
     }
+}
 
-    /// Get a service type from a string
-    pub fn from_str(s: &str) -> Option<Self> {
+impl FromStr for ServiceType {
+    type Err = ();
+
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
         match s.to_lowercase().as_str() {
-            "display" => Some(Self::Display),
-            "input" => Some(Self::Input),
-            "audio" => Some(Self::Audio),
-            "clipboard" => Some(Self::Clipboard),
-            "file-transfer" => Some(Self::FileTransfer),
-            _ => None,
+            "display" => Ok(Self::Display),
+            "input" => Ok(Self::Input),
+            "audio" => Ok(Self::Audio),
+            "clipboard" => Ok(Self::Clipboard),
+            "file-transfer" => Ok(Self::FileTransfer),
+            _ => Err(()),
         }
     }
 }
@@ -221,6 +225,12 @@ pub mod builtin {
     /// Display service implementation
     pub struct DisplayService {}
 
+    impl Default for DisplayService {
+        fn default() -> Self {
+            Self::new()
+        }
+    }
+
     impl DisplayService {
         /// Create a new display service
         pub fn new() -> Self {
@@ -277,6 +287,12 @@ pub mod builtin {
     /// Input service implementation
     pub struct InputService {}
 
+    impl Default for InputService {
+        fn default() -> Self {
+            Self::new()
+        }
+    }
+
     impl InputService {
         /// Create a new input service
         pub fn new() -> Self {
@@ -312,6 +328,12 @@ pub mod builtin {
     /// Clipboard service implementation
     pub struct ClipboardService {}
 
+    impl Default for ClipboardService {
+        fn default() -> Self {
+            Self::new()
+        }
+    }
+
     impl ClipboardService {
         /// Create a new clipboard service
         pub fn new() -> Self {
@@ -346,6 +368,12 @@ pub mod builtin {
 
     /// File transfer service implementation
     pub struct FileTransferService {}
+
+    impl Default for FileTransferService {
+        fn default() -> Self {
+            Self::new()
+        }
+    }
 
     impl FileTransferService {
         /// Create a new file transfer service

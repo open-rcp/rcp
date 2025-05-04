@@ -1,6 +1,6 @@
 use crate::{
     error::{Error, Result},
-    service::{Service, ServiceClient, ServiceFactory, ServiceMessage, ServiceType},
+    service::{ServiceClient, ServiceFactory, ServiceMessage, ServiceType},
     DEFAULT_CONNECTION_TIMEOUT_SECS, DEFAULT_KEEP_ALIVE_SECS, DEFAULT_RECONNECT_DELAY_MS,
 };
 use log::{debug, error, info, trace, warn};
@@ -68,7 +68,7 @@ impl Default for ClientConfig {
 }
 
 /// Builder for creating an RCP client
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct ClientBuilder {
     /// Client configuration
     config: ClientConfig,
@@ -330,7 +330,7 @@ impl Client {
         };
 
         // Parse challenge
-        let challenge: AuthChallenge = rcp_core::utils::from_bytes(&challenge_frame.payload())?;
+        let challenge: AuthChallenge = rcp_core::utils::from_bytes(challenge_frame.payload())?;
 
         // Handle challenge based on auth method
         match self.config.auth_method {
@@ -381,7 +381,7 @@ impl Client {
         };
 
         // Parse session info
-        let session_info: SessionInfo = rcp_core::utils::from_bytes(&session_frame.payload())?;
+        let session_info: SessionInfo = rcp_core::utils::from_bytes(session_frame.payload())?;
 
         // Store session info
         *self.session_info.write().await = Some(session_info);
@@ -658,7 +658,7 @@ async fn process_frame(
         }
         cmd if cmd == CommandId::Error as u8 => {
             // Error from server
-            let error_msg = String::from_utf8_lossy(&frame.payload()).to_string();
+            let error_msg = String::from_utf8_lossy(frame.payload()).to_string();
             warn!("Received error from server: {}", error_msg);
             Ok(())
         }
@@ -666,14 +666,6 @@ async fn process_frame(
             // Forward to display service
             let services_guard = services.read().await;
             if let Some(service) = services_guard.get(&ServiceType::Display) {
-                // Forward to service handler
-                let message = ServiceMessage {
-                    id: Uuid::new_v4(),
-                    frame: frame.clone(),
-                    response_tx: None,
-                };
-
-                // Send message to service
                 // Use fire and forget since this is streaming data
                 let _ = service.send_fire_and_forget(frame).await;
             }
@@ -683,14 +675,7 @@ async fn process_frame(
             // Forward to display service
             let services_guard = services.read().await;
             if let Some(service) = services_guard.get(&ServiceType::Display) {
-                // Forward to service handler
-                let message = ServiceMessage {
-                    id: Uuid::new_v4(),
-                    frame: frame.clone(),
-                    response_tx: None,
-                };
-
-                // Send message to service
+                // Use fire and forget for display info
                 let _ = service.send_fire_and_forget(frame).await;
             }
             Ok(())
