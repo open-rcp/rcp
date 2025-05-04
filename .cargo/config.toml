@@ -1,0 +1,21 @@
+# RCP Project - Cargo Configuration
+# This configuration avoids the need for libclang/LLVM dependencies
+
+[env]
+# Force zstd-sys and other sys crates to use precompiled bindings and avoid bindgen
+CARGO_FEATURE_USE_STATIC_ZSTD = "1"
+CARGO_FEATURE_DISABLE_ZSTD_SYS_MMAP = "1"
+ZSTD_SYS_USE_PKG_CONFIG = "0" 
+ZSTD_SYS_STATIC = "1"
+RUST_BINDGEN_DISABLE = "1"
+ZSTD_SYS_USE_BINDGEN = "0"
+BINDGEN_EXTRA_CLANG_ARGS = "--no-system-headers"
+
+# Override the build and test environment configuration
+[build]
+# Use the vscode toolchain by default
+target-dir = "target"
+
+# Rustflags applied to all Windows builds
+[target.'cfg(target_os = "windows")']
+rustflags = ["-C", "target-feature=+crt-static"]

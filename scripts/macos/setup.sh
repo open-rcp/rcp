@@ -16,7 +16,7 @@ fi
 
 # Install build dependencies
 echo "Installing build dependencies..."
-brew install cmake pkg-config
+brew install pkg-config
 
 # Install OpenSSL
 echo "Installing OpenSSL..."
@@ -51,11 +51,6 @@ echo "Configuring Rust toolchain..."
 rustup default stable
 rustup component add rustfmt
 rustup component add clippy
-
-# Install LLVM for additional build dependencies
-echo "Installing LLVM..."
-brew install llvm
-echo "export PATH=$(brew --prefix llvm)/bin:\$PATH" >> ~/.zshrc
 
 # Verify project dependencies
 echo "Checking project dependencies..."

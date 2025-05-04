@@ -17,15 +17,11 @@ apt-get update
 
 # Install essential build tools
 echo "Installing essential build tools..."
-apt-get install -y build-essential cmake pkg-config
+apt-get install -y build-essential pkg-config
 
 # Install SSL development libraries
 echo "Installing SSL development libraries..."
 apt-get install -y libssl-dev
-
-# Install additional dependencies
-echo "Installing additional dependencies..."
-apt-get install -y libclang-dev llvm-dev
 
 # Install Rust if not already installed
 if ! command -v rustc &> /dev/null; then
