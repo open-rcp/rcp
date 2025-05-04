@@ -10,7 +10,7 @@ description = "Server implementation for the Rust Control Protocol (RCP)"
 
 [features]
 default = []
-management-api = []  # Feature flag for the management API
+management-api = ["dep:axum"]  # Feature flag for the management API requiring axum
 
 [dependencies]
 rcp-core = { workspace = true }
@@ -30,3 +30,4 @@ futures-util = { workspace = true }
 async-trait = "0.1.88"
 rustls = { workspace = true }
 webpki-roots = { workspace = true }
+axum = { version = "0.7.5", optional = true }

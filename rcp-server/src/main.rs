@@ -112,15 +112,65 @@ async fn main() -> Result<()> {
 
 #[cfg(feature = "management-api")]
 async fn run_management_api_server(server_handle: Arc<Mutex<Server>>, port: u16) -> Result<()> {
-    use log::error;
+    use axum::{
+        extract::State,
+        http::StatusCode,
+        routing::{get, post},
+        Json, Router,
+    };
+    use serde::{Deserialize, Serialize};
+    use std::net::SocketAddr;
+    use tokio::net::TcpListener;
 
-    // Create management API configuration
-    let mgmt_config = rcp_management_api::Config::new()
-        .with_port(port)
-        .with_server_handle(server_handle);
+    #[derive(Clone)]
+    struct ApiState {
+        server_handle: Arc<Mutex<Server>>,
+    }
 
-    // Run the management API server
-    rcp_management_api::run_server(mgmt_config)
-        .await
-        .map_err(|e| error::Error::Other(format!("Management API server error: {}", e)))
+    #[derive(Serialize)]
+    struct ServerStatus {
+        version: String,
+        uptime: u64,
+        active_connections: usize,
+    }
+
+    // Initialize API state
+    let state = ApiState {
+        server_handle,
+    };
+
+    // Setup API routes
+    let app = Router::new()
+        .route("/status", get(get_status))
+        .with_state(state);
+
+    // Bind to address
+    let addr = SocketAddr::from(([0, 0, 0, 0], port));
+    let listener = TcpListener::bind(addr).await
+        .map_err(|e| error::Error::Other(format!("Failed to bind management API port: {}", e)))?;
+
+    info!("Management API server listening on {}", addr);
+
+    // Start the server
+    axum::serve(listener, app).await
+        .map_err(|e| error::Error::Other(format!("Management API server error: {}", e)))?;
+
+    Ok(())
+}
+
+#[cfg(feature = "management-api")]
+async fn get_status(
+    State(state): State<ApiState>,
+) -> Result<Json<ServerStatus>, StatusCode> {
+    // Get server status information
+    let server = state.server_handle.lock().await;
+    
+    // This is a placeholder - you'd implement actual status gathering
+    let status = ServerStatus {
+        version: env!("CARGO_PKG_VERSION").to_string(),
+        uptime: 0, // You would calculate this based on server start time
+        active_connections: 0, // You would get this from the server
+    };
+    
+    Ok(Json(status))
 }
