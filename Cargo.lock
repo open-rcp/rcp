@@ -2030,8 +2030,3 @@ dependencies = [
  "quote",
  "syn",
 ]
-
-[[patch.unused]]
-name = "zstd-sys"
-version = "2.0.5+zstd.1.5.2"
-source = "git+https://github.com/gyscos/zstd-rs.git?branch=master#1c49557922fd2d4ee2f39b3cb829e387dfaae736"

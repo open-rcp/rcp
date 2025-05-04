@@ -217,7 +217,7 @@ Unified administrative interface for web and desktop platforms.
 - [ ] Implement system tray functionality
 - [ ] Create build and packaging process
 - [ ] Write unit and integration tests
-- [ ] Refactor and rename from legacy `rcp-management-ui` to `rcp-desk`
+- [ ] Setup `rcp-desk`
 
 **Dependencies:** RCP API
 
@@ -268,10 +268,10 @@ Additional core services to extend system capabilities.
 
 ### Component Refactoring
 
-To align with the new architecture, these components need to be refactored:
+To align with the new architecture, these components need to be created from scratch:
 
-- [ ] Rename `rcp-management-api` to `rcp-api`
-- [ ] Rename `rcp-management-ui` to `rcp-desk`
+- [ ] Create new `rcp-api` component
+- [ ] Create new `rcp-desk` component
 - [ ] Update dependencies and references
 - [ ] Update documentation
 

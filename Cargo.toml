@@ -51,7 +51,3 @@ debug = false
 lto = true
 codegen-units = 1
 strip = true
-
-[patch.crates-io]
-# Use a specific version of zstd-sys from GitHub to avoid pkg-config issues
-zstd-sys = { git = "https://github.com/gyscos/zstd-rs.git", branch = "master", features = ["zstdmt"], default-features = false }
