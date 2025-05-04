@@ -1,8 +1,45 @@
 # RCP Project Outline and Development Guidelines
 
-## Project Overview
+This document outlines the Remote Control Protocol (RCP) project structure, components, and planned development roadmap.
 
-The Rust Control Protocol (RCP) is a low-level, high-performance protocol designed for remote application control. It enables secure remote control of desktop applications over TCP/IP using the Rust programming language. This document outlines the project structure, development guidelines, and roadmap.
+## Project Components
+
+### Core Components
+
+- **RCP Core**: Protocol definitions, framing, authentication mechanisms
+- **RCP Server**: Server implementation for handling client connections
+- **RCP Client**: Client libraries for connecting to RCP servers
+- **RCP WebSocket Bridge**: WebSocket proxy for browser-based clients
+
+### New Components
+
+- **Management API**: REST API for remote management of RCP servers and connections
+- **Management Dashboard**: Web interface for monitoring and controlling RCP deployments
+- **Flutter Client**: Cross-platform mobile/desktop client using the Flutter framework
+- **FFI Integration**: Foreign Function Interface to use RCP client from other languages
+
+## Development Roadmap
+
+1. ✅ Core Protocol Implementation
+2. ✅ Basic Server and Client
+3. ✅ Service Architecture
+4. ✅ Authentication System
+5. ✅ WebSocket Bridge
+6. 🔄 Management API
+   - REST endpoints for system control
+   - Authentication and authorization
+   - Configuration management
+   - Statistics and monitoring
+7. 🔄 Management Dashboard
+   - Real-time connection monitoring
+   - User management interface
+   - Service configuration
+   - Analytics visualization
+8. 🔄 Flutter Client 
+   - Cross-platform UI
+   - FFI integration with RCP client
+   - Optimized mobile experience
+   - Offline operation support
 
 ## Architecture
 
@@ -57,6 +94,9 @@ rcp/
 - Service implementations (display, input, clipboard)
 - Application launch and control
 - Client library
+- Management API
+- Management Dashboard
+- Flutter Client
 
 ### Planned
 - Advanced authentication (public key)
@@ -148,3 +188,6 @@ To add a new service:
 - Browser-based client
 - Mobile client library
 - Integration with popular remote access protocols
+- Management API
+- Management Dashboard
+- Flutter Client
