@@ -1,0 +1,198 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g. v0.1.0)'
+        required: true
+        default: 'v0.1.0'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  create_release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      version: ${{ steps.get_version.outputs.version }}
+    
+    steps:
+    - name: Get version
+      id: get_version
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+        else
+          echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.get_version.outputs.version }}
+        release_name: Release ${{ steps.get_version.outputs.version }}
+        draft: true
+        prerelease: false
+        body: |
+          ## RCP ${{ steps.get_version.outputs.version }}
+          
+          Please refer to [CHANGELOG.md](https://github.com/open-rcp/rcp/blob/main/CHANGELOG.md) for detailed changes.
+          
+          ### Downloads
+          - Windows: `rcp-server-windows.exe`, `rcp-client-windows.exe`, `rcp-ws-bridge-windows.exe`
+          - Linux: `rcp-server-linux`, `rcp-client-linux`, `rcp-ws-bridge-linux`
+          - macOS: `rcp-server-macos`, `rcp-client-macos`, `rcp-ws-bridge-macos`
+
+  build:
+    name: Build for ${{ matrix.os }}
+    needs: create_release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+            target: x86_64-unknown-linux-gnu
+          - os: windows-latest
+            platform: windows
+            target: x86_64-pc-windows-msvc
+          - os: macos-latest
+            platform: macos
+            target: x86_64-apple-darwin
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+        target: ${{ matrix.target }}
+    
+    - name: Rust cache
+      uses: swatinem/rust-cache@v2
+      with:
+        shared-key: "build-${{ matrix.target }}"
+    
+    - name: Install dependencies for Linux
+      if: matrix.platform == 'linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libssl-dev pkg-config
+    
+    - name: Build Server
+      run: cargo build --release --package rcp-server --target ${{ matrix.target }}
+    
+    - name: Build Client
+      run: cargo build --release --package rcp-client --target ${{ matrix.target }}
+    
+    - name: Build WebSocket Bridge
+      run: cargo build --release --package rcp-ws-bridge --target ${{ matrix.target }}
+    
+    - name: Prepare Server artifact (Windows)
+      if: matrix.platform == 'windows'
+      run: |
+        cp target/${{ matrix.target }}/release/rcp-server.exe rcp-server-windows.exe
+    
+    - name: Prepare Client artifact (Windows)
+      if: matrix.platform == 'windows'
+      run: |
+        cp target/${{ matrix.target }}/release/rcp-client.exe rcp-client-windows.exe
+    
+    - name: Prepare WS Bridge artifact (Windows)
+      if: matrix.platform == 'windows'
+      run: |
+        cp target/${{ matrix.target }}/release/rcp-ws-bridge.exe rcp-ws-bridge-windows.exe
+    
+    - name: Prepare Server artifact (Linux/macOS)
+      if: matrix.platform != 'windows'
+      run: |
+        cp target/${{ matrix.target }}/release/rcp-server rcp-server-${{ matrix.platform }}
+    
+    - name: Prepare Client artifact (Linux/macOS)
+      if: matrix.platform != 'windows'
+      run: |
+        cp target/${{ matrix.target }}/release/rcp-client rcp-client-${{ matrix.platform }}
+    
+    - name: Prepare WS Bridge artifact (Linux/macOS)
+      if: matrix.platform != 'windows'
+      run: |
+        cp target/${{ matrix.target }}/release/rcp-ws-bridge rcp-ws-bridge-${{ matrix.platform }}
+    
+    - name: Upload Server Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.create_release.outputs.upload_url }}
+        asset_path: ./rcp-server-${{ matrix.platform }}${{ matrix.platform == 'windows' && '.exe' || '' }}
+        asset_name: rcp-server-${{ matrix.platform }}${{ matrix.platform == 'windows' && '.exe' || '' }}
+        asset_content_type: application/octet-stream
+    
+    - name: Upload Client Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.create_release.outputs.upload_url }}
+        asset_path: ./rcp-client-${{ matrix.platform }}${{ matrix.platform == 'windows' && '.exe' || '' }}
+        asset_name: rcp-client-${{ matrix.platform }}${{ matrix.platform == 'windows' && '.exe' || '' }}
+        asset_content_type: application/octet-stream
+    
+    - name: Upload WS Bridge Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.create_release.outputs.upload_url }}
+        asset_path: ./rcp-ws-bridge-${{ matrix.platform }}${{ matrix.platform == 'windows' && '.exe' || '' }}
+        asset_name: rcp-ws-bridge-${{ matrix.platform }}${{ matrix.platform == 'windows' && '.exe' || '' }}
+        asset_content_type: application/octet-stream
+
+  publish:
+    name: Publish Release
+    needs: [create_release, build]
+    runs-on: ubuntu-latest
+    if: ${{ !failure() && !cancelled() }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+      
+      - name: Publish to crates.io
+        run: |
+          cargo login ${{ secrets.CRATES_IO_TOKEN }}
+          cd rcp-core && cargo publish
+          # Wait a bit for crates.io to index
+          sleep 30
+          cd ../rcp-client && cargo publish
+          cd ../rcp-server && cargo publish
+          cd ../rcp-ws-bridge && cargo publish
+        if: ${{ github.event_name == 'push' && github.event.ref_type == 'tag' && secrets.CRATES_IO_TOKEN != '' }}
+      
+      - name: Finalize GitHub Release
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.repos.updateRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: ${{ github.event.release.id }},
+              draft: false
+            })
+        if: ${{ github.event_name == 'push' && github.event.ref_type == 'tag' }}

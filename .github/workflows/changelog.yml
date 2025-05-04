@@ -1,0 +1,103 @@
+name: Changelog Preparation
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: 'Version to prepare changelog for (e.g., v0.2.0)'
+        required: true
+
+jobs:
+  update_changelog:
+    if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Setup git user
+        run: |
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "actions@github.com"
+      
+      - name: Determine version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "version=${{ github.event.inputs.release_version }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=v$(grep -m 1 'version = "[0-9]\+\.[0-9]\+\.[0-9]\+"' Cargo.toml | sed 's/.*version = "\([0-9]\+\.[0-9]\+\.[0-9]\+\)".*/\1/')" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Determine previous tag
+        id: prev_tag
+        run: |
+          prev_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -z "$prev_tag" ]; then
+            echo "prev_tag=HEAD~100" >> $GITHUB_OUTPUT
+            echo "No previous tag found, using earliest commits"
+          else
+            echo "prev_tag=$prev_tag" >> $GITHUB_OUTPUT
+            echo "Previous tag: $prev_tag"
+          fi
+      
+      - name: Generate changelog entry
+        id: changelog
+        run: |
+          echo "## ${{ steps.version.outputs.version }} ($(date '+%Y-%m-%d'))" > temp_changelog.md
+          echo "" >> temp_changelog.md
+          
+          # Features
+          echo "### Features" >> temp_changelog.md
+          git log ${{ steps.prev_tag.outputs.prev_tag }}..HEAD --pretty=format:"* %s" --grep="^feat" | grep -v "^$" | sort >> temp_changelog.md || echo "* No new features in this release" >> temp_changelog.md
+          echo "" >> temp_changelog.md
+          
+          # Bug fixes
+          echo "### Bug Fixes" >> temp_changelog.md
+          git log ${{ steps.prev_tag.outputs.prev_tag }}..HEAD --pretty=format:"* %s" --grep="^fix" | grep -v "^$" | sort >> temp_changelog.md || echo "* No bug fixes in this release" >> temp_changelog.md
+          echo "" >> temp_changelog.md
+          
+          # Improvements
+          echo "### Improvements" >> temp_changelog.md
+          git log ${{ steps.prev_tag.outputs.prev_tag }}..HEAD --pretty=format:"* %s" --grep="^improve\|^refactor\|^perf" | grep -v "^$" | sort >> temp_changelog.md || echo "* No improvements in this release" >> temp_changelog.md
+          echo "" >> temp_changelog.md
+          
+          # Documentation changes
+          echo "### Documentation" >> temp_changelog.md
+          git log ${{ steps.prev_tag.outputs.prev_tag }}..HEAD --pretty=format:"* %s" --grep="^docs" | grep -v "^$" | sort >> temp_changelog.md || echo "* No documentation changes in this release" >> temp_changelog.md
+          
+          cat temp_changelog.md
+      
+      - name: Update CHANGELOG.md
+        run: |
+          if [ -f CHANGELOG.md ]; then
+            cat temp_changelog.md > new_changelog.md
+            echo "" >> new_changelog.md
+            cat CHANGELOG.md >> new_changelog.md
+            mv new_changelog.md CHANGELOG.md
+          else
+            echo "# Changelog" > CHANGELOG.md
+            echo "" >> CHANGELOG.md
+            cat temp_changelog.md >> CHANGELOG.md
+          fi
+      
+      - name: Create Pull Request
+        if: github.event_name == 'workflow_dispatch'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "docs: update changelog for ${{ steps.version.outputs.version }}"
+          title: "Update CHANGELOG for ${{ steps.version.outputs.version }}"
+          body: "Automatically generated changelog for ${{ steps.version.outputs.version }}"
+          branch: "changelog-${{ steps.version.outputs.version }}"
+          labels: "documentation"
