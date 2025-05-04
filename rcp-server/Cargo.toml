@@ -10,6 +10,7 @@ description = "Server implementation for the Rust Control Protocol (RCP)"
 
 [dependencies]
 rcp-core = { workspace = true }
+rcp-management-api = { path = "../rcp-management-api" }
 tokio = { workspace = true }
 thiserror = { workspace = true }
 anyhow = { workspace = true }

@@ -1,5 +1,7 @@
 use serde::Deserialize;
-use std::sync::OnceLock;
+use std::sync::{Arc, OnceLock};
+use tokio::sync::Mutex;
+use crate::error::ApiResult;
 
 static CONFIG: OnceLock<AppConfig> = OnceLock::new();
 
@@ -109,4 +111,50 @@ fn load_from_file() -> Result<AppConfig, Box<dyn std::error::Error>> {
     let config: AppConfig = toml::from_str(&config_content)?;
     
     Ok(config)
+}
+
+#[derive(Default)]
+pub struct Config {
+    pub port: u16,
+    pub host: String,
+    pub server_handle: Option<Arc<Mutex<rcp_server::server::Server>>>,
+    pub jwt_secret: String,
+    pub database_url: String,
+}
+
+impl Config {
+    pub fn new() -> Self {
+        Self {
+            port: 8081,
+            host: "127.0.0.1".to_string(),
+            server_handle: None,
+            jwt_secret: "default_secret_change_me".to_string(),
+            database_url: "sqlite://rcp_management.db".to_string(),
+        }
+    }
+
+    pub fn with_port(mut self, port: u16) -> Self {
+        self.port = port;
+        self
+    }
+
+    pub fn with_host(mut self, host: String) -> Self {
+        self.host = host;
+        self
+    }
+
+    pub fn with_server_handle(mut self, handle: Arc<Mutex<rcp_server::server::Server>>) -> Self {
+        self.server_handle = Some(handle);
+        self
+    }
+
+    pub fn with_jwt_secret(mut self, secret: String) -> Self {
+        self.jwt_secret = secret;
+        self
+    }
+
+    pub fn with_database_url(mut self, url: String) -> Self {
+        self.database_url = url;
+        self
+    }
 }

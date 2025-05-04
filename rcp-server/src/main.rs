@@ -9,6 +9,8 @@ use config::ServerConfig;
 use error::Result;
 use log::{info, LevelFilter};
 use server::Server;
+use std::sync::Arc;
+use tokio::sync::Mutex;
 
 /// RCP Server - Remote Control Protocol Server
 #[derive(Parser, Debug)]
@@ -29,6 +31,14 @@ struct Cli {
     /// Enable verbose logging
     #[clap(short, long)]
     verbose: bool,
+
+    /// Management API port
+    #[clap(long, default_value = "8081")]
+    mgmt_port: u16,
+    
+    /// Disable management API
+    #[clap(long)]
+    no_mgmt: bool,
 }
 
 #[tokio::main]
@@ -61,10 +71,45 @@ async fn main() -> Result<()> {
         config.port = port;
     }
 
-    // Initialize and run server
+    // Initialize server
     let server = Server::new(config);
-    server.run().await?;
+    let server_handle = Arc::new(Mutex::new(server));
+    
+    // Start management API server if enabled
+    if !cli.no_mgmt {
+        let api_server_handle = server_handle.clone();
+        tokio::spawn(async move {
+            info!("Starting management API server on port {}", cli.mgmt_port);
+            if let Err(e) = run_management_api_server(api_server_handle, cli.mgmt_port).await {
+                log::error!("Management API server error: {}", e);
+            }
+        });
+    }
+
+    // Run RCP server
+    {
+        let mut server = server_handle.lock().await;
+        server.run().await?;
+    }
 
     info!("Server shutdown complete");
     Ok(())
+}
+
+async fn run_management_api_server(
+    server_handle: Arc<Mutex<Server>>, 
+    port: u16
+) -> Result<()> {
+    // Create management API configuration
+    let mgmt_config = rcp_management_api::Config {
+        port,
+        server_handle: Some(server_handle),
+        // Add other configuration options as needed
+        ..Default::default()
+    };
+    
+    // Run the management API server
+    rcp_management_api::run_server(mgmt_config).await.map_err(|e| {
+        error::Error::Other(format!("Management API server error: {}", e))
+    })
 }

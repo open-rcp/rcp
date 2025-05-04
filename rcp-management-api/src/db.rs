@@ -1,5 +1,6 @@
 use surrealdb::engine::local::{Db, RocksDb, Mem};
 use surrealdb::Surreal;
+use sqlx::{Pool, Postgres, postgres::PgPoolOptions};
 use std::sync::Arc;
 use tracing::info;
 
@@ -7,10 +8,36 @@ use tracing::info;
 pub enum DatabaseEngine {
     Memory,
     RocksDb,
+    Postgres,
+}
+
+/// Initialize the database connection
+/// If the URL starts with "postgres://" or "postgresql://", it will use PostgreSQL
+/// Otherwise, it will use SurrealDB (memory or RocksDB based on configuration)
+pub async fn init_database(db_url: &str) -> Result<Option<Pool<Postgres>>, Box<dyn std::error::Error>> {
+    // Check if we're using PostgreSQL
+    if db_url.starts_with("postgres://") || db_url.starts_with("postgresql://") {
+        info!("Connecting to PostgreSQL database at {}", db_url);
+        let pool = PgPoolOptions::new()
+            .max_connections(5)
+            .connect(db_url)
+            .await?;
+            
+        // Run migrations if needed
+        // sqlx::migrate!("./migrations").run(&pool).await?;
+        
+        info!("PostgreSQL database initialized successfully");
+        Ok(Some(pool))
+    } else {
+        // Use SurrealDB instead (but return None for PgPool)
+        init_surrealdb().await?;
+        Ok(None)
+    }
 }
 
 /// Initialize the SurrealDB connection and set up namespaces/databases
-pub async fn init_database() -> Result<Surreal<Db>, Box<dyn std::error::Error>> {
+/// This preserves the original function for backward compatibility
+pub async fn init_surrealdb() -> Result<Surreal<Db>, Box<dyn std::error::Error>> {
     // Load environment variables to determine which database engine to use
     let engine_type = std::env::var("DB_ENGINE").unwrap_or_else(|_| "memory".to_string());
     let db_path = std::env::var("DB_PATH").unwrap_or_else(|_| "rcp_data".to_string());
@@ -31,8 +58,7 @@ pub async fn init_database() -> Result<Surreal<Db>, Box<dyn std::error::Error>> 
     let username = std::env::var("DB_USER").unwrap_or_else(|_| "root".to_string());
     let password = std::env::var("DB_PASS").unwrap_or_else(|_| "root".to_string());
     
-    // Authenticate to the database (API changed in 2.3.0)
-    // Fix: Pass string references instead of owned Strings
+    // Authenticate to the database
     db.signin(surrealdb::opt::auth::Root {
         username: &username,
         password: &password,
@@ -44,7 +70,7 @@ pub async fn init_database() -> Result<Surreal<Db>, Box<dyn std::error::Error>> 
     // Initialize database schema
     init_database_schema(&db).await?;
     
-    info!("Database initialized successfully");
+    info!("SurrealDB initialized successfully");
     Ok(db)
 }
 
@@ -103,7 +129,7 @@ mod tests {
     
     #[tokio::test]
     async fn test_db_connection() {
-        let db = init_database().await.expect("Failed to connect to database");
+        let db = init_surrealdb().await.expect("Failed to connect to database");
         
         // Verify connection by running a simple query (API changed in 2.3.0)
         let result: Vec<surrealdb::opt::RecordId> = db.select("user").await.expect("Failed to query users");
