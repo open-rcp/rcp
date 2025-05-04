@@ -69,22 +69,22 @@ RCP supports multiple authentication methods:
 The authentication process follows these steps:
 
 ```
-┌─────────┐                           ┌─────────┐
-│ Client  │                           │ Server  │
-└────┬────┘                           └────┬────┘
-     │                                     │
-     │       1. Connection Request         │
-     │ ──────────────────────────────────► │
-     │                                     │
-     │       2. Authentication Challenge   │
-     │ ◄────────────────────────────────── │
-     │                                     │
-     │       3. Authentication Response    │
-     │ ──────────────────────────────────► │
-     │                                     │
-     │       4. Auth Result + Session Info │
-     │ ◄────────────────────────────────── │
-     │                                     │
+┌─────────┐                              ┌──────────┐
+│ Client  │                              │  Server  │
+└────┬────┘                              └─────┬────┘
+     │                                         │
+     │       1. Connection Request             │
+     │ ──────────────────────────────────────► │
+     │                                         │
+     │       2. Authentication Challenge       │
+     │ ◄────────────────────────────────────── │
+     │                                         │
+     │       3. Authentication Response        │
+     │ ──────────────────────────────────────► │
+     │                                         │
+     │       4. Auth Result + Session Info     │
+     │ ◄────────────────────────────────────── │
+     │                                         │
 ```
 
 ## Session Management
