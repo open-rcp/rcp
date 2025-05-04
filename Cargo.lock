@@ -3252,8 +3252,14 @@ dependencies = [
 name = "rcp-examples"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
+ "env_logger",
  "rcp-client",
  "rcp-core",
+ "serde",
+ "serde_json",
+ "tokio",
+ "uuid",
 ]
 
 [[package]]
