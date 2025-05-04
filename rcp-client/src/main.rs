@@ -105,8 +105,14 @@ async fn main() -> Result<()> {
                 .client_id(Uuid::new_v4())
                 .auth_method(AuthMethod::PreSharedKey);
 
+            // Use PSK from command line argument or default to "test_key" from config
             if let Some(auth_psk) = psk {
                 builder = builder.auth_psk(auth_psk);
+            } else if let Some(conn_str) = connection_string {
+                // PSK might already be set from connection string - nothing to do
+            } else {
+                // Default to "test_key" when no PSK provided
+                builder = builder.auth_psk("test_key");
             }
 
             // Build the client

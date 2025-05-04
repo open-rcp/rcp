@@ -89,17 +89,26 @@ The RCP client supports several methods for connecting to a server:
 Connect with a single, convenient connection string:
 
 ```bash
-# Connect using SSH-like string format: [user[:pass]@]host[:port][/path]
+# Connect using SSH-style string format: [user[:pass]@]host[:port][/path]
 ./target/debug/rcp-client connect admin:secretkey@192.168.1.100:8716
 ```
 
 #### Using Command-Line Parameters
 
-Connect using traditional command-line flags:
+Connect using host and port flags (must be specified before the connect command):
 
 ```bash
 # Connect using command-line parameters
-./target/debug/rcp-client -H 192.168.1.100 -p 8716 connect -k secretkey
+./target/debug/rcp-client -H 127.0.0.1 -p 8716 connect
+```
+
+#### Using Pre-Shared Key Authentication
+
+When connection string doesn't include credentials, you'll need to add them in the string:
+
+```bash
+# Connect with PSK authentication
+./target/debug/rcp-client connect user:mypassword@127.0.0.1:8716
 ```
 
 #### Programmatic Connection
