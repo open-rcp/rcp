@@ -11,6 +11,11 @@ on:
         required: true
         default: 'v0.1.0'
 
+# Add permissions block for GITHUB_TOKEN
+permissions:
+  contents: write
+  discussions: write
+
 env:
   CARGO_TERM_COLOR: always
 
