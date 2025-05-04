@@ -27,3 +27,8 @@ allowed_apps = ["default:*"]
 denied_apps = []
 allow_elevated = false
 work_dir = "./apps"
+
+# Service permissions
+[services]
+# Enable all services including app service
+enabled = ["display", "input", "audio", "clipboard", "file-transfer", "app"]
