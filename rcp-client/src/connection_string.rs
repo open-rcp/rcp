@@ -60,8 +60,14 @@ impl ConnectionString {
                     Some(url.username().to_string())
                 };
 
-                let password = url.password().map(|s| s.to_string());
-                let path = if url.path() == "/" {
+                // Only set password if it exists and is not empty
+                let password = match url.password() {
+                    Some(pass) if !pass.is_empty() => Some(pass.to_string()),
+                    _ => None
+                };
+                
+                // Only set path if it's not just "/"
+                let path = if url.path() == "/" || url.path().is_empty() {
                     None
                 } else {
                     Some(url.path().to_string())
@@ -93,7 +99,10 @@ impl ConnectionString {
 
         // Extract path if present
         if let Some(path_idx) = input_str.find('/') {
-            path = Some(input_str[path_idx..].to_string());
+            let path_str = input_str[path_idx..].to_string();
+            if !path_str.is_empty() {
+                path = Some(path_str);
+            }
             input_str.truncate(path_idx);
         }
 
@@ -144,26 +153,46 @@ impl FromStr for ConnectionString {
 #[cfg(test)]
 mod tests {
     use super::*;
+    
+    fn debug_cs(cs: &ConnectionString, test_name: &str) {
+        println!("{}: Username: {:?}, Password: {:?}, Host: {}, Port: {:?}, Path: {:?}", 
+                 test_name, cs.username, cs.password, cs.host, cs.port, cs.path);
+    }
 
     #[test]
     fn test_parse_ssh_style() {
+        // Test with username, password, host, port and path
         let cs = ConnectionString::parse("user:pass@host:8716/path").unwrap();
+        debug_cs(&cs, "Test 1");
         assert_eq!(cs.username, Some("user".to_string()));
         assert_eq!(cs.password, Some("pass".to_string()));
         assert_eq!(cs.host, "host");
         assert_eq!(cs.port, Some(8716));
         assert_eq!(cs.path, Some("/path".to_string()));
 
+        // Test with just host and port
         let cs = ConnectionString::parse("host:8716").unwrap();
+        debug_cs(&cs, "Test 2");
         assert_eq!(cs.username, None);
         assert_eq!(cs.password, None);
         assert_eq!(cs.host, "host");
         assert_eq!(cs.port, Some(8716));
         assert_eq!(cs.path, None);
 
+        // Test with username and host
         let cs = ConnectionString::parse("user@host").unwrap();
+        debug_cs(&cs, "Test 3");
         assert_eq!(cs.username, Some("user".to_string()));
         assert_eq!(cs.password, None);
+        assert_eq!(cs.host, "host");
+        assert_eq!(cs.port, None);
+        assert_eq!(cs.path, None);
+        
+        // Test with empty password
+        let cs = ConnectionString::parse("user:@host").unwrap();
+        debug_cs(&cs, "Test 4");
+        assert_eq!(cs.username, Some("user".to_string()));
+        assert_eq!(cs.password, None); // Empty password should be None
         assert_eq!(cs.host, "host");
         assert_eq!(cs.port, None);
         assert_eq!(cs.path, None);
@@ -172,10 +201,21 @@ mod tests {
     #[test]
     fn test_parse_url_style() {
         let cs = ConnectionString::parse("rcp://user:pass@host:8716/path").unwrap();
+        debug_cs(&cs, "URL Test 1");
         assert_eq!(cs.username, Some("user".to_string()));
         assert_eq!(cs.password, Some("pass".to_string()));
         assert_eq!(cs.host, "host");
         assert_eq!(cs.port, Some(8716));
         assert_eq!(cs.path, Some("/path".to_string()));
+        
+        // Test with empty password
+        let cs = ConnectionString::parse("rcp://user:@host:8716").unwrap();
+        debug_cs(&cs, "URL Test 2");
+        println!("Raw password: {:?}", cs.password);
+        assert_eq!(cs.username, Some("user".to_string()));
+        assert_eq!(cs.password, None); // Empty password should be None
+        assert_eq!(cs.host, "host");
+        assert_eq!(cs.port, Some(8716));
+        assert_eq!(cs.path, None);
     }
 }
