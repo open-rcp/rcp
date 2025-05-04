@@ -167,7 +167,7 @@ RCP provides comprehensive documentation to help you understand, implement, and 
 
 ### Development Resources
 - [BUILD Guide](BUILD.md) - Instructions for building and developing RCP
-- [Milestone Roadmap](docs/milestone-roadmap.md) - Project milestones and development plans
+- [Roadmap (Legacy)](docs/milestone-legacy.md) - Project milestones and development plans
 - [Contributing Guide](CONTRIBUTING.md) - Guidelines for contributors
 - [Release Notes](RELEASE.md) - Version history and release information
 

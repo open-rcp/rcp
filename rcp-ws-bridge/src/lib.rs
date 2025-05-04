@@ -183,7 +183,7 @@ async fn handle_connection(stream: TcpStream, rcp_host: String, rcp_port: u16) -
 
                                                             // Send success response
                                                             let response = WsMessage::Update {
-                                                                service: "auth".to_string().into(),
+                                                                service: "auth".to_string(),
                                                                 data: serde_json::json!({"status": "success"}),
                                                             };
                                                             let json_str =
@@ -202,11 +202,11 @@ async fn handle_connection(stream: TcpStream, rcp_host: String, rcp_port: u16) -
                                                         Err(e) => {
                                                             error!("Authentication failed: {}", e);
                                                             let response = WsMessage::Error {
-                                                                code: "AUTH_FAILED".to_string().into(),
+                                                                code: "AUTH_FAILED".to_string(),
                                                                 message: format!(
                                                                     "Authentication failed: {}",
                                                                     e
-                                                                ).into(),
+                                                                ),
                                                             };
                                                             let json_str =
                                                                 serde_json::to_string(&response)
@@ -229,11 +229,11 @@ async fn handle_connection(stream: TcpStream, rcp_host: String, rcp_port: u16) -
                                                         e
                                                     );
                                                     let response = WsMessage::Error {
-                                                        code: "CONNECTION_FAILED".to_string().into(),
+                                                        code: "CONNECTION_FAILED".to_string(),
                                                         message: format!(
                                                             "Failed to connect to RCP server: {}",
                                                             e
-                                                        ).into(),
+                                                        ),
                                                     };
                                                     let json_str = serde_json::to_string(&response)
                                                         .unwrap_or_default();
@@ -260,7 +260,7 @@ async fn handle_connection(stream: TcpStream, rcp_host: String, rcp_port: u16) -
 
                                                 // This is a placeholder - actual implementation would depend on service types
                                                 let response = WsMessage::Update {
-                                                    service: service.clone().into(),
+                                                    service: service.clone(),
                                                     data: serde_json::json!({"status": "received"}),
                                                 };
                                                 let json_str = serde_json::to_string(&response)
@@ -276,8 +276,8 @@ async fn handle_connection(stream: TcpStream, rcp_host: String, rcp_port: u16) -
                                             } else {
                                                 // Client not authenticated
                                                 let response = WsMessage::Error {
-                                                    code: "NOT_AUTHENTICATED".to_string().into(),
-                                                    message: "Not authenticated".to_string().into(),
+                                                    code: "NOT_AUTHENTICATED".to_string(),
+                                                    message: "Not authenticated".to_string(),
                                                 };
                                                 let json_str = serde_json::to_string(&response)
                                                     .unwrap_or_default();
@@ -291,8 +291,8 @@ async fn handle_connection(stream: TcpStream, rcp_host: String, rcp_port: u16) -
                                         _ => {
                                             debug!("Received unsupported message type");
                                             let response = WsMessage::Error {
-                                                code: "INVALID_MESSAGE_TYPE".to_string().into(),
-                                                message: "Unsupported message type".to_string().into(),
+                                                code: "INVALID_MESSAGE_TYPE".to_string(),
+                                                message: "Unsupported message type".to_string(),
                                             };
                                             let json_str = serde_json::to_string(&response)
                                                 .unwrap_or_default();
@@ -303,8 +303,8 @@ async fn handle_connection(stream: TcpStream, rcp_host: String, rcp_port: u16) -
                                 Err(e) => {
                                     error!("Failed to parse WebSocket message: {}", e);
                                     let response = WsMessage::Error {
-                                        code: "INVALID_MESSAGE".to_string().into(),
-                                        message: format!("Invalid message format: {}", e).into(),
+                                        code: "INVALID_MESSAGE".to_string(),
+                                        message: format!("Invalid message format: {}", e),
                                     };
                                     let json_str =
                                         serde_json::to_string(&response).unwrap_or_default();
