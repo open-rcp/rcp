@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "rcp-desk",
+        "title": "RCP Desk",
         "width": 800,
         "height": 600
       }
