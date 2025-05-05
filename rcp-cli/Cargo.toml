@@ -1,0 +1,28 @@
+[package]
+name = "rcp-cli"
+version = "0.1.0"
+edition = "2021"
+description = "Command-line interface for the Rust Control Protocol (RCP)"
+authors = ["Akash Shah <itsalfredakku@gmail.com>"]
+
+[dependencies]
+rcp-core = { path = "../rcp-core" }
+clap = { version = "4.3", features = ["derive"] }
+tokio = { version = "1.28", features = ["full"] }
+anyhow = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+toml = "0.7"
+dirs = "5.0"
+thiserror = "1.0"
+log = "0.4"
+env_logger = "0.10"
+rpassword = "7.2"
+colored = "2.0"
+humantime = "2.1"
+chrono = { version = "0.4", features = ["serde"] }
+indicatif = "0.17"
+
+[[bin]]
+name = "rcp-cli"
+path = "src/main.rs"

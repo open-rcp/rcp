@@ -4,7 +4,8 @@ members = [
     "rcp-server",
     "rcp-client",
     "rcp-ws-bridge",
-    "examples"
+    "examples",
+    "rcp-desk/src-tauri"
 ]
 resolver = "2"
 
@@ -12,7 +13,7 @@ resolver = "2"
 version = "0.1.0"
 edition = "2021"
 authors = ["Akash Shah <akash@devstroop.com>", "Devstroop Technologies <info@devstroop.com>"]
-license = "MIT OR Apache-2.0"
+license = "Apache-2.0"
 repository = "https://github.com/open-rcp/rcp"
 homepage = "https://github.com/open-rcp/rcp"
 
