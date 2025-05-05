@@ -246,6 +246,7 @@
 
 <div class="space-y-6">
   <div class="flex justify-between items-center">
+    <h1 class="text-2xl font-bold text-gray-800">System Configuration</h1>
     <div class="flex space-x-2">
       {#if !isEditingMode}
         <button class="btn-primary flex items-center" onclick={toggleEditMode}>

@@ -29,7 +29,7 @@ pub fn run() {
         })
         .build(tauri::generate_context!())
         .expect("Error while building tauri application")
-        .run(|_app_handle, event| {
+        .run(move |_app_handle, event| {
             if let tauri::RunEvent::ExitRequested { api, .. } = event {
                 // Prevent the app from exiting immediately
                 api.prevent_exit();
