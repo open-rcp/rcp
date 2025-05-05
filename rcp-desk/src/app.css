@@ -16,6 +16,10 @@ body {
   @apply w-64 bg-white shadow-md;
 }
 
+.sidebar-collapsed {
+  @apply w-[72px] min-w-[72px];
+}
+
 .main-content {
   @apply flex-1 overflow-auto p-6;
 }
@@ -61,6 +65,15 @@ body {
 
 .status-error {
   @apply bg-red-100 text-red-700 px-2 py-1 rounded-sm text-xs font-medium;
+}
+
+/* User info styles */
+.user-status-inline {
+  @apply flex items-center gap-1 text-sm text-gray-400 w-full break-words;
+}
+
+.user-status-inline .username {
+  @apply font-semibold truncate;
 }
 
 /* Proxmox-style header */

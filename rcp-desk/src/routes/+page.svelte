@@ -124,7 +124,7 @@
     </div>
     
     <!-- Status Overview -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
       <div class="card">
         <h2 class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-2">Server Status</h2>
         <div class="flex items-center">
@@ -157,38 +157,38 @@
     </div>
     
     <!-- Recent Sessions -->
-    <div class="card overflow-hidden">
+    <div class="card">
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-lg font-semibold">Recent Sessions</h2>
         <a href="/sessions" class="text-sm text-primary-600 hover:text-primary-800">View all</a>
       </div>
       
-      <div class="overflow-x-auto">
+      <div class="overflow-x-auto -mx-6 px-6">
         <table class="min-w-full divide-y divide-gray-200">
           <thead>
             <tr>
-              <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
-              <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Address</th>
-              <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Started</th>
-              <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-              <th class="px-6 py-3 bg-gray-50 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              <th class="px-3 sm:px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
+              <th class="px-3 sm:px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Address</th>
+              <th class="px-3 sm:px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Started</th>
+              <th class="px-3 sm:px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+              <th class="px-3 sm:px-6 py-3 bg-gray-50 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
             {#each sessions as session, i}
               <tr>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{session.client_name}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{session.client_address}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{timeAgo(session.started_at)}</td>
-                <td class="px-6 py-4 whitespace-nowrap">
+                <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{session.client_name}</td>
+                <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden sm:table-cell">{session.client_address}</td>
+                <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">{timeAgo(session.started_at)}</td>
+                <td class="px-3 sm:px-6 py-4 whitespace-nowrap">
                   {#if session.idle}
                     <span class="status-inactive">Idle</span>
                   {:else}
                     <span class="status-active">Active</span>
                   {/if}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <a href="/sessions/{session.id}" class="text-primary-600 hover:text-primary-900 mr-3">View</a>
+                <td class="px-3 sm:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <a href="/sessions/{session.id}" class="text-primary-600 hover:text-primary-900 mr-1 sm:mr-3">View</a>
                   <button class="text-red-600 hover:text-red-900">Terminate</button>
                 </td>
               </tr>
@@ -199,7 +199,7 @@
     </div>
     
     <!-- Quick Actions -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
       <div class="card">
         <h3 class="text-lg font-medium mb-4">Quick Actions</h3>
         <div class="space-y-2">

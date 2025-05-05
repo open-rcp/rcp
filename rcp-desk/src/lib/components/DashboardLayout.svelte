@@ -10,27 +10,7 @@
   <Sidebar />
   
   <div class="flex-1 flex flex-col overflow-hidden">
-    <header class="proxmox-header flex items-center justify-between">
-      <div class="flex items-center">
-        <h1 class="text-lg font-medium text-gray-800 mx-4">
-          {#if $page.url.pathname === '/'}
-            Dashboard
-          {:else if $page.url.pathname.startsWith('/servers')}
-            Server Management
-          {:else if $page.url.pathname.startsWith('/sessions')}
-            Active Sessions
-          {:else if $page.url.pathname.startsWith('/users')}
-            User Management
-          {:else if $page.url.pathname.startsWith('/config')}
-            System Configuration
-          {:else if $page.url.pathname.startsWith('/logs')}
-            System Logs
-          {:else}
-            RCP Management Console
-          {/if}
-        </h1>
-      </div>
-      
+    <header class="proxmox-header flex items-center justify-end">
       <div class="flex items-center mr-4">
         <span class="text-sm text-gray-700 mr-4">{$authStore?.user?.name || 'Administrator'}</span>
         <button 

@@ -246,8 +246,7 @@
 
 <div class="space-y-6">
   <div class="flex justify-between items-center">
-    <h1 class="text-2xl font-bold text-gray-800">System Configuration</h1>
-    <div class="space-x-2">
+    <div class="flex space-x-2">
       {#if !isEditingMode}
         <button class="btn-primary flex items-center" onclick={toggleEditMode}>
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
