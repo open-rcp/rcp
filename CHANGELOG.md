@@ -21,6 +21,32 @@
 * docs: update changelog for v0.1.0-beta
 * docs: update changelog for v0.1.0-beta
 * docs: update changelog for v0.1.0-beta
+* docs: update changelog for v0.1.0-beta
+* docs: update changelog for v0.1.0-pre
+
+## v0.1.0-beta (2025-05-05)
+
+### Features
+* chore: update Cargo.toml to include rcp-desk and change license to Apache-2.0
+* feat: Add initial package.json for rcp-desk with dependencies and scripts
+* feat: Implement initial version of rcp-cli with configuration management, service commands, and user management
+* feat: initialize Tauri + SvelteKit application with basic greeting functionality
+
+### Bug Fixes
+* chore: update Cargo.toml to include rcp-desk and change license to Apache-2.0
+* fix: update documentation links for consistency in naming
+* fix: update documentation links for protocol specification and development guidelines
+
+### Improvements
+
+### Documentation
+* docs: update changelog for v0.1.0+7
+* docs: update changelog for v0.1.0+7
+* docs: update changelog for v0.1.0+7
+* docs: update changelog for v0.1.0+7
+* docs: update changelog for v0.1.0-beta
+* docs: update changelog for v0.1.0-beta
+* docs: update changelog for v0.1.0-beta
 * docs: update changelog for v0.1.0-pre
 
 ## v0.1.0-beta (2025-05-04)
