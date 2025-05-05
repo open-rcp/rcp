@@ -26,15 +26,15 @@ body {
 }
 
 .btn-primary {
-  @apply bg-secondary-500 hover:bg-secondary-600 text-white px-4 py-2 rounded-sm;
+  @apply bg-secondary-500 hover:bg-secondary-600 text-white px-3 py-1.5 text-sm rounded-sm;
 }
 
 .btn-secondary {
-  @apply bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-sm;
+  @apply bg-primary-600 hover:bg-primary-700 text-white px-3 py-1.5 text-sm rounded-sm;
 }
 
 .btn-outline {
-  @apply border border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-sm;
+  @apply border border-gray-300 text-gray-700 hover:bg-gray-50 px-3 py-1.5 text-sm rounded-sm;
 }
 
 /* Form styles */
