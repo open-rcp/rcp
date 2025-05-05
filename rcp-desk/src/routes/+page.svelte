@@ -2,16 +2,6 @@
   import { invoke } from "@tauri-apps/api/core";
   import { onMount } from 'svelte';
 
-  let name = $state("");
-  let greetMsg = $state("");
-
-  async function greet(event: Event) {
-    event.preventDefault();
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    greetMsg = await invoke("greet", { name });
-  }
-
-  // Mock data for initial development
   let serverStatus = $state({
     status: "running",
     uptime: 3600, // in seconds
@@ -119,45 +109,8 @@
   <title>Dashboard | RCP Desk</title>
 </svelte:head>
 
-<main class="container mx-auto px-4 py-8">
-  <h1 class="text-3xl font-bold text-center mb-8">Welcome to RCP Desk</h1>
-
-  <div class="flex justify-center items-center space-x-4 mb-6">
-    <a href="https://vitejs.dev" target="_blank" class="hover:opacity-80 transition-opacity">
-      <img src="/vite.svg" class="h-12" alt="Vite Logo" />
-    </a>
-    <a href="https://tauri.app" target="_blank" class="hover:opacity-80 transition-opacity">
-      <img src="/tauri.svg" class="h-12" alt="Tauri Logo" />
-    </a>
-    <a href="https://kit.svelte.dev" target="_blank" class="hover:opacity-80 transition-opacity">
-      <img src="/svelte.svg" class="h-12" alt="SvelteKit Logo" />
-    </a>
-  </div>
-  
-  <p class="text-center text-gray-600 mb-8">Click on the Tauri, Vite, and SvelteKit logos to learn more.</p>
-
-  <div class="card bg-white shadow-md rounded-lg p-6 max-w-md mx-auto">
-    <form class="flex space-x-2" onsubmit={greet}>
-      <input 
-        id="greet-input"
-        placeholder="Enter a name..." 
-        bind:value={name}
-        class="form-input flex-1 px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-      />
-      <button 
-        type="submit"
-        class="btn-primary"
-      >
-        Greet
-      </button>
-    </form>
-    
-    {#if greetMsg}
-      <p class="mt-4 text-center font-medium">{greetMsg}</p>
-    {/if}
-  </div>
-  
-  <div class="space-y-6 mt-12">
+<main class="container mx-auto px-4 py-4">
+  <div class="space-y-5">
     <div class="flex justify-between items-center">
       <h1 class="text-2xl font-bold text-gray-800">Dashboard</h1>
       <div>

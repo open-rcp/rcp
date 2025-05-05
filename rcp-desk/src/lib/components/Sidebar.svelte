@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { page } from '$app/stores';
   import { authStore } from '$lib/stores/auth';
   
@@ -55,7 +55,7 @@
     isCollapsed = !isCollapsed;
   }
   
-  function isActive(href) {
+  function isActive(href: string): boolean {
     return $page.url.pathname === href || 
            ($page.url.pathname !== '/' && $page.url.pathname.startsWith(href) && href !== '/');
   }
@@ -78,7 +78,7 @@
     </div>
     <button 
       class="sidebar-toggle"
-      on:click={toggleSidebar}
+      onclick={toggleSidebar}
       aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
     >
       {#if isCollapsed}
@@ -100,7 +100,7 @@
           href={item.href}
           class={`flex items-center px-4 py-2 text-sm font-medium rounded-md transition duration-150 ease-in-out 
                  ${isActive(item.href) ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white'}`}
-          on:click={handleNavigate}
+          onclick={handleNavigate}
           aria-current={isActive(item.href) ? 'page' : undefined}
         >
           <div class="flex-shrink-0 nav-icon">
@@ -156,9 +156,18 @@
   }
   
   .sidebar-toggle {
-    @apply text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-gray-500;
+    color: rgba(156, 163, 175, 1); /* text-gray-400 */
     border-radius: 0.375rem;
     padding: 0.25rem;
+  }
+  
+  .sidebar-toggle:hover {
+    color: rgba(255, 255, 255, 1); /* hover:text-white */
+  }
+  
+  .sidebar-toggle:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(107, 114, 128, 0.5); /* focus:ring-2 focus:ring-gray-500 */
   }
   
   .nav-icon {
