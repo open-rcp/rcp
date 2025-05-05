@@ -1,9 +1,11 @@
 // Base API service for making HTTP requests to the backend
 import { authStore } from '../stores/auth';
 import { get } from 'svelte/store';
+import { handleMockRequest } from './mockApi';
 
 // API configuration
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api/v1';
+const DEV_MODE = import.meta.env.VITE_DEV_MODE === 'true';
 
 // Types
 interface RequestOptions {
@@ -41,6 +43,38 @@ class ApiService {
       requiresAuth = true,
       retryWithRefresh = true
     } = options;
+
+    // In development mode with mock API enabled, use the mock handler
+    if (DEV_MODE) {
+      try {
+        // Remove leading slash for consistency
+        const path = endpoint.startsWith('/') ? endpoint : '/' + endpoint;
+        const response = await handleMockRequest(path, method, body);
+        
+        // Format response to match the ApiResponse interface
+        if (response.success === true) {
+          return {
+            success: true,
+            data: response,
+            status: 200
+          };
+        } else {
+          return {
+            success: false,
+            error: response.error || 'Unknown error',
+            data: response,
+            status: response.status || 500
+          };
+        }
+      } catch (error) {
+        console.error("[Mock API] Error:", error);
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Mock API error',
+          status: 500
+        };
+      }
+    }
 
     // Build request headers
     const requestHeaders: Record<string, string> = {

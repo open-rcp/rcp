@@ -28,5 +28,15 @@ export default defineConfig(async () => ({
       // 3. tell vite to ignore watching `src-tauri`
       ignored: ["**/src-tauri/**"],
     },
+    proxy: {
+      // Proxy API requests to the backend during development
+      '/api/v1': {
+        target: 'http://localhost:8080', // Default API server address
+        changeOrigin: true,
+        secure: false,
+        // Rewrite request path if needed
+        // rewrite: (path) => path.replace(/^\/api\/v1/, '')
+      },
+    },
   },
 }));
