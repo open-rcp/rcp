@@ -1,6 +1,13 @@
 <script lang="ts">
   import { page } from '$app/stores';
-  import { authStore } from '$lib/stores/auth';
+  import { authStore } from '../stores/auth';
+  import { sidebarStore } from '../stores/sidebar';
+  import { onMount } from 'svelte';
+  
+  // Define the sidebar state type
+  interface SidebarState {
+    isCollapsed: boolean;
+  }
   
   // Navigation items
   const navItems = [
@@ -49,11 +56,36 @@
     }
   ];
   
-  let isCollapsed = $state(false);
+  // Properly type the isCollapsed variable
+  let isCollapsed: boolean = false;
   
-  function toggleSidebar() {
-    isCollapsed = !isCollapsed;
-  }
+  // Subscribe to the sidebar store with proper types
+  const unsubscribe = sidebarStore.subscribe((state: SidebarState): void => {
+    isCollapsed = state.isCollapsed;
+  });
+  
+  // Check screen size on component mount
+  onMount(() => {
+    // Check if screen is below medium breakpoint (768px)
+    const checkScreenSize = (): void => {
+      sidebarStore.update((state: SidebarState): SidebarState => ({ 
+        ...state, 
+        isCollapsed: window.innerWidth < 768 
+      }));
+    };
+    
+    // Set initial state
+    checkScreenSize();
+    
+    // Add resize listener
+    window.addEventListener('resize', checkScreenSize);
+    
+    // Cleanup
+    return () => {
+      window.removeEventListener('resize', checkScreenSize);
+      unsubscribe();
+    };
+  });
   
   function isActive(href: string): boolean {
     return $page.url.pathname === href || 
@@ -61,36 +93,24 @@
   }
   
   // Close sidebar on mobile when navigating
-  function handleNavigate() {
+  function handleNavigate(): void {
     if (window.innerWidth < 768) {
-      isCollapsed = true;
+      sidebarStore.update((state: SidebarState): SidebarState => ({ 
+        ...state, 
+        isCollapsed: true 
+      }));
     }
   }
 </script>
 
 <aside class={`bg-primary-800 text-white transition-all duration-300 ${isCollapsed ? 'sidebar-collapsed' : 'sidebar-expanded'}`}>
-  <div class="p-4 flex items-center justify-between">
-    <div class="flex items-center">
+  <div class="p-4 flex items-center">
+    <div class={`flex items-center ${isCollapsed ? 'justify-center w-full' : ''}`}>
       <img src="/rust-huskell.png" alt="RCP Logo" class="h-8 w-auto object-contain" />
       {#if !isCollapsed}
         <span class="ml-3 text-lg font-bold text-white">RCP Desk</span>
       {/if}
     </div>
-    <button 
-      class="sidebar-toggle"
-      onclick={toggleSidebar}
-      aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-    >
-      {#if isCollapsed}
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mx-auto" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-        </svg>
-      {:else}
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
-        </svg>
-      {/if}
-    </button>
   </div>
   
   <div class="mt-3">
