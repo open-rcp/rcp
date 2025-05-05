@@ -73,7 +73,7 @@
 <div class="min-h-screen flex items-center justify-center bg-gray-100 p-4">
   <div class="bg-white shadow-md rounded-lg w-full max-w-md p-8">
     <div class="text-center mb-8">
-      <img src="/tauri.svg" alt="RCP Logo" class="h-16 w-auto mx-auto mb-2">
+      <img src="/rust-icon.png" alt="RCP Logo" class="h-16 w-auto mx-auto mb-2">
       <h1 class="text-2xl font-bold text-gray-800">RCP Desk Login</h1>
     </div>
     
