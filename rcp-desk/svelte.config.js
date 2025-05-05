@@ -11,7 +11,14 @@ const config = {
   kit: {
     adapter: adapter(),
     alias: {
-      $lib: resolve('./src/lib')
+      // $lib is already configured by default, but we explicitly define it for clarity
+      '$lib': resolve('./src/lib'),
+      
+      // Add your custom path aliases here
+      '$components': resolve('./src/lib/components'),
+      '$stores': resolve('./src/lib/stores'),
+      '$services': resolve('./src/lib/services'),
+      '$utils': resolve('./src/lib/utils')
     }
   },
 };

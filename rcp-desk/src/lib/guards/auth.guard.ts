@@ -1,5 +1,5 @@
-import { goto } from '../utils/navigation';
-import { authService } from '../services/auth.service';
+import { goto } from '$utils/navigation';
+import { authService } from '$services/auth.service';
 
 // Auth guard to protect routes
 export async function authGuard(path: string): Promise<boolean> {

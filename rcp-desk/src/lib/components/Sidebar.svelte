@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { page } from '../utils/stores';
-  import { authStore } from '../stores/auth';
-  import { sidebarStore } from '../stores/sidebar';
+  import { page } from '$utils/stores';
+  import { authStore } from '$stores/auth';
+  import { sidebarStore } from '$stores/sidebar';
   import { onMount } from 'svelte';
   
   // Define the sidebar state type

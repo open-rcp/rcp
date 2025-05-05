@@ -1,12 +1,12 @@
 <script lang="ts">
-  import Sidebar from './Sidebar.svelte';
-  import { page } from '../utils/stores';
-  import { goto } from '../utils/navigation';
+  import Sidebar from '$components/Sidebar.svelte';
+  import { page } from '$utils/stores';
+  import { goto } from '$utils/navigation';
   
   // Import the auth store and sidebar store
-  import { authStore } from '../stores/auth';
-  import { sidebarStore, toggleSidebar } from '../stores/sidebar';
-  import { authService } from '../services/auth.service';
+  import { authStore } from '$stores/auth';
+  import { sidebarStore, toggleSidebar } from '$stores/sidebar';
+  import { authService } from '$services/auth.service';
   
   // Define the sidebar state type
   interface SidebarState {
