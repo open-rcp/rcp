@@ -224,7 +224,7 @@
   </div>
   
   <!-- Users Table -->
-  <div class="card overflow-hidden">
+  <div class="card overflow-hidden" style="padding: 0">
     <div class="overflow-x-auto">
       <table class="min-w-full divide-y divide-gray-200">
         <thead>

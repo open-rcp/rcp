@@ -319,12 +319,11 @@
   </div>
   
   <!-- Recent Sessions -->
-  <div class="card">
-    <div class="flex justify-between items-center mb-4">
+    <div class="flex justify-between items-center">
       <h2 class="text-lg font-semibold">Recent Sessions</h2>
       <a href="/sessions" class="text-sm text-primary-600 hover:text-primary-800">View all</a>
     </div>
-    
+  <div class="card" style="padding: 0">
     <div class="overflow-x-auto -mx-6 px-6">
       <table class="min-w-full divide-y divide-gray-200">
         <thead>

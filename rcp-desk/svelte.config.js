@@ -20,7 +20,7 @@ const config = {
       '$services': resolve('./src/lib/services'),
       '$utils': resolve('./src/lib/utils')
     }
-  },
+  }
 };
 
 export default config;
