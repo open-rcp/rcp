@@ -9,17 +9,12 @@ export async function load({ url }: { url: URL }) {
   // Public routes that don't need authentication
   const publicRoutes = ['/login'];
   
-  // Return early for public routes
-  if (publicRoutes.includes(url.pathname)) {
-    return {
-      isPublicRoute: true,
-    };
-  }
+  // Check if the current path is in public routes
+  const isPublicRoute = publicRoutes.includes(url.pathname);
   
-  // For protected routes, auth check will happen in the +layout.svelte
-  // using browser-only APIs
+  // Return data with route information
   return {
-    isPublicRoute: false,
-    currentPath: url.pathname,
+    isPublicRoute,
+    currentPath: url.pathname
   };
 }

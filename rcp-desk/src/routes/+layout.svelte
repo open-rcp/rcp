@@ -1,10 +1,10 @@
 <script lang="ts">
   import '../app.css';
-  import DashboardLayout from '../lib/components/DashboardLayout.svelte';
+  import DashboardLayout from '$components/DashboardLayout.svelte';
   import { onMount } from 'svelte';
-  import { authGuard } from '../lib/guards/auth.guard';
-  import { authService } from '../lib/services/auth.service';
-  import { browser } from '../lib/utils/environment';
+  import { authGuard } from '$lib/guards/auth.guard';
+  import { authService } from '$services/auth.service';
+  import { browser } from '$lib/utils/environment';
   
   // Get properties from the layout data
   export let data: {
@@ -19,6 +19,8 @@
   // Handle authentication on mount
   onMount(async () => {
     if (browser) {
+      console.log('Layout mounted, path:', data.currentPath, 'isPublic:', data.isPublicRoute);
+      
       // Don't check authentication for public routes
       if (data.isPublicRoute) {
         isLoading = false;
@@ -60,16 +62,22 @@
       <p class="text-gray-600">Loading...</p>
     </div>
   </div>
-{:else if data.isPublicRoute || authenticated}
-  {#if data.isPublicRoute}
-    <!-- Public route (login) -->
+{:else if data.isPublicRoute}
+  <!-- Public route (login) -->
+  <slot />
+{:else if authenticated}
+  <!-- Protected route with dashboard layout -->
+  <DashboardLayout>
     <slot />
-  {:else}
-    <!-- Protected route with dashboard layout -->
-    <DashboardLayout>
-      <slot />
-    </DashboardLayout>
-  {/if}
+  </DashboardLayout>
+{:else}
+  <!-- Fallback while redirecting to login -->
+  <div class="min-h-screen flex items-center justify-center bg-gray-100">
+    <div class="text-center">
+      <div class="spinner mb-3"></div>
+      <p class="text-gray-600">Redirecting to login...</p>
+    </div>
+  </div>
 {/if}
 
 <style>
