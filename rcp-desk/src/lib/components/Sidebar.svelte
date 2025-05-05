@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { page } from '$app/stores';
+  import { page } from '../utils/stores';
   import { authStore } from '../stores/auth';
   import { sidebarStore } from '../stores/sidebar';
   import { onMount } from 'svelte';
@@ -141,17 +141,6 @@
         <div class="inline-block">Logged in as <strong>{$authStore?.user?.name || 'User'}</strong></div>
       </div>
     {/if}
-    <a 
-      href="/logout" 
-      class={`mt-2 flex items-center py-2 text-sm font-medium rounded-md text-gray-300 hover:bg-primary-700 hover:text-white transition duration-150 ease-in-out ${isCollapsed ? 'justify-center px-2' : 'px-4'}`}
-    >
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-      </svg>
-      {#if !isCollapsed}
-        <span class="ml-3">Logout</span>
-      {/if}
-    </a>
   </div>
 </aside>
 

@@ -1,7 +1,85 @@
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/core";
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
+  import { authStore } from '../lib/stores/auth';
+  import { api } from '../lib/services/api';
 
+  // Define interface for User type
+  interface User {
+    id: string;
+    name: string;
+    email: string;
+    roles: string[];
+  }
+
+  // Define API status type
+  interface ApiStatus {
+    loading: boolean;
+    status: string | null;
+    error: string | null;
+  }
+
+  // Authentication status with proper reactive variables
+  let isAuthenticated = $state(false);
+  let authUser = $state<User | null>(null);
+  let apiStatus = $state<ApiStatus>({ 
+    loading: false, 
+    status: null, 
+    error: null 
+  });
+
+  // Subscribe to auth store changes
+  const unsubscribe = authStore.subscribe(state => {
+    isAuthenticated = state.isAuthenticated;
+    authUser = state.user;
+  });
+
+  // Test API connectivity
+  async function testApiConnection() {
+    apiStatus.loading = true;
+    apiStatus.status = null;
+    apiStatus.error = null;
+
+    try {
+      const response = await api.get('/health', { requiresAuth: false });
+      apiStatus.status = response.success ? 'Connected' : 'Failed';
+      apiStatus.error = response.error || null;
+    } catch (error) {
+      apiStatus.status = 'Error';
+      apiStatus.error = error instanceof Error ? error.message : 'Unknown error';
+    } finally {
+      apiStatus.loading = false;
+    }
+  }
+
+  // Test authenticated endpoint
+  async function testAuthenticatedEndpoint() {
+    apiStatus.loading = true;
+    apiStatus.status = null;
+    apiStatus.error = null;
+
+    try {
+      const response = await api.get('/profile');
+      apiStatus.status = response.success ? 'Authenticated' : 'Failed';
+      apiStatus.error = response.error || null;
+      
+      if (response.success) {
+        console.log('Profile data:', response.data);
+      }
+    } catch (error) {
+      apiStatus.status = 'Error';
+      apiStatus.error = error instanceof Error ? error.message : 'Unknown error';
+    } finally {
+      apiStatus.loading = false;
+    }
+  }
+
+  // Clean up subscription when component is destroyed
+  onDestroy(() => {
+    if (unsubscribe) unsubscribe();
+  });
+
+  // Define server status and sessions with proper reactive variables
   let serverStatus = $state({
     status: "running",
     uptime: 3600, // in seconds
@@ -101,12 +179,15 @@
     // Set up periodic data refresh
     const interval = setInterval(fetchData, 10000); // Refresh every 10 seconds
     
+    // Test API connectivity on page load
+    testApiConnection();
+
     return () => clearInterval(interval);
   });
 </script>
 
 <svelte:head>
-  <title>Dashboard | RCP Desk</title>
+  <title>Dashboard - RCP Desk</title>
 </svelte:head>
 
 <main class="container mx-auto px-4 py-4">
@@ -123,6 +204,87 @@
       </div>
     </div>
     
+    <!-- Authentication Status -->
+    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+      <h2 class="text-xl font-semibold mb-4">Authentication Status</h2>
+      
+      <div class="grid md:grid-cols-2 gap-4">
+        <div class="bg-gray-50 p-4 rounded-md">
+          <h3 class="font-medium mb-2">Authentication</h3>
+          <div class="flex items-center mb-1">
+            <span class="font-medium text-gray-700 w-40">Status:</span>
+            <span class={`px-2 py-1 rounded-full text-xs font-medium ${isAuthenticated ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+              {isAuthenticated ? 'Authenticated' : 'Not Authenticated'}
+            </span>
+          </div>
+          {#if authUser}
+            <div class="flex items-center mb-1">
+              <span class="font-medium text-gray-700 w-40">User:</span>
+              <span class="text-gray-900">{authUser.name}</span>
+            </div>
+            <div class="flex items-center mb-1">
+              <span class="font-medium text-gray-700 w-40">Email:</span>
+              <span class="text-gray-900">{authUser.email}</span>
+            </div>
+            <div class="flex items-center">
+              <span class="font-medium text-gray-700 w-40">Roles:</span>
+              <div class="flex flex-wrap gap-1">
+                {#each authUser.roles || [] as role}
+                  <span class="px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">{role}</span>
+                {/each}
+              </div>
+            </div>
+          {/if}
+        </div>
+        
+        <div class="bg-gray-50 p-4 rounded-md">
+          <h3 class="font-medium mb-2">API Connectivity</h3>
+          <div class="flex items-center mb-3">
+            <span class="font-medium text-gray-700 w-40">Status:</span>
+            {#if apiStatus.loading}
+              <span class="inline-flex items-center">
+                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Testing...
+              </span>
+            {:else if apiStatus.status}
+              <span class={`px-2 py-1 rounded-full text-xs font-medium ${apiStatus.status === 'Connected' || apiStatus.status === 'Authenticated' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                {apiStatus.status}
+              </span>
+            {:else}
+              <span class="text-gray-500">Not tested</span>
+            {/if}
+          </div>
+          
+          {#if apiStatus.error}
+            <div class="bg-red-50 border-l-4 border-red-500 p-3 mb-3 text-sm text-red-700">
+              {apiStatus.error}
+            </div>
+          {/if}
+          
+          <div class="flex flex-wrap gap-2">
+            <button
+              class="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200"
+              onclick={testApiConnection}
+              disabled={apiStatus.loading}
+            >
+              Test API Connection
+            </button>
+            
+            <button
+              class="px-4 py-2 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-200"
+              onclick={testAuthenticatedEndpoint}
+              disabled={apiStatus.loading || !isAuthenticated}
+            >
+              Test Authenticated API
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Status Overview -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
       <div class="card">
