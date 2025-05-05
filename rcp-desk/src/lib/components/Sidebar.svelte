@@ -68,12 +68,12 @@
   }
 </script>
 
-<aside class={`bg-gray-800 text-white transition-all duration-300 ${isCollapsed ? 'sidebar-collapsed' : 'sidebar-expanded'}`}>
+<aside class={`bg-primary-800 text-white transition-all duration-300 ${isCollapsed ? 'sidebar-collapsed' : 'sidebar-expanded'}`}>
   <div class="p-4 flex items-center justify-between">
     <div class="flex items-center">
       <img src="/logo.svg" alt="RCP Logo" class="h-8 w-8" />
       {#if !isCollapsed}
-        <span class="ml-3 text-lg font-bold">RCP Desk</span>
+        <span class="ml-3 text-lg font-bold text-white">RCP Desk</span>
       {/if}
     </div>
     <button 
@@ -93,13 +93,13 @@
     </button>
   </div>
   
-  <div class="mt-5">
-    <nav class="space-y-1 px-2">
+  <div class="mt-3">
+    <nav class="space-y-0 px-2">
       {#each navItems as item}
         <a 
           href={item.href}
-          class={`flex items-center px-4 py-2 text-sm font-medium rounded-md transition duration-150 ease-in-out 
-                 ${isActive(item.href) ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white'}`}
+          class={`flex items-center px-4 py-2.5 text-sm font-medium transition duration-150 ease-in-out border-l-4 
+                 ${isActive(item.href) ? 'bg-primary-900 border-secondary-500 text-white' : 'border-transparent text-gray-300 hover:bg-primary-700 hover:text-white'}`}
           onclick={handleNavigate}
           aria-current={isActive(item.href) ? 'page' : undefined}
         >
@@ -123,7 +123,7 @@
     {/if}
     <a 
       href="/logout" 
-      class="mt-2 flex items-center px-4 py-2 text-sm font-medium rounded-md text-gray-300 hover:bg-gray-700 hover:text-white transition duration-150 ease-in-out"
+      class="mt-2 flex items-center px-4 py-2 text-sm font-medium rounded-md text-gray-300 hover:bg-primary-700 hover:text-white transition duration-150 ease-in-out"
     >
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -143,6 +143,7 @@
     position: sticky;
     top: 0;
     overflow-y: auto;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
   }
   
   .sidebar-expanded {
@@ -156,25 +157,25 @@
   }
   
   .sidebar-toggle {
-    color: rgba(156, 163, 175, 1); /* text-gray-400 */
-    border-radius: 0.375rem;
+    color: rgba(255, 255, 255, 0.7);
+    border-radius: 0.125rem;
     padding: 0.25rem;
   }
   
   .sidebar-toggle:hover {
-    color: rgba(255, 255, 255, 1); /* hover:text-white */
+    color: rgba(255, 255, 255, 1);
+    background-color: rgba(255, 255, 255, 0.1);
   }
   
   .sidebar-toggle:focus {
     outline: none;
-    box-shadow: 0 0 0 2px rgba(107, 114, 128, 0.5); /* focus:ring-2 focus:ring-gray-500 */
+    box-shadow: 0 0 0 2px rgba(246, 128, 44, 0.5);
   }
   
   .nav-icon {
     flex-shrink: 0;
   }
   
-  /* Responsive styles */
   @media (max-width: 768px) {
     .sidebar-expanded {
       position: fixed;
