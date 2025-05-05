@@ -135,8 +135,10 @@
       </div>
     </header>
     
-    <div class="flex-1 overflow-auto bg-gray-100 p-4">
-      <slot />
+    <div class="flex-1 overflow-auto bg-gray-100">
+      <div class="container mx-auto p-6">
+        <slot />
+      </div>
     </div>
   </div>
 </div>

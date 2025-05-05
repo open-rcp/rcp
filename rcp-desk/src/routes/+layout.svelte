@@ -1,6 +1,7 @@
 <script lang="ts">
   import '../app.css';
   import DashboardLayout from '$components/DashboardLayout.svelte';
+  import AuthLayout from '$components/AuthLayout.svelte';
   import { onMount } from 'svelte';
   import { authGuard } from '$lib/guards/auth.guard';
   import { authService } from '$services/auth.service';
@@ -79,8 +80,10 @@
     </div>
   </div>
 {:else if data.isPublicRoute && !authenticated}
-  <!-- Public route (login) when not authenticated -->
-  <slot />
+  <!-- Public route (login) with AuthLayout -->
+  <AuthLayout>
+    <slot />
+  </AuthLayout>
 {:else if authenticated}
   <!-- Authenticated route with dashboard layout -->
   <DashboardLayout>
