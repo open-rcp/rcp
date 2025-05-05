@@ -105,8 +105,8 @@
 
 <aside class={`bg-primary-800 text-white transition-all duration-300 ${isCollapsed ? 'sidebar-collapsed' : 'sidebar-expanded'}`}>
   <div class="p-4 flex items-center">
-    <div class={`flex items-center ${isCollapsed ? 'justify-center w-full' : ''}`}>
-      <img src="/rust-huskell.png" alt="RCP Logo" class="h-8 w-auto object-contain" />
+    <div class='flex items-center justify-center w-full'>
+      <img src="tauri.svg" alt="RCP Logo" class="h-8 w-auto object-contain" />
       {#if !isCollapsed}
         <span class="ml-3 text-lg font-bold text-white">RCP Desk</span>
       {/if}
