@@ -1,7 +1,9 @@
 <script lang="ts">
-  import { page } from '../../lib/utils/stores';
-  import { goto } from '../../lib/utils/navigation';
-  import { authService } from '../../lib/services/auth.service';
+  import { page } from '$lib/utils/stores';
+  import { goto } from '$lib/utils/navigation';
+  import { authService } from '$services/auth.service';
+  import { authStore } from '$stores/auth';
+  import { onMount } from 'svelte';
 
   // Form state
   let username = '';
@@ -10,7 +12,28 @@
   let error = '';
 
   // Get return URL from query parameters
-  const returnUrl = $page.url.searchParams.get('returnUrl') || '/';
+  let returnUrl = '/';
+  
+  // Subscribe to page store for URL params and check authentication state
+  $: {
+    returnUrl = $page.url.searchParams.get('returnUrl') || '/';
+  }
+  
+  // Check if already authenticated on mount
+  onMount(() => {
+    // Check if already logged in
+    let isAuthenticated = false;
+    const unsubscribe = authStore.subscribe(state => {
+      isAuthenticated = state.isAuthenticated;
+    });
+    
+    // If authenticated, redirect to returnUrl
+    if (isAuthenticated) {
+      goto(returnUrl);
+    }
+    
+    unsubscribe();
+  });
 
   // Handle login form submission
   async function handleLogin() {
@@ -30,8 +53,8 @@
       const success = await authService.login({ username, password });
       
       if (success) {
-        // Navigate to return URL on success
-        goto(returnUrl);
+        // Ensure the redirect happens with a fresh page load
+        window.location.href = returnUrl;
       } else {
         error = 'Invalid username or password';
       }

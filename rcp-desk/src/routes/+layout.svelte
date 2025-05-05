@@ -4,7 +4,9 @@
   import { onMount } from 'svelte';
   import { authGuard } from '$lib/guards/auth.guard';
   import { authService } from '$services/auth.service';
+  import { authStore } from '$stores/auth';
   import { browser } from '$lib/utils/environment';
+  import { goto } from '$lib/utils/navigation';
   
   // Get properties from the layout data
   export let data: {
@@ -15,13 +17,22 @@
   // Authentication state
   let isLoading = true;
   let authenticated = false;
+  
+  // Subscribe to auth store changes
+  authStore.subscribe(state => {
+    authenticated = state.isAuthenticated;
+  });
 
   // Handle authentication on mount
   onMount(async () => {
     if (browser) {
-      console.log('Layout mounted, path:', data.currentPath, 'isPublic:', data.isPublicRoute);
+      // If already on login page and authenticated, redirect to dashboard
+      if (data.isPublicRoute && authenticated) {
+        goto('/');
+        return;
+      }
       
-      // Don't check authentication for public routes
+      // If on login page, no need for further checks
       if (data.isPublicRoute) {
         isLoading = false;
         return;
@@ -29,26 +40,31 @@
 
       // For protected routes, check authentication
       try {
-        // First check if already authenticated
-        if (authService.isAuthenticated()) {
-          authenticated = true;
+        // First check if already authenticated from store
+        if (authenticated) {
           isLoading = false;
           return;
         }
 
-        // Try to restore auth from refresh token
+        // Try to restore auth from refresh token if not authenticated
         const success = await authService.initAuth();
-        authenticated = success;
+        if (success) {
+          authenticated = true;
+          isLoading = false;
+          return;
+        }
+        
+        // If we reach this point, we're not authenticated
+        // Redirect to login page
+        if (data.currentPath && data.currentPath !== '/login') {
+          goto(`/login?returnUrl=${encodeURIComponent(data.currentPath)}`);
+        } else {
+          goto('/login');
+        }
       } catch (error) {
         console.error('Authentication error:', error);
-        authenticated = false;
       } finally {
         isLoading = false;
-      }
-      
-      // If not authenticated after all checks, redirect to login
-      if (!authenticated && data.currentPath) {
-        authGuard(data.currentPath);
       }
     }
   });
@@ -62,11 +78,11 @@
       <p class="text-gray-600">Loading...</p>
     </div>
   </div>
-{:else if data.isPublicRoute}
-  <!-- Public route (login) -->
+{:else if data.isPublicRoute && !authenticated}
+  <!-- Public route (login) when not authenticated -->
   <slot />
 {:else if authenticated}
-  <!-- Protected route with dashboard layout -->
+  <!-- Authenticated route with dashboard layout -->
   <DashboardLayout>
     <slot />
   </DashboardLayout>
