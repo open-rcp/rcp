@@ -262,7 +262,7 @@
   </div>
   
   <!-- Sessions Table -->
-  <div class="card overflow-hidden">
+  <div class="card overflow-hidden" style="padding: 0;">
     <div class="overflow-x-auto">
       <table class="min-w-full divide-y divide-gray-200">
         <thead>
@@ -307,8 +307,14 @@
                 </div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <a href={`/sessions/${session.id}`} class="text-primary-600 hover:text-primary-900 mr-3">View</a>
-                <button onclick={() => terminateSession(session.id)} class="text-red-600 hover:text-red-900">Terminate</button>
+                <a href={`/sessions/${session.id}`} class="text-primary-600 hover:text-primary-900 mr-3">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><!-- Icon from Mage Icons by MageIcons - https://github.com/Mage-Icons/mage-icons/blob/main/License.txt --><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path stroke-width="1.5" d="M12 21.5a9.5 9.5 0 1 0 0-19a9.5 9.5 0 0 0 0 19m.005-4.222v-6.333"/><path stroke-width="2" d="M11.956 7.443h.01"/></g></svg>
+                  Details
+                </a>
+                <button onclick={() => terminateSession(session.id)} class="text-red-600 hover:text-red-900">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><!-- Icon from Mage Icons by MageIcons - https://github.com/Mage-Icons/mage-icons/blob/main/License.txt --><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 21.5a9.5 9.5 0 1 0 0-19a9.5 9.5 0 0 0 0 19m6.713-2.787L5.287 5.287"/></svg>
+                  Block
+                </button>
               </td>
             </tr>
           {/each}

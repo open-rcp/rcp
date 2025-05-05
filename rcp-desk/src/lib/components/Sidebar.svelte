@@ -126,7 +126,7 @@
             {@html item.icon}
           </div>
           {#if !isCollapsed}
-            <span class="ml-3 text-sm font-medium">{item.name}</span>
+            <span class="ml-2 text-sm font-medium">{item.name}</span>
           {/if}
         </a>
       {/each}
