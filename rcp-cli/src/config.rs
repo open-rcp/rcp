@@ -1,18 +1,7 @@
 use anyhow::Result;
 use std::path::{Path, PathBuf};
 use serde::{Deserialize, Serialize};
-
-#[derive(Debug, Deserialize, Serialize)]
-pub struct CliConfig {
-    pub log_level: String,
-    pub format: String,
-    pub color: bool,
-    pub timeout_seconds: u64,
-    pub json_output: bool,
-    pub quiet: bool,
-    pub connection: ConnectionConfig,
-    pub auth: AuthConfig,
-}
+use crate::cli::{CliConfig, ConnectionConfig, AuthConfig};
 
 /// Get the default configuration path
 pub fn default_config_path() -> Result<PathBuf> {

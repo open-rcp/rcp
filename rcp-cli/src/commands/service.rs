@@ -5,9 +5,9 @@ use crate::utils;
 use crate::ServiceAction;
 
 /// Handle service-related commands
-pub async fn handle_service_command(action: ServiceAction, cli: &mut Cli) -> Result<()> {
+pub async fn handle_service_command(action: ServiceAction, auto_start: bool, user: Option<String>, cli: &mut Cli) -> Result<()> {
     match action {
-        ServiceAction::Install { auto_start, user } => {
+        ServiceAction::Install => {
             install_service(cli, auto_start, user).await
         }
         ServiceAction::Uninstall => {

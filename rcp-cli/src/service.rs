@@ -194,8 +194,9 @@ impl ServiceClient {
         Ok(installed)
     }
 
-    pub async fn install_service(&mut self) -> Result<()> {
-        self.send_command("install", &[]).await?;
+    pub async fn install_service(&mut self, options: &serde_json::Value) -> Result<()> {
+        let args = serde_json::to_vec(options)?;
+        self.send_command("install", &args).await?;
         Ok(())
     }
 

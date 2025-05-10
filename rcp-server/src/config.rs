@@ -200,6 +200,15 @@ pub struct AppDefaults {
     pub permissions: Vec<String>,
 }
 
+impl Default for AppDefaults {
+    fn default() -> Self {
+        Self {
+            working_dir: default_working_dir(),
+            permissions: Vec::new(),
+        }
+    }
+}
+
 fn default_working_dir() -> String {
     "/tmp".to_string()
 }

@@ -1,7 +1,8 @@
-use clap::{Parser, Subcommand};
+use clap::{Parser, Subcommand, Command};
 use anyhow::Result;
 use colored::Colorize;
 use std::path::PathBuf;
+use clap_complete::Shell;
 
 mod cli;
 mod commands;
@@ -40,7 +41,16 @@ enum Commands {
     /// Manage RCP service
     Service {
         /// Service action to perform
+        #[arg(value_enum)]
         action: ServiceAction,
+        
+        /// Auto-start service on boot (only for install action)
+        #[arg(long, requires = "action", required_if_eq("action", "install"))]
+        auto_start: Option<bool>,
+        
+        /// User to run service as (only for install action)
+        #[arg(long, requires = "action")]
+        user: Option<String>,
     },
     /// Manage remote servers
     Server {
@@ -192,7 +202,7 @@ async fn main() -> Result<()> {
             
             // Only warn and continue for commands that might work without a service connection
             match args.command {
-                Commands::Login { .. } | Commands::Completions { .. } => {
+                Commands::Auth { .. } | Commands::Completions { .. } => {
                     eprintln!("{}", "Continuing without service connection...".yellow());
                 },
                 _ => {
@@ -206,40 +216,40 @@ async fn main() -> Result<()> {
     }
 
     // Handle commands
-    let result = match cli.command {
-        Commands::Service { action } => {
-            handle_service_command(&mut client, &action).await
+    let result = match &args.command {
+        Commands::Service { action, auto_start, user } => {
+            commands::service::handle_service_command(action.clone(), auto_start.unwrap_or(false), user.clone(), &mut cli).await
         }
-        Commands::Server { action } => {
-            handle_server_command().await
+        Commands::Server { action: _ } => {
+            Ok(()) // Placeholder
         }
-        Commands::Session { action } => {
-            handle_session_command().await
+        Commands::Session { action: _ } => {
+            Ok(()) // Placeholder
         }
-        Commands::User { action } => {
-            handle_user_command().await
+        Commands::User { action: _ } => {
+            Ok(()) // Placeholder
         }
-        Commands::Config { action } => {
-            handle_config_command().await
+        Commands::Config { action: _ } => {
+            Ok(()) // Placeholder
         }
-        Commands::Diag { action } => {
-            handle_diag_command().await
+        Commands::Diag { action: _ } => {
+            Ok(()) // Placeholder
         }
-        Commands::Logs { level, limit, since } => {
-            handle_logs_command(level, limit, since).await
+        Commands::Logs { level: _, limit: _, since: _ } => {
+            Ok(()) // Placeholder
         }
         Commands::Auth { action } => {
-            handle_auth_command(&mut client, &action).await
+            commands::auth::handle_auth_command(&mut cli, action.clone()).await
         }
         Commands::Shell => {
-            handle_shell_command().await
+            Ok(()) // Placeholder
         }
-        Commands::Batch { file } => {
-            handle_batch_command(&file).await
+        Commands::Batch { file: _ } => {
+            Ok(()) // Placeholder
         }
         Commands::Completions { shell } => {
-            handle_completions_command(&mut build_cli(), shell)
-                .map_err(|e| CliError::IoError(e))?;
+            commands::completions::handle_completions_command(&mut Command::new("rcp-cli"), *shell)
+                .map_err(|e| anyhow::anyhow!("Completion error: {}", e))?;
             Ok(())
         }
     };

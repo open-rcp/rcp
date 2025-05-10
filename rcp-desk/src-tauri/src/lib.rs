@@ -2,6 +2,8 @@ use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use tauri::{generate_handler, command, State, Manager};
 use tokio::sync::Mutex;
+use tauri_plugin_dialog;
+use tauri_plugin_shell;
 use rcp_client::{ClientBuilder, Client};
 use rcp_core::{AuthMethod, Frame};
 use uuid::Uuid;
@@ -213,6 +215,8 @@ pub fn get_saved_credentials() -> Option<ConnectionConfig> {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_shell::init())
         .manage(ClientState::default())
         .invoke_handler(generate_handler![
             connect,
