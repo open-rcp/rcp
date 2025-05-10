@@ -17,4 +17,5 @@ target/
 .idea/
 temp/
 rustdesk/
-*/node_modules/
+node_modules/
+.svelte-kit/
