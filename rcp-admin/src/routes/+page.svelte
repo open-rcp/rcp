@@ -1,25 +1,7 @@
 <script lang="ts">
   import { invoke } from '@tauri-apps/api/core';
-  import { listen } from '@tauri-ap    try {
-      const status = await invoke<ServerStatus>('get_server_status');
-      serverStatus = status;
-      
-      // If server is running, set up polling for stats
-      if (status.running) {
-        setInterval(async () => {
-          const updatedStats = await invoke<Partial<ServerStatus>>('get_server_stats');
-          serverStatus = { ...serverStatus, ...updatedStats };
-        }, 5000);
-      }
-    } catch (e: any) {
-      error = e.message;
-    }
-    
-    // Listen for log events
-    await listen<LogEntry>('server-log', (event) => {
-      addLogEntry(event.payload);
-    });
-  });port { onMount } from 'svelte';
+  import { listen } from '@tauri-apps/api/event';
+  import { onMount } from 'svelte';
 
   // Define type for server status response
   type ServerStatus = {
@@ -132,6 +114,7 @@
       }
     } catch (e: any) {
       error = e.message;
+    }
     
     // Listen for log events
     await listen<LogEntry>('server-log', (event) => {
