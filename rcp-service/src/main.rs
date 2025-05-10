@@ -71,7 +71,7 @@ async fn main() -> Result<()> {
         .format_timestamp_millis()
         .init();
 
-    info!("RCP Service v{} initializing...", env!("CARGO                            _PKG_VERSION"));
+    info!("RCP Service v{} initializing...", env!("            env!("CARGO_PKG_VERSION")"));
 
     // Process commands if provided
     if let Some(cmd) = cli.command {

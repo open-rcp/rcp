@@ -2,7 +2,7 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
-use tokio::net::unix::pipe;
+
 use tokio::time::timeout;
 
 use crate::cli::UserInfo;
@@ -65,7 +65,7 @@ impl ServiceClient {
                 return Ok(Self { socket });
             }
             Ok(Err(e)) => Err(CliError::ServiceError(format!("Failed to connect: {}", e)).into()),
-            Err(_) => Err(CliError::ConnectionTimeout.into()),
+            Err(_) => Err(CliError::Timeout.into()),
         }
     }
     
@@ -188,5 +188,34 @@ impl ServiceClient {
         Ok(())
     }
     
-    // Additional methods will be implemented as needed
+    pub async fn is_service_installed(&mut self) -> Result<bool> {
+        let response = self.send_command("check-install", &[]).await?;
+        let installed: bool = serde_json::from_slice(&response)?;
+        Ok(installed)
+    }
+
+    pub async fn install_service(&mut self) -> Result<()> {
+        self.send_command("install", &[]).await?;
+        Ok(())
+    }
+
+    pub async fn uninstall_service(&mut self) -> Result<()> {
+        self.send_command("uninstall", &[]).await?;
+        Ok(())
+    }
+
+    pub async fn start_service(&mut self) -> Result<()> {
+        self.send_command("start", &[]).await?;
+        Ok(())
+    }
+
+    pub async fn stop_service(&mut self) -> Result<()> {
+        self.send_command("stop", &[]).await?;
+        Ok(())
+    }
+
+    pub async fn restart_service(&mut self) -> Result<()> {
+        self.send_command("restart", &[]).await?;
+        Ok(())
+    }
 }

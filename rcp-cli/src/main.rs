@@ -37,290 +37,121 @@ struct Args {
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Service management commands
+    /// Manage RCP service
     Service {
-        #[clap(subcommand)]
+        /// Service action to perform
         action: ServiceAction,
     },
-
-    /// Server management commands
+    /// Manage remote servers
     Server {
-        #[clap(subcommand)]
+        /// Server action to perform
         action: ServerAction,
     },
-
-    /// Session management commands
+    /// Manage user sessions
     Session {
-        #[clap(subcommand)]
+        /// Session action to perform
         action: SessionAction,
     },
-
-    /// User management commands
+    /// Manage RCP users
     User {
-        #[clap(subcommand)]
+        /// User action to perform
         action: UserAction,
     },
-
-    /// Configuration management commands
+    /// Manage configuration
     Config {
-        #[clap(subcommand)]
+        /// Config action to perform
         action: ConfigAction,
     },
-
-    /// Diagnostic commands
+    /// Run diagnostics
     Diag {
-        #[clap(subcommand)]
+        /// Diagnostic action to perform
         action: DiagAction,
     },
-
-    /// View system logs
+    /// View logs
     Logs {
         /// Log level filter
-        #[clap(short, long)]
-        level: Option<String>,
-
-        /// Maximum number of logs to show
-        #[clap(short, long, default_value = "100")]
+        #[arg(short, long, default_value = "info")]
+        level: String,
+        /// Maximum number of log entries
+        #[arg(short, long, default_value = "100")]
         limit: usize,
-
-        /// Show logs since this time (e.g. "10m", "1h", "1d")
-        #[clap(short, long)]
+        /// Show logs since timestamp
+        #[arg(long)]
         since: Option<String>,
     },
-
-    /// Login to RCP API
-    Login {
-        /// Username for authentication
-        #[clap(short, long)]
-        username: Option<String>,
+    /// Authentication commands
+    Auth {
+        /// Auth action to perform
+        action: AuthAction,
     },
-
-    /// Logout from RCP API
-    Logout,
-
-    /// Start interactive shell mode
+    /// Start interactive shell
     Shell,
-
-    /// Execute commands from a file
+    /// Run commands from file
     Batch {
-        /// Path to file with commands
-        file: PathBuf,
+        /// Path to batch file
+        file: String,
     },
-
     /// Generate shell completions
     Completions {
         /// Shell to generate completions for
-        #[clap(value_enum)]
-        shell: clap_complete::Shell,
+        #[arg(value_enum)]
+        shell: Shell,
     },
 }
 
-#[derive(Subcommand)]
-enum ServiceAction {
-    /// Install the RCP service
-    Install {
-        /// Start automatically at boot
-        #[clap(long)]
-        auto_start: bool,
-
-        /// Run service as specific user
-        #[clap(long)]
-        user: Option<String>,
-    },
-
-    /// Uninstall the RCP service
-    Uninstall,
-
-    /// Start the RCP service
-    Start,
-
-    /// Stop the RCP service
-    Stop,
-
-    /// Restart the RCP service
-    Restart,
-
-    /// Get RCP service status
+#[derive(clap::ValueEnum, Clone, Debug)]
+pub enum ServiceAction {
     Status,
+    Start,
+    Stop,
+    Restart,
+    Install,
+    Uninstall,
 }
 
-#[derive(Subcommand)]
-enum ServerAction {
-    /// List configured servers
+#[derive(clap::ValueEnum, Clone, Debug)]
+pub enum ServerAction {
     List,
-
-    /// Get server status
-    Status {
-        /// Server name
-        #[clap(default_value = "default")]
-        name: String,
-    },
-
-    /// Start a server
-    Start {
-        /// Server name
-        #[clap(default_value = "default")]
-        name: String,
-    },
-
-    /// Stop a server
-    Stop {
-        /// Server name
-        #[clap(default_value = "default")]
-        name: String,
-    },
-
-    /// Restart a server
-    Restart {
-        /// Server name
-        #[clap(default_value = "default")]
-        name: String,
-    },
-
-    /// Create a new server configuration
-    Create {
-        /// Server name
-        name: String,
-
-        /// Server port
-        #[clap(short, long, default_value = "8716")]
-        port: u16,
-
-        /// Maximum connections
-        #[clap(long, default_value = "100")]
-        max_conn: usize,
-
-        /// Enable TLS
-        #[clap(long)]
-        tls: bool,
-    },
+    Start,
+    Stop,
+    Restart,
+    Delete,
 }
 
-#[derive(Subcommand)]
-enum SessionAction {
-    /// List active sessions
-    List {
-        /// Filter by server
-        #[clap(short, long)]
-        server: Option<String>,
-    },
-
-    /// Get session details
-    Info {
-        /// Session ID
-        session_id: String,
-    },
-
-    /// Terminate a session
-    Terminate {
-        /// Session ID
-        session_id: String,
-
-        /// Reason for termination
-        #[clap(short, long)]
-        reason: Option<String>,
-    },
-
-    /// Send message to a session
-    Message {
-        /// Session ID
-        session_id: String,
-
-        /// Message to send
-        message: String,
-    },
-}
-
-#[derive(Subcommand)]
-enum UserAction {
-    /// List users
+#[derive(clap::ValueEnum, Clone, Debug)]
+pub enum SessionAction {
     List,
-
-    /// Add a new user
-    Add {
-        /// Username
-        username: String,
-
-        /// Create as admin
-        #[clap(long)]
-        admin: bool,
-
-        /// User password
-        #[clap(short, long)]
-        password: Option<String>,
-    },
-
-    /// Change user password
-    Passwd {
-        /// Username
-        username: String,
-    },
-
-    /// Remove a user
-    Remove {
-        /// Username
-        username: String,
-    },
-
-    /// Manage user roles
-    Roles {
-        /// Username
-        username: String,
-
-        /// Add role(s)
-        #[clap(long)]
-        add: Option<Vec<String>>,
-
-        /// Remove role(s)
-        #[clap(long)]
-        remove: Option<Vec<String>>,
-    },
+    Disconnect,
+    Info,
 }
 
-#[derive(Subcommand)]
-enum ConfigAction {
-    /// Show current configuration
-    Show {
-        /// Configuration section
-        #[clap(short, long)]
-        section: Option<String>,
-    },
-
-    /// Set configuration value
-    Set {
-        /// Configuration key
-        key: String,
-
-        /// Configuration value
-        value: String,
-    },
-
-    /// Reset configuration to defaults
-    Reset {
-        /// Configuration section
-        #[clap(short, long)]
-        section: Option<String>,
-    },
-
-    /// Validate configuration
-    Validate,
+#[derive(clap::ValueEnum, Clone, Debug)]
+pub enum UserAction {
+    List,
+    Add,
+    Remove,
+    Update,
 }
 
-#[derive(Subcommand)]
-enum DiagAction {
-    /// Run diagnostics
-    Run {
-        /// Tests to run
-        #[clap(short, long)]
-        tests: Option<Vec<String>>,
-    },
+#[derive(clap::ValueEnum, Clone, Debug)]
+pub enum ConfigAction {
+    Show,
+    Set,
+    Reset,
+}
 
-    /// Check connectivity
-    Connectivity {
-        /// Server to check
-        #[clap(short, long)]
-        server: Option<String>,
-    },
+#[derive(clap::ValueEnum, Clone, Debug)]
+pub enum DiagAction {
+    Network,
+    System,
+    All,
+}
+
+#[derive(clap::ValueEnum, Clone, Debug)]
+pub enum AuthAction {
+    Login,
+    Logout,
+    Status,
 }
 
 #[tokio::main]
@@ -375,42 +206,41 @@ async fn main() -> Result<()> {
     }
 
     // Handle commands
-    let result = match args.command {
+    let result = match cli.command {
         Commands::Service { action } => {
-            commands::service::handle_service_command(action, &mut cli).await
+            handle_service_command(&mut client, &action).await
         }
         Commands::Server { action } => {
-            commands::server::handle_server_command(action, &mut cli).await
+            handle_server_command().await
         }
         Commands::Session { action } => {
-            commands::session::handle_session_command(action, &mut cli).await
+            handle_session_command().await
         }
         Commands::User { action } => {
-            commands::user::handle_user_command(action, &mut cli).await
+            handle_user_command().await
         }
         Commands::Config { action } => {
-            commands::config::handle_config_command(action, &mut cli).await
+            handle_config_command().await
         }
         Commands::Diag { action } => {
-            commands::diag::handle_diag_command(action, &mut cli).await
+            handle_diag_command().await
         }
         Commands::Logs { level, limit, since } => {
-            commands::logs::handle_logs_command(level, limit, since, &mut cli).await
+            handle_logs_command(level, limit, since).await
         }
-        Commands::Login { username } => {
-            commands::auth::handle_login_command(username, &mut cli).await
-        }
-        Commands::Logout => {
-            commands::auth::handle_logout_command(&mut cli).await
+        Commands::Auth { action } => {
+            handle_auth_command(&mut client, &action).await
         }
         Commands::Shell => {
-            commands::shell::handle_shell_command(&mut cli).await
+            handle_shell_command().await
         }
         Commands::Batch { file } => {
-            commands::batch::handle_batch_command(file, &mut cli).await
+            handle_batch_command(&file).await
         }
         Commands::Completions { shell } => {
-            commands::completions::handle_completions_command(shell)
+            handle_completions_command(&mut build_cli(), shell)
+                .map_err(|e| CliError::IoError(e))?;
+            Ok(())
         }
     };
 

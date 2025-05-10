@@ -97,7 +97,7 @@ Milestone 2 focuses on developing the management layer of the RCP system, which 
 1. Implement the Runtime Service architecture (rcp-service)
 2. Develop the Command-Line Interface (rcp-cli) for administration
 3. Create the RESTful API (rcp-api) for remote management
-4. Build the Unified Admin Interface (rcp-desk) using SvelteKit and Tauri
+4. Build the Unified Admin Interface (rcp-admin) using SvelteKit and Tauri
 5. Complete the WebSocket Bridge for browser-based clients
 6. Enhance existing components with additional services
 7. Refactor management components from legacy naming to new architecture

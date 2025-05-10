@@ -924,4 +924,4 @@ See the `examples/` directory for complete working examples:
 
 ---
 
-For more information, refer to the [Architecture Overview](architecture.md), [Protocol Specification](spec.md), [RCP Service](rcp-service.md), [RCP CLI](rcp-cli.md), [RCP API](rcp-api.md), and [RCP Desk](rcp-desk.md) documents.
+For more information, refer to the [Architecture Overview](architecture.md), [Protocol Specification](protocol-specification.md), [RCP Service](rcp-service.md), [RCP CLI](rcp-cli.md), [RCP API](rcp-api.md), [RCP Admin](rcp-admin.md), and [RCP Desk](rcp-desk.md) documents.

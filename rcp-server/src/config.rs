@@ -138,34 +138,111 @@ impl Default for SessionConfig {
 /// Application configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ApplicationConfig {
-    /// Allowed applications
+    /// Map of application configurations by ID
     #[serde(default)]
-    pub allowed_apps: Vec<String>,
+    pub applications: std::collections::HashMap<String, VirtualAppConfig>,
 
-    /// Denied applications
+    /// Default application settings
     #[serde(default)]
-    pub denied_apps: Vec<String>,
-
-    /// Whether to allow elevated privileges
-    #[serde(default)]
-    pub allow_elevated: bool,
-
-    /// Working directory for applications
-    #[serde(default = "default_work_dir")]
-    pub work_dir: String,
+    pub defaults: AppDefaults,
 }
 
-fn default_work_dir() -> String {
-    "./apps".to_string()
+/// Configuration for a virtual application
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct VirtualAppConfig {
+    /// Unique identifier for the application
+    pub id: String,
+
+    /// Display name of the application
+    pub name: String,
+
+    /// Path to the executable
+    pub executable_path: String,
+
+    /// Working directory for the application
+    #[serde(default)]
+    pub working_dir: Option<String>,
+
+    /// Launch arguments
+    #[serde(default)]
+    pub args: Vec<String>,
+
+    /// Environment variables
+    #[serde(default)]
+    pub env: std::collections::HashMap<String, String>,
+
+    /// Permissions required to use this application
+    #[serde(default)]
+    pub required_permissions: Vec<String>,
+
+    /// File types this application can handle
+    #[serde(default)]
+    pub file_associations: Vec<String>,
+
+    /// Whether the application should start maximized
+    #[serde(default)]
+    pub start_maximized: bool,
+
+    /// Application-specific settings
+    #[serde(default)]
+    pub settings: serde_json::Value,
+}
+
+/// Default application settings
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AppDefaults {
+    /// Default working directory
+    #[serde(default = "default_working_dir")]
+    pub working_dir: String,
+
+    /// Default permissions
+    #[serde(default)]
+    pub permissions: Vec<String>,
+}
+
+fn default_working_dir() -> String {
+    "/tmp".to_string()
 }
 
 impl Default for ApplicationConfig {
     fn default() -> Self {
+        let mut applications = std::collections::HashMap::new();
+        
+        // Add default text editor based on platform
+        #[cfg(target_os = "macos")]
+        applications.insert("textedit".to_string(), VirtualAppConfig {
+            id: "textedit".to_string(),
+            name: "TextEdit".to_string(),
+            executable_path: "/System/Applications/TextEdit.app/Contents/MacOS/TextEdit".to_string(),
+            working_dir: None,
+            args: vec![],
+            env: std::collections::HashMap::new(),
+            required_permissions: vec!["app:textedit".to_string()],
+            file_associations: vec!["txt".to_string(), "rtf".to_string()],
+            start_maximized: false,
+            settings: serde_json::json!({}),
+        });
+
+        #[cfg(target_os = "windows")]
+        applications.insert("notepad".to_string(), VirtualAppConfig {
+            id: "notepad".to_string(),
+            name: "Notepad".to_string(),
+            executable_path: "C:\\Windows\\System32\\notepad.exe".to_string(),
+            working_dir: None,
+            args: vec![],
+            env: std::collections::HashMap::new(),
+            required_permissions: vec!["app:notepad".to_string()],
+            file_associations: vec!["txt".to_string()],
+            start_maximized: false,
+            settings: serde_json::json!({}),
+        });
+
         Self {
-            allowed_apps: Vec::new(),
-            denied_apps: Vec::new(),
-            allow_elevated: false,
-            work_dir: default_work_dir(),
+            applications,
+            defaults: AppDefaults {
+                working_dir: default_working_dir(),
+                permissions: vec!["app:basic".to_string()],
+            },
         }
     }
 }

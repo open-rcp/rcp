@@ -10,9 +10,10 @@ This document outlines the Remote Control Protocol (RCP) project structure, comp
 - **RCP Server**: Server implementation for handling client connections
 - **RCP Client**: Client libraries for connecting to RCP servers
 - **RCP Service**: Runtime service for managing application lifecycle
-- **RCP CLI**: Command-line interface for management and configuration
+- **RCP CLI**: Command-line interface for server administration
 - **RCP API**: RESTful API for remote management of RCP servers
-- **RCP Desk**: Unified admin interface (SvelteKit+Tauri, Web+Desktop)
+- **RCP Admin**: Server administration interface (SvelteKit+Tauri, Web+Desktop)
+- **RCP Desk**: End-user client application for virtual applications
 - **RCP WebSocket Bridge**: WebSocket proxy for browser-based clients
 
 ## Development Roadmap
@@ -37,13 +38,20 @@ This document outlines the Remote Control Protocol (RCP) project structure, comp
    - Authentication and authorization
    - Configuration management
    - Statistics and monitoring
-9. 🔄 RCP Desk
+9. 🔄 RCP Admin
    - SvelteKit-based web interface
    - Tauri integration for desktop app
    - Real-time connection monitoring
    - User management interface
    - Service configuration
    - Analytics visualization
+   
+10. 🔄 RCP Desk
+   - End-user client application
+   - Virtual application launcher
+   - Connection management
+   - File transfer capabilities
+   - User settings and preferences
 
 ## Architecture
 
@@ -53,10 +61,11 @@ RCP follows a modular architecture with these core components:
 2. **rcp-server**: The server application that accepts connections and manages sessions
 3. **rcp-client**: Client library for connecting to RCP servers and controlling applications
 4. **rcp-service**: Runtime service managing the application lifecycle and configuration
-5. **rcp-cli**: Command-line tool for service and configuration management
+5. **rcp-cli**: Command-line tool for server administration only
 6. **rcp-api**: RESTful API for remote management and integration
-7. **rcp-desk**: Unified admin interface for web and desktop
-8. **rcp-ws-bridge**: Optional WebSocket bridge for browser clients
+7. **rcp-admin**: Server administration interface for web and desktop
+8. **rcp-desk**: End-user client application for accessing virtual applications
+9. **rcp-ws-bridge**: Optional WebSocket bridge for browser clients
 
 ## Codebase Structure
 
@@ -203,7 +212,8 @@ To add a new service:
 
 ### Phase 3: Management Layer
 - RESTful management API
-- Unified desk interface (web & desktop)
+- Admin interface (web & desktop)
+- End-user client application
 - Authentication and permission system
 - Configuration management
 - Logs and monitoring

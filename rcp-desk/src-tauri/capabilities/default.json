@@ -1,10 +1,12 @@
 {
-  "$schema": "../gen/schemas/desktop-schema.json",
-  "identifier": "default",
-  "description": "Capability for the main window",
+  "$schema": "https://schema.tauri.app/schema.json",
+  "identifier": "default-capability",
+  "description": "Default capabilities for RCP Desk",
   "windows": ["main"],
   "permissions": [
-    "core:default",
-    "opener:default"
+    "dialog:allow",
+    "shell:allow",
+    "app:allow",
+    "window:allow"
   ]
 }

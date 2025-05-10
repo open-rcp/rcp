@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    rcp_desk_lib::run()
+    rcp_desk::run()
 }

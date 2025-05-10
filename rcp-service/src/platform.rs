@@ -1,0 +1,19 @@
+use crate::error::ServiceError;
+
+#[cfg(target_family = "unix")]
+pub mod unix;
+
+#[cfg(target_family = "windows")]
+pub mod windows;
+
+#[cfg(target_family = "unix")]
+pub use unix::*;
+
+#[cfg(target_family = "windows")]
+pub use windows::*;
+
+pub trait Platform {
+    fn get_socket_path() -> Result<String, ServiceError>;
+    fn create_socket_dir() -> Result<(), ServiceError>;
+    fn cleanup_socket() -> Result<(), ServiceError>;
+}

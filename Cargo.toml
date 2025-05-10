@@ -5,7 +5,10 @@ members = [
     "rcp-client",
     "rcp-ws-bridge",
     "examples",
-    "rcp-desk/src-tauri"
+    "rcp-admin/src-tauri", 
+    "rcp-desk/src-tauri",
+    "rcp-service",
+    "rcp-cli"
 ]
 resolver = "2"
 

@@ -4,7 +4,7 @@ This document outlines the RCP CLI (Command Line Interface), which provides admi
 
 ## Overview
 
-RCP CLI is a command-line utility designed for administrators to interact with RCP Service and RCP Servers. It provides functionality for installation, configuration, monitoring, and management operations.
+RCP CLI is a command-line utility designed exclusively for administrators to interact with RCP Service and RCP Servers. It provides functionality for installation, configuration, monitoring, and management operations of the server side components only.
 
 Key features of the RCP CLI include:
 
