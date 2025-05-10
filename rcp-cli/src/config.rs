@@ -1,6 +1,8 @@
 use anyhow::Result;
 use std::path::{Path, PathBuf};
-use serde::{Deserialize, Serialize};
+// We need the following imports for the config module
+// Even though they're reported as unused, they're needed for config file loading
+use serde::{Deserialize, Serialize}; 
 use crate::cli::{CliConfig, ConnectionConfig, AuthConfig};
 
 /// Get the default configuration path

@@ -1,8 +1,6 @@
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
-use tokio::sync::Mutex;
-use std::sync::Arc;
 use crate::error::CliError;
 use crate::service::{ServiceClient, ServiceStatus};
 

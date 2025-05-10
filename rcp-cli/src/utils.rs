@@ -1,6 +1,6 @@
 use anyhow::Result;
 use chrono::Duration;
-use colored::{Color, Colorize};
+use colored::Colorize;
 use humantime::parse_duration;
 use std::io::{self, Write};
 

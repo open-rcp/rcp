@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+// use std::path::PathBuf; // Commented until used
 use tokio::sync::mpsc;
 use anyhow::Result;
 use crate::error::ServiceError;

@@ -10,9 +10,9 @@ pub mod shell;
 pub mod batch;
 pub mod completions;
 
-// Re-export handlers for easier importing
-pub use service::handle_service_command;
-pub use auth::handle_auth_command;
-pub use shell::handle_shell_command;
-pub use batch::handle_batch_command;
-pub use completions::handle_completions_command;
+// Module declarations only - exports commented out until used
+// pub use service::handle_service_command;
+// pub use auth::handle_auth_command;
+// pub use shell::handle_shell_command;
+// pub use batch::handle_batch_command;
+// pub use completions::handle_completions_command;
