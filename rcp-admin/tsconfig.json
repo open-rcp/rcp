@@ -1,5 +1,4 @@
 {
-  "extends": "./.svelte-kit/tsconfig.json",
   "compilerOptions": {
     "allowJs": true,
     "checkJs": true,
@@ -13,7 +12,7 @@
     "moduleResolution": "bundler",
     "target": "es2022",
     "lib": ["es2022", "DOM", "DOM.Iterable"],
-    "types": ["svelte", "vite/client"],
+    "types": ["node", "svelte", "vite/client"],
     "baseUrl": "."
     // Path aliases are now handled by SvelteKit through svelte.config.js
     // The $lib alias is automatically configured by SvelteKit
