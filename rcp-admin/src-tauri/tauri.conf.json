@@ -4,8 +4,8 @@
   "version": "0.1.0",
   "identifier": "com.open-rcp.rcp-admin",
   "build": {
-    "beforeDevCommand": "npm run dev",
-    "devUrl": "http://localhost:1420",
+    "beforeDevCommand": "npm run dev -- --port 5173",
+    "devUrl": "http://localhost:5173",
     "beforeBuildCommand": "npm run build",
     "frontendDist": "../build"
   },
