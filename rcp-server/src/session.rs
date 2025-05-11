@@ -335,6 +335,11 @@ impl Session {
                     "TwoFactor authentication not supported".to_string(),
                 ))
             }
+            AuthMethod::Password(_, _) => {
+                // For now, handle Password authentication the same way as PSK
+                warn!("Using PSK for Password authentication");
+                self.authenticate_psk(auth_payload).await
+            }
         }
     }
 

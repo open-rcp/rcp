@@ -10,7 +10,7 @@ pub const CHALLENGE_LENGTH: usize = 32;
 pub const SALT_LENGTH: usize = 16;
 
 /// Authentication method types
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum AuthMethod {
     /// Pre-shared key authentication
     PreSharedKey,
@@ -20,6 +20,9 @@ pub enum AuthMethod {
 
     /// Two-factor authentication
     TwoFactor,
+    
+    /// Username and password authentication
+    Password(String, String),
 }
 
 /// Authentication payload for client-server handshake

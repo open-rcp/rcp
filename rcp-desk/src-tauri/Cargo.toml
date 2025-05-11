@@ -16,6 +16,7 @@ tauri-plugin-dialog = "2.0.0-beta"
 tauri-plugin-shell = "2.0.0-beta"
 serde = { workspace = true }
 serde_json = { workspace = true }
+serde_with = "3.0.0"
 rcp-client = { path = "../../rcp-client" }
 rcp-core = { workspace = true }
 tokio = { workspace = true }

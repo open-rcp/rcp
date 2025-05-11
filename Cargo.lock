@@ -4516,6 +4516,7 @@ dependencies = [
  "rcp-core",
  "serde",
  "serde_json",
+ "serde_with",
  "tauri",
  "tauri-build",
  "tauri-plugin-dialog",
