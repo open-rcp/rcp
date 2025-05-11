@@ -1,3 +1,41 @@
+## v0.1.0-beta (2025-05-11)
+
+### Features
+* chore: update Cargo.toml to include rcp-desk and change license to Apache-2.0
+* feat: Add initial package.json for rcp-desk with dependencies and scripts
+* feat: Implement initial version of rcp-cli with configuration management, service commands, and user management
+* feat: add comprehensive integration tests for RCP core library functionality
+* feat: initialize Tauri + SvelteKit application with basic greeting functionality
+
+### Bug Fixes
+* chore: update Cargo.toml to include rcp-desk and change license to Apache-2.0
+* fix: remove .svelte-kit directory from .gitignore and update version hash in internal.js
+* fix: remove duplicate environment variable declarations in ambient.d.ts
+* fix: remove unused imports from config module and clean up commands exposure
+* fix: update .gitignore to include specific node_modules and .svelte-kit directories
+* fix: update SvelteKit adapter and dependencies, improve server management UI
+* fix: update SvelteKit adapter to version 3.0.8 and clean up server status handling in admin interface
+* fix: update daemonize dependency to version 0.5 and clean up import in main.rs
+* fix: update documentation links for consistency in naming
+* fix: update documentation links for protocol specification and development guidelines
+* fix: update documentation to reflect the correct name "Rust/Remote Control Protocol" across multiple files
+
+### Improvements
+* refactor: clean up unused imports and re-export statements in CLI and service modules
+* refactor: remove unused UnixPlatform export from platform module
+
+### Documentation
+* docs: update changelog for v0.1.0+7
+* docs: update changelog for v0.1.0+7
+* docs: update changelog for v0.1.0+7
+* docs: update changelog for v0.1.0+7
+* docs: update changelog for v0.1.0-beta
+* docs: update changelog for v0.1.0-beta
+* docs: update changelog for v0.1.0-beta
+* docs: update changelog for v0.1.0-beta
+* docs: update changelog for v0.1.0-beta
+* docs: update changelog for v0.1.0-pre
+
 ## v0.1.0-beta (2025-05-05)
 
 ### Features
