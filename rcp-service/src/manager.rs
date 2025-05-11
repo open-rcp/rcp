@@ -1,6 +1,6 @@
-use tokio::sync::mpsc;
-use std::path::PathBuf;
 use crate::error::ServiceError;
+use std::path::PathBuf;
+use tokio::sync::mpsc;
 
 pub struct ServiceManager {
     shutdown_tx: mpsc::Sender<()>,
@@ -9,7 +9,7 @@ pub struct ServiceManager {
 
 impl ServiceManager {
     pub fn new(work_dir: PathBuf, shutdown_tx: mpsc::Sender<()>) -> Self {
-        Self { 
+        Self {
             shutdown_tx,
             work_dir,
         }
@@ -21,7 +21,9 @@ impl ServiceManager {
     }
 
     pub async fn stop(&self) -> Result<(), ServiceError> {
-        self.shutdown_tx.send(()).await
+        self.shutdown_tx
+            .send(())
+            .await
             .map_err(|_| ServiceError::Service("Failed to send shutdown signal".to_string()))?;
         Ok(())
     }

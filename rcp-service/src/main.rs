@@ -8,10 +8,10 @@ mod platform;
 mod service;
 mod user;
 
-use clap::Parser;
-use anyhow::Result;
-use log::{info, LevelFilter};
 use crate::manager::ServiceManager;
+use anyhow::Result;
+use clap::Parser;
+use log::{info, LevelFilter};
 
 /// RCP Service - Rust/Remote Control Protocol Runtime Service
 #[derive(Parser, Debug)]
@@ -20,15 +20,15 @@ struct Cli {
     /// Config file path
     #[clap(short, long, default_value = "service.toml")]
     config: String,
-    
+
     /// Run in foreground (no daemon)
     #[clap(short, long)]
     foreground: bool,
-    
+
     /// Enable verbose logging
     #[clap(short, long)]
     verbose: bool,
-    
+
     /// Service command to execute
     #[clap(subcommand)]
     command: Option<ServiceCommand>,
@@ -38,19 +38,19 @@ struct Cli {
 enum ServiceCommand {
     /// Start the service
     Start,
-    
+
     /// Stop the service
     Stop,
-    
+
     /// Restart the service
     Restart,
-    
+
     /// Get service status
     Status,
-    
+
     /// Install service
     Install,
-    
+
     /// Uninstall service
     Uninstall,
 }
@@ -81,7 +81,10 @@ async fn main() -> Result<()> {
                 if cli.foreground {
                     // Run in foreground
                     let (shutdown_tx, _shutdown_rx) = tokio::sync::mpsc::channel(1);
-                    let work_dir = std::path::PathBuf::from(&cli.config).parent().unwrap_or_else(|| std::path::Path::new(".")).to_path_buf();
+                    let work_dir = std::path::PathBuf::from(&cli.config)
+                        .parent()
+                        .unwrap_or_else(|| std::path::Path::new("."))
+                        .to_path_buf();
                     let manager = ServiceManager::new(work_dir, shutdown_tx);
                     manager.start().await?;
                 } else {
@@ -116,7 +119,10 @@ async fn main() -> Result<()> {
         // No command, run in foreground
         info!("Starting RCP Service in foreground...");
         let (shutdown_tx, _shutdown_rx) = tokio::sync::mpsc::channel(1);
-        let work_dir = std::path::PathBuf::from(&cli.config).parent().unwrap_or_else(|| std::path::Path::new(".")).to_path_buf();
+        let work_dir = std::path::PathBuf::from(&cli.config)
+            .parent()
+            .unwrap_or_else(|| std::path::Path::new("."))
+            .to_path_buf();
         let manager = ServiceManager::new(work_dir, shutdown_tx);
         manager.start().await?;
     } else {

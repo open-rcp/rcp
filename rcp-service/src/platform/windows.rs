@@ -1,6 +1,6 @@
-use anyhow::Result;
 use crate::error::ServiceError;
 use crate::platform::Platform;
+use anyhow::Result;
 
 pub struct WindowsPlatform;
 

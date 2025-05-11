@@ -1,8 +1,8 @@
-use clap::{Parser, Subcommand, Command};
 use anyhow::Result;
+use clap::{Command, Parser, Subcommand};
+use clap_complete::Shell;
 use colored::Colorize;
 use std::path::PathBuf;
-use clap_complete::Shell;
 
 mod cli;
 mod commands;
@@ -11,7 +11,7 @@ mod error;
 mod service;
 mod utils;
 
-use cli::{CliConfig, Cli};
+use cli::{Cli, CliConfig};
 
 #[derive(Parser)]
 #[clap(name = "rcp-cli", about = "RCP command-line interface", version)]
@@ -43,11 +43,11 @@ enum Commands {
         /// Service action to perform
         #[arg(value_enum)]
         action: ServiceAction,
-        
+
         /// Auto-start service on boot (only for install action)
         #[arg(long, requires = "action", required_if_eq("action", "install"))]
         auto_start: Option<bool>,
-        
+
         /// User to run service as (only for install action)
         #[arg(long, requires = "action")]
         user: Option<String>,
@@ -195,19 +195,21 @@ async fn main() -> Result<()> {
 
     // Connect to service
     let connection_result = cli.connect().await;
-    
+
     if let Err(ref e) = connection_result {
         if !args.quiet {
             eprintln!("{}: {}", "Error connecting to service".bright_red(), e);
-            
+
             // Only warn and continue for commands that might work without a service connection
             match args.command {
                 Commands::Auth { .. } | Commands::Completions { .. } => {
                     eprintln!("{}", "Continuing without service connection...".yellow());
-                },
+                }
                 _ => {
-                    eprintln!("{}",
-                        "Make sure the RCP service is running. You can start it with:".yellow());
+                    eprintln!(
+                        "{}",
+                        "Make sure the RCP service is running. You can start it with:".yellow()
+                    );
                     eprintln!("  rcp-cli service start");
                     return Err(anyhow::anyhow!("Failed to connect to service"));
                 }
@@ -217,8 +219,18 @@ async fn main() -> Result<()> {
 
     // Handle commands
     let result = match &args.command {
-        Commands::Service { action, auto_start, user } => {
-            commands::service::handle_service_command(action.clone(), auto_start.unwrap_or(false), user.clone(), &mut cli).await
+        Commands::Service {
+            action,
+            auto_start,
+            user,
+        } => {
+            commands::service::handle_service_command(
+                action.clone(),
+                auto_start.unwrap_or(false),
+                user.clone(),
+                &mut cli,
+            )
+            .await
         }
         Commands::Server { action: _ } => {
             Ok(()) // Placeholder
@@ -235,7 +247,11 @@ async fn main() -> Result<()> {
         Commands::Diag { action: _ } => {
             Ok(()) // Placeholder
         }
-        Commands::Logs { level: _, limit: _, since: _ } => {
+        Commands::Logs {
+            level: _,
+            limit: _,
+            since: _,
+        } => {
             Ok(()) // Placeholder
         }
         Commands::Auth { action } => {

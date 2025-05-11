@@ -1,6 +1,6 @@
-use anyhow::Result;
 use crate::cli::Cli;
 use crate::AuthAction;
+use anyhow::Result;
 
 pub async fn handle_auth_command(cli: &mut Cli, action: AuthAction) -> Result<()> {
     match action {

@@ -16,7 +16,9 @@ impl Service {
     }
 
     pub async fn stop(&self) -> Result<(), ServiceError> {
-        self.shutdown_tx.send(()).await
+        self.shutdown_tx
+            .send(())
+            .await
             .map_err(|_| ServiceError::Service("Failed to send shutdown signal".to_string()))?;
         Ok(())
     }

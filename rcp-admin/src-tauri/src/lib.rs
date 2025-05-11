@@ -25,10 +25,10 @@ impl RcpState {
 
 pub fn run() {
     println!("Starting Tauri app with minimal functionality");
-    
+
     // Create state but prefix with underscore to indicate it's intentionally unused
     let _state = RcpState::new();
-    
+
     // Print some info to indicate the app would start normally
     println!("Creating Tauri builder");
     println!("Setting up application");
@@ -36,7 +36,7 @@ pub fn run() {
     println!("Adding invoke handler for commands");
     println!("Loading context from tauri.conf.json");
     println!("Starting application");
-    
+
     // This function now just serves as a placeholder/stub
     // The actual Tauri startup has been commented out to avoid macros
     // that are causing SIGBUS errors

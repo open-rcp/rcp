@@ -1,14 +1,14 @@
-pub mod service;
-pub mod server;
-pub mod session;
-pub mod user;
+pub mod auth;
+pub mod batch;
+pub mod completions;
 pub mod config;
 pub mod diag;
 pub mod logs;
-pub mod auth;
+pub mod server;
+pub mod service;
+pub mod session;
 pub mod shell;
-pub mod batch;
-pub mod completions;
+pub mod user;
 
 // Module declarations only - exports commented out until used
 // pub use service::handle_service_command;
