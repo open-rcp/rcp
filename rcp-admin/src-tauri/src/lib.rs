@@ -10,7 +10,6 @@ use tokio::sync::Mutex;
 mod commands_mod {
     include!("commands.rs");
 }
-pub use commands_mod::*;
 
 pub struct RcpState {
     is_connected: Arc<Mutex<bool>>,
