@@ -4,7 +4,6 @@ use axum::{
 };
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use std::time::SystemTime;
 
 use crate::{AppState, ApiError, db};
 use crate::handlers::auth::AuthUser;
@@ -37,7 +36,7 @@ pub async fn list_servers(
     auth_user: AuthUser,
 ) -> Result<Json<Vec<ServerResponse>>, ApiError> {
     // Get service client to call the RCP service
-    let mut service_client = state.service_client.lock().await;
+    let service_client = state.service_client.lock().await;
     
     // Get server list from service
     let servers = service_client.list_servers().await
@@ -49,9 +48,9 @@ pub async fn list_servers(
             id: server.id,
             name: server.name,
             status: server.status,
-            port: server.port,
-            connections: server.connections,
-            started_at: server.started_at,
+            port: server.port.unwrap_or(0),
+            connections: 0, // Default value since the field doesn't exist
+            started_at: Some(server.created_at.clone()), // Using created_at as a substitute
         })
         .collect();
     
@@ -75,7 +74,7 @@ pub async fn get_server(
     Path(name): Path<String>,
 ) -> Result<Json<ServerResponse>, ApiError> {
     // Get service client to call the RCP service
-    let mut service_client = state.service_client.lock().await;
+    let service_client = state.service_client.lock().await;
     
     // Get server list from service
     let servers = service_client.list_servers().await
@@ -91,9 +90,9 @@ pub async fn get_server(
         id: server.id,
         name: server.name,
         status: server.status,
-        port: server.port,
-        connections: server.connections,
-        started_at: server.started_at,
+        port: server.port.unwrap_or(0),
+        connections: 0, // Default value since the field doesn't exist
+        started_at: Some(server.created_at.clone()), // Using created_at as a substitute
     };
     
     // Log the action
@@ -175,7 +174,7 @@ pub async fn start_server(
     Path(name): Path<String>,
 ) -> Result<StatusCode, ApiError> {
     // Get service client to call the RCP service
-    let mut service_client = state.service_client.lock().await;
+    let service_client = state.service_client.lock().await;
     
     // Start the server
     service_client.start_server(&name).await
@@ -201,7 +200,7 @@ pub async fn stop_server(
     Path(name): Path<String>,
 ) -> Result<StatusCode, ApiError> {
     // Get service client to call the RCP service
-    let mut service_client = state.service_client.lock().await;
+    let service_client = state.service_client.lock().await;
     
     // Stop the server
     service_client.stop_server(&name).await
@@ -227,7 +226,7 @@ pub async fn restart_server(
     Path(name): Path<String>,
 ) -> Result<StatusCode, ApiError> {
     // Get service client to call the RCP service
-    let mut service_client = state.service_client.lock().await;
+    let service_client = state.service_client.lock().await;
     
     // Restart the server
     service_client.stop_server(&name).await
@@ -256,7 +255,7 @@ pub async fn delete_server(
     Path(name): Path<String>,
 ) -> Result<StatusCode, ApiError> {
     // First try to stop the server if it's running
-    let mut service_client = state.service_client.lock().await;
+    let service_client = state.service_client.lock().await;
     
     // Get server list to check if the server exists and is running
     let servers = service_client.list_servers().await

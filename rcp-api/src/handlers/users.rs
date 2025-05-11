@@ -3,13 +3,12 @@ use axum::{
     http::StatusCode,
 };
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 
 use crate::{AppState, ApiError, db};
 use crate::handlers::auth::AuthUser;
 
 /// User information response
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct UserResponse {
     id: String,
     username: String,
@@ -46,25 +45,19 @@ pub async fn list_users(
     State(state): State<AppState>,
     auth_user: AuthUser,
 ) -> Result<Json<Vec<UserResponse>>, ApiError> {
-    // Query all users from the database
-    let users = sqlx::query_as!(
-        db::User,
-        r#"SELECT id, username, password_hash, role, active, created_at, last_login FROM users"#
-    )
-    .fetch_all(&state.db_pool)
-    .await?;
+    // Get service client to call the RCP service
+    let service_client = state.service_client.lock().await;
     
-    // Convert to response format, excluding password hash
-    let responses = users.into_iter()
-        .map(|user| UserResponse {
-            id: user.id,
-            username: user.username,
-            role: user.role,
-            active: user.active,
-            created_at: user.created_at,
-            last_login: user.last_login,
-        })
-        .collect();
+    // Call the RCP service to list users
+    let command = "list-users";
+    let args = serde_json::to_vec(&serde_json::json!({}))?;
+    
+    let response = service_client.send_command(command, &args).await
+        .map_err(|e| ApiError::ServiceError(format!("Failed to list users: {}", e)))?;
+    
+    // Parse users from response
+    let users: Vec<UserResponse> = serde_json::from_slice(&response)
+        .map_err(|e| ApiError::ServiceError(format!("Failed to parse user list: {}", e)))?;
     
     // Log the action
     db::add_audit_log(
@@ -76,7 +69,7 @@ pub async fn list_users(
         None
     ).await?;
     
-    Ok(Json(responses))
+    Ok(Json(users))
 }
 
 /// Get a user by ID
@@ -85,37 +78,43 @@ pub async fn get_user(
     auth_user: AuthUser,
     Path(id): Path<String>,
 ) -> Result<Json<UserResponse>, ApiError> {
-    // Query user from the database
-    let user = sqlx::query_as!(
-        db::User,
-        r#"SELECT id, username, password_hash, role, active, created_at, last_login FROM users WHERE id = ?"#,
-        id
-    )
-    .fetch_optional(&state.db_pool)
-    .await?
-    .ok_or_else(|| ApiError::NotFoundError(format!("User '{}' not found", id)))?;
+    // Get service client to call the RCP service
+    let service_client = state.service_client.lock().await;
     
-    // Convert to response format
-    let response = UserResponse {
-        id: user.id,
-        username: user.username,
-        role: user.role,
-        active: user.active,
-        created_at: user.created_at,
-        last_login: user.last_login,
-    };
+    // Call the RCP service to get the user
+    let command = "get-user";
+    let args = serde_json::to_vec(&serde_json::json!({
+        "id": id
+    }))?;
     
-    // Log the action
-    db::add_audit_log(
-        &state.db_pool,
-        Some(&auth_user.id),
-        "get_user",
-        Some("user"),
-        Some(&id),
-        None
-    ).await?;
+    let response = service_client.send_command(command, &args).await
+        .map_err(|e| ApiError::ServiceError(format!("Failed to get user: {}", e)))?;
     
-    Ok(Json(response))
+    // Check for error response
+    let response_value: serde_json::Value = serde_json::from_slice(&response)
+        .map_err(|e| ApiError::ServiceError(format!("Failed to parse user response: {}", e)))?;
+    
+    if let Some(error) = response_value.get("error").and_then(|e| e.as_str()) {
+        return Err(ApiError::NotFoundError(error.to_string()));
+    }
+    
+    // Parse user from response
+    let user: UserResponse = serde_json::from_value(response_value)
+        .map_err(|e| ApiError::ServiceError(format!("Failed to parse user data: {}", e)))?;
+    
+    // Log the action (using rcp-server audit system)
+    let audit_command = "add-audit-log";
+    let audit_args = serde_json::to_vec(&serde_json::json!({
+        "user_id": auth_user.id,
+        "action": "get_user",
+        "entity_type": "user",
+        "entity_id": id,
+        "details": null
+    }))?;
+    
+    let _ = service_client.send_command(audit_command, &audit_args).await;
+    
+    Ok(Json(user))
 }
 
 /// Get the current user's profile
@@ -123,27 +122,8 @@ pub async fn get_profile(
     State(state): State<AppState>,
     auth_user: AuthUser,
 ) -> Result<Json<UserResponse>, ApiError> {
-    // Query user from the database
-    let user = sqlx::query_as!(
-        db::User,
-        r#"SELECT id, username, password_hash, role, active, created_at, last_login FROM users WHERE id = ?"#,
-        auth_user.id
-    )
-    .fetch_optional(&state.db_pool)
-    .await?
-    .ok_or_else(|| ApiError::AuthError("User account no longer exists".to_string()))?;
-    
-    // Convert to response format
-    let response = UserResponse {
-        id: user.id,
-        username: user.username,
-        role: user.role,
-        active: user.active,
-        created_at: user.created_at,
-        last_login: user.last_login,
-    };
-    
-    Ok(Json(response))
+    // Reuse get_user to fetch the current user's profile
+    get_user(State(state), auth_user.clone(), Path(auth_user.id)).await
 }
 
 /// Create a new user
@@ -152,60 +132,48 @@ pub async fn create_user(
     auth_user: AuthUser,
     Json(payload): Json<CreateUserRequest>,
 ) -> Result<(StatusCode, Json<UserResponse>), ApiError> {
-    // Check if username already exists
-    let exists = db::user_exists(&state.db_pool, &payload.username).await?;
-    if exists {
-        return Err(ApiError::ConflictError(format!("Username '{}' is already taken", payload.username)));
+    // Get service client to call the RCP service
+    let service_client = state.service_client.lock().await;
+    
+    // Call the RCP service to create the user
+    let command = "create-user";
+    let args = serde_json::to_vec(&serde_json::json!({
+        "username": payload.username,
+        "password": payload.password,
+        "role": payload.role
+    }))?;
+    
+    let response = service_client.send_command(command, &args).await
+        .map_err(|e| ApiError::ServiceError(format!("Failed to create user: {}", e)))?;
+    
+    // Check for error response
+    let response_value: serde_json::Value = serde_json::from_slice(&response)
+        .map_err(|e| ApiError::ServiceError(format!("Failed to parse response: {}", e)))?;
+    
+    if let Some(error) = response_value.get("error").and_then(|e| e.as_str()) {
+        if error.contains("already taken") {
+            return Err(ApiError::ConflictError(error.to_string()));
+        }
+        return Err(ApiError::ValidationError(error.to_string()));
     }
     
-    // Validate role
-    if !["admin", "operator", "viewer"].contains(&payload.role.as_str()) {
-        return Err(ApiError::ValidationError("Invalid role. Must be 'admin', 'operator', or 'viewer'".to_string()));
-    }
+    // Parse user from response
+    let user: UserResponse = serde_json::from_value(response_value)
+        .map_err(|e| ApiError::ServiceError(format!("Failed to parse user data: {}", e)))?;
     
-    // Hash password (in a real app, use bcrypt or argon2)
-    // This is a placeholder - in production use a proper hash function
-    let password_hash = format!("$2b$12$placeholder-hash-{}", payload.password);
+    // Log the action (using rcp-server audit system)
+    let audit_command = "add-audit-log";
+    let audit_args = serde_json::to_vec(&serde_json::json!({
+        "user_id": auth_user.id,
+        "action": "create_user",
+        "entity_type": "user",
+        "entity_id": user.id,
+        "details": format!("username={}, role={}", payload.username, payload.role)
+    }))?;
     
-    // Create new user
-    let id = Uuid::new_v4().to_string();
-    let now = chrono::Utc::now().to_rfc3339();
+    let _ = service_client.send_command(audit_command, &audit_args).await;
     
-    sqlx::query(
-        r#"
-        INSERT INTO users (id, username, password_hash, role, active, created_at)
-        VALUES (?, ?, ?, ?, 1, ?)
-        "#
-    )
-    .bind(&id)
-    .bind(&payload.username)
-    .bind(&password_hash)
-    .bind(&payload.role)
-    .bind(&now)
-    .execute(&state.db_pool)
-    .await?;
-    
-    // Log the action
-    db::add_audit_log(
-        &state.db_pool,
-        Some(&auth_user.id),
-        "create_user",
-        Some("user"),
-        Some(&id),
-        Some(&format!("username={}, role={}", payload.username, payload.role))
-    ).await?;
-    
-    // Return the created user info
-    let response = UserResponse {
-        id,
-        username: payload.username,
-        role: payload.role,
-        active: true,
-        created_at: now,
-        last_login: None,
-    };
-    
-    Ok((StatusCode::CREATED, Json(response)))
+    Ok((StatusCode::CREATED, Json(user)))
 }
 
 /// Update a user
@@ -215,65 +183,49 @@ pub async fn update_user(
     Path(id): Path<String>,
     Json(payload): Json<UpdateUserRequest>,
 ) -> Result<Json<UserResponse>, ApiError> {
-    // Get existing user
-    let user = sqlx::query_as!(
-        db::User,
-        r#"SELECT id, username, password_hash, role, active, created_at, last_login FROM users WHERE id = ?"#,
-        id
-    )
-    .fetch_optional(&state.db_pool)
-    .await?
-    .ok_or_else(|| ApiError::NotFoundError(format!("User '{}' not found", id)))?;
+    // Get service client to call the RCP service
+    let service_client = state.service_client.lock().await;
     
-    // Prepare update fields
-    let role = payload.role.unwrap_or(user.role);
-    let active = payload.active.unwrap_or(user.active);
+    // Call the RCP service to update the user
+    let command = "update-user";
+    let args = serde_json::to_vec(&serde_json::json!({
+        "id": id,
+        "role": payload.role,
+        "active": payload.active,
+        "requesting_user_id": auth_user.id
+    }))?;
     
-    // Validate role if it's being updated
-    if payload.role.is_some() && !["admin", "operator", "viewer"].contains(&role.as_str()) {
-        return Err(ApiError::ValidationError("Invalid role. Must be 'admin', 'operator', or 'viewer'".to_string()));
+    let response = service_client.send_command(command, &args).await
+        .map_err(|e| ApiError::ServiceError(format!("Failed to update user: {}", e)))?;
+    
+    // Check for error response
+    let response_value: serde_json::Value = serde_json::from_slice(&response)
+        .map_err(|e| ApiError::ServiceError(format!("Failed to parse response: {}", e)))?;
+    
+    if let Some(error) = response_value.get("error").and_then(|e| e.as_str()) {
+        if error.contains("not found") {
+            return Err(ApiError::NotFoundError(error.to_string()));
+        }
+        return Err(ApiError::ValidationError(error.to_string()));
     }
     
-    // Don't allow users to deactivate themselves
-    if auth_user.id == id && Some(false) == payload.active {
-        return Err(ApiError::ValidationError("Cannot deactivate your own account".to_string()));
-    }
+    // Parse user from response
+    let user: UserResponse = serde_json::from_value(response_value)
+        .map_err(|e| ApiError::ServiceError(format!("Failed to parse user data: {}", e)))?;
     
-    // Update the user
-    sqlx::query(
-        r#"
-        UPDATE users 
-        SET role = ?, active = ?
-        WHERE id = ?
-        "#
-    )
-    .bind(&role)
-    .bind(active)
-    .bind(&id)
-    .execute(&state.db_pool)
-    .await?;
+    // Log the action (using rcp-server audit system)
+    let audit_command = "add-audit-log";
+    let audit_args = serde_json::to_vec(&serde_json::json!({
+        "user_id": auth_user.id,
+        "action": "update_user",
+        "entity_type": "user",
+        "entity_id": id,
+        "details": format!("role={:?}, active={:?}", payload.role, payload.active)
+    }))?;
     
-    // Log the action
-    db::add_audit_log(
-        &state.db_pool,
-        Some(&auth_user.id),
-        "update_user",
-        Some("user"),
-        Some(&id),
-        Some(&format!("role={}, active={}", role, active))
-    ).await?;
+    let _ = service_client.send_command(audit_command, &audit_args).await;
     
-    // Return the updated user info
-    let response = UserResponse {
-        id: user.id,
-        username: user.username,
-        role,
-        active,
-        created_at: user.created_at,
-        last_login: user.last_login,
-    };
-    
-    Ok(Json(response))
+    Ok(Json(user))
 }
 
 /// Delete a user
@@ -282,30 +234,46 @@ pub async fn delete_user(
     auth_user: AuthUser,
     Path(id): Path<String>,
 ) -> Result<StatusCode, ApiError> {
-    // Don't allow users to delete themselves
+    // Prevent users from deleting themselves
     if auth_user.id == id {
         return Err(ApiError::ValidationError("Cannot delete your own account".to_string()));
     }
     
-    // Delete the user
-    let result = sqlx::query("DELETE FROM users WHERE id = ?")
-        .bind(&id)
-        .execute(&state.db_pool)
-        .await?;
+    // Get service client to call the RCP service
+    let service_client = state.service_client.lock().await;
     
-    if result.rows_affected() == 0 {
-        return Err(ApiError::NotFoundError(format!("User '{}' not found", id)));
+    // Call the RCP service to delete the user
+    let command = "delete-user";
+    let args = serde_json::to_vec(&serde_json::json!({
+        "id": id,
+        "requesting_user_id": auth_user.id
+    }))?;
+    
+    let response = service_client.send_command(command, &args).await
+        .map_err(|e| ApiError::ServiceError(format!("Failed to delete user: {}", e)))?;
+    
+    // Check for error response
+    let response_value: serde_json::Value = serde_json::from_slice(&response)
+        .map_err(|e| ApiError::ServiceError(format!("Failed to parse response: {}", e)))?;
+    
+    if let Some(error) = response_value.get("error").and_then(|e| e.as_str()) {
+        if error.contains("not found") {
+            return Err(ApiError::NotFoundError(error.to_string()));
+        }
+        return Err(ApiError::ValidationError(error.to_string()));
     }
     
-    // Log the action
-    db::add_audit_log(
-        &state.db_pool,
-        Some(&auth_user.id),
-        "delete_user",
-        Some("user"),
-        Some(&id),
-        None
-    ).await?;
+    // Log the action (using rcp-server audit system)
+    let audit_command = "add-audit-log";
+    let audit_args = serde_json::to_vec(&serde_json::json!({
+        "user_id": auth_user.id,
+        "action": "delete_user",
+        "entity_type": "user",
+        "entity_id": id,
+        "details": null
+    }))?;
+    
+    let _ = service_client.send_command(audit_command, &audit_args).await;
     
     Ok(StatusCode::NO_CONTENT)
 }
@@ -317,52 +285,46 @@ pub async fn change_password(
     Path(id): Path<String>,
     Json(payload): Json<ChangePasswordRequest>,
 ) -> Result<StatusCode, ApiError> {
-    // Get existing user
-    let user = sqlx::query_as!(
-        db::User,
-        r#"SELECT id, username, password_hash, role, active, created_at, last_login FROM users WHERE id = ?"#,
-        id
-    )
-    .fetch_optional(&state.db_pool)
-    .await?
-    .ok_or_else(|| ApiError::NotFoundError(format!("User '{}' not found", id)))?;
+    // Get service client to call the RCP service
+    let service_client = state.service_client.lock().await;
     
-    // If changing own password, require current password
-    if auth_user.id == id {
-        if let Some(current_password) = &payload.current_password {
-            // Verify current password (in a real app, use bcrypt or argon2)
-            // This is a placeholder verification
-            if !user.password_hash.ends_with(current_password) {
-                return Err(ApiError::AuthError("Current password is incorrect".to_string()));
-            }
-        } else {
-            return Err(ApiError::ValidationError("Current password is required".to_string()));
+    // Call the RCP service to change the password
+    let command = "change-user-password";
+    let args = serde_json::to_vec(&serde_json::json!({
+        "id": id,
+        "current_password": payload.current_password,
+        "new_password": payload.new_password,
+        "requesting_user_id": auth_user.id,
+        "requesting_user_role": auth_user.role
+    }))?;
+    
+    let response = service_client.send_command(command, &args).await
+        .map_err(|e| ApiError::ServiceError(format!("Failed to change password: {}", e)))?;
+    
+    // Check for error response
+    let response_value: serde_json::Value = serde_json::from_slice(&response)
+        .map_err(|e| ApiError::ServiceError(format!("Failed to parse response: {}", e)))?;
+    
+    if let Some(error) = response_value.get("error").and_then(|e| e.as_str()) {
+        if error.contains("not found") {
+            return Err(ApiError::NotFoundError(error.to_string()));
+        } else if error.contains("incorrect") {
+            return Err(ApiError::AuthError(error.to_string()));
         }
-    } else if auth_user.role != "admin" {
-        // Only admins can change others' passwords
-        return Err(ApiError::ForbiddenError("Only administrators can change other users' passwords".to_string()));
+        return Err(ApiError::ValidationError(error.to_string()));
     }
     
-    // Hash new password (in a real app, use bcrypt or argon2)
-    // This is a placeholder - in production use a proper hash function
-    let new_password_hash = format!("$2b$12$placeholder-hash-{}", payload.new_password);
+    // Log the action (using rcp-server audit system)
+    let audit_command = "add-audit-log";
+    let audit_args = serde_json::to_vec(&serde_json::json!({
+        "user_id": auth_user.id,
+        "action": "change_password",
+        "entity_type": "user",
+        "entity_id": id,
+        "details": null
+    }))?;
     
-    // Update the password
-    sqlx::query("UPDATE users SET password_hash = ? WHERE id = ?")
-        .bind(&new_password_hash)
-        .bind(&id)
-        .execute(&state.db_pool)
-        .await?;
-    
-    // Log the action (don't include any password details in the log)
-    db::add_audit_log(
-        &state.db_pool,
-        Some(&auth_user.id),
-        "change_password",
-        Some("user"),
-        Some(&id),
-        None
-    ).await?;
+    let _ = service_client.send_command(audit_command, &audit_args).await;
     
     Ok(StatusCode::NO_CONTENT)
 }

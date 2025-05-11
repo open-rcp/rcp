@@ -36,6 +36,14 @@ pub enum ApiError {
     /// Server error
     #[error("Server error: {0}")]
     ServerError(String),
+    
+    /// Validation error
+    #[error("Validation error: {0}")]
+    ValidationError(String),
+    
+    /// Conflict error
+    #[error("Conflict error: {0}")]
+    ConflictError(String),
 }
 
 /// Convert SQLx errors to ApiError
@@ -67,6 +75,13 @@ impl From<anyhow::Error> for ApiError {
     }
 }
 
+/// Convert serde_json errors to ApiError
+impl From<serde_json::Error> for ApiError {
+    fn from(error: serde_json::Error) -> Self {
+        ApiError::ServerError(format!("JSON serialization error: {}", error))
+    }
+}
+
 /// Implement Axum's IntoResponse for ApiError
 impl IntoResponse for ApiError {
     fn into_response(self) -> Response {
@@ -78,6 +93,8 @@ impl IntoResponse for ApiError {
             ApiError::DatabaseError(msg) => (StatusCode::INTERNAL_SERVER_ERROR, msg),
             ApiError::ServiceError(msg) => (StatusCode::SERVICE_UNAVAILABLE, msg),
             ApiError::ServerError(msg) => (StatusCode::INTERNAL_SERVER_ERROR, msg),
+            ApiError::ValidationError(msg) => (StatusCode::BAD_REQUEST, msg),
+            ApiError::ConflictError(msg) => (StatusCode::CONFLICT, msg),
         };
 
         // Create a JSON response with error details

@@ -34,9 +34,13 @@ pub async fn init(config: ApiConfig) -> Result<(), ApiError> {
     let db_pool = db::init_db(&config.database_url).await?;
     
     // Connect to RCP service
-    let service_client = service::ServiceClient::connect(&config.service_socket, config.service_timeout)
+    let service_client = service::ServiceClient::connect(&config.service_connection_string, None)
         .await
         .map_err(|e| ApiError::ServiceError(format!("Failed to connect to RCP service: {}", e)))?;
+    
+    // Store config values before moving into Arc
+    let bind_address = config.bind_address.clone();
+    let port = config.port;
     
     // Create application state
     let app_state = AppState {
@@ -49,7 +53,7 @@ pub async fn init(config: ApiConfig) -> Result<(), ApiError> {
     let router = routes::create_router(app_state);
     
     // Start the server
-    let addr = format!("{}:{}", config.bind_address, config.bind_port);
+    let addr = format!("{}:{}", bind_address, port);
     tracing::info!("Starting API server at {}", addr);
     
     axum::Server::bind(&addr.parse().unwrap())

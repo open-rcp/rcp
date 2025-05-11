@@ -53,11 +53,11 @@ async fn main() -> Result<()> {
     }
     
     if let Some(port) = args.port {
-        config.bind_port = port;
+        config.port = port;
     }
     
     if let Some(socket) = args.socket {
-        config.service_socket = socket;
+        config.service_connection_string = socket;
     }
     
     // Initialize and start API server

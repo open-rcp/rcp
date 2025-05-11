@@ -6,7 +6,7 @@ use std::env;
 
 /// API Server Configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Config {
+pub struct ApiConfig {
     /// Server bind address
     pub bind_address: String,
     
@@ -38,7 +38,7 @@ pub struct Config {
     pub log_level: String,
 }
 
-impl Default for Config {
+impl Default for ApiConfig {
     fn default() -> Self {
         Self {
             bind_address: "127.0.0.1".to_string(),
@@ -55,11 +55,11 @@ impl Default for Config {
     }
 }
 
-impl Config {
+impl ApiConfig {
     /// Load configuration from file
     pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Self> {
         let contents = fs::read_to_string(path)?;
-        let config: Config = toml::from_str(&contents)?;
+        let config: ApiConfig = toml::from_str(&contents)?;
         Ok(config)
     }
     

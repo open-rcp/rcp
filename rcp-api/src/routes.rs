@@ -56,23 +56,30 @@ fn api_routes() -> Router<AppState> {
         .route("/users/:id", delete(handlers::users::delete_user))
         .route("/users/:id/password", put(handlers::users::change_password))
         
-        .route("/auth/logout", post(handlers::auth::logout))
         .route("/profile", get(handlers::users::get_profile))
+        .route("/auth/logout", post(handlers::auth::logout))
+        
+        .route("/apps", get(handlers::apps::list_apps))
+        .route("/apps", post(handlers::apps::create_app))
+        .route("/apps/:id", get(handlers::apps::get_app))
+        .route("/apps/:id", put(handlers::apps::update_app))
+        .route("/apps/:id", delete(handlers::apps::delete_app))
+        .route("/apps/:id/enable", post(handlers::apps::enable_app))
+        .route("/apps/:id/disable", post(handlers::apps::disable_app))
+        .route("/apps/:id/launch/:user_id", post(handlers::apps::launch_app))
+        .route("/app-instances", get(handlers::apps::list_app_instances))
+        .route("/app-instances/:instance_id", delete(handlers::apps::terminate_app_instance))
         
         .route("/system/status", get(handlers::system::system_status))
         .route("/system/logs", get(handlers::system::get_logs))
-        .layer(middleware::from_fn_with_state(
-            handlers::auth::auth_middleware
-        ));
+        .layer(middleware::from_fn(handlers::auth::auth_middleware));
 
     // Admin-only routes
     let admin_routes = Router::new()
         .route("/admin/system/config", get(handlers::admin::get_system_config))
         .route("/admin/system/config", put(handlers::admin::update_system_config))
         .route("/admin/audit", get(handlers::admin::get_audit_logs))
-        .layer(middleware::from_fn_with_state(
-            handlers::auth::admin_middleware
-        ));
+        .layer(middleware::from_fn(handlers::auth::admin_middleware));
 
     // Combine all routes
     Router::new()
