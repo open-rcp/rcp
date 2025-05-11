@@ -7,22 +7,28 @@ use std::io::{self, Write};
 /// Format duration from seconds to human readable string
 pub fn format_duration(seconds: u64) -> String {
     let duration = Duration::seconds(seconds as i64);
-    
+
     if duration.num_days() > 0 {
-        format!("{}d {}h {}m {}s", 
+        format!(
+            "{}d {}h {}m {}s",
             duration.num_days(),
             duration.num_hours() % 24,
             duration.num_minutes() % 60,
-            duration.num_seconds() % 60)
+            duration.num_seconds() % 60
+        )
     } else if duration.num_hours() > 0 {
-        format!("{}h {}m {}s", 
+        format!(
+            "{}h {}m {}s",
             duration.num_hours(),
             duration.num_minutes() % 60,
-            duration.num_seconds() % 60)
+            duration.num_seconds() % 60
+        )
     } else if duration.num_minutes() > 0 {
-        format!("{}m {}s", 
+        format!(
+            "{}m {}s",
             duration.num_minutes(),
-            duration.num_seconds() % 60)
+            duration.num_seconds() % 60
+        )
     } else {
         format!("{}s", duration.num_seconds())
     }
@@ -43,20 +49,20 @@ pub fn format_status(status: &str) -> colored::ColoredString {
         "starting" | "stopping" | "restarting" => status.yellow(),
         "warning" => status.yellow(),
         "error" | "failed" => status.red(),
-        _ => status.normal()
+        _ => status.normal(),
     }
 }
 
 /// Prompt user for confirmation
 pub fn confirm(prompt: &str, default: bool) -> bool {
     let mut input = String::new();
-    
+
     let default_str = if default { "Y/n" } else { "y/N" };
     print!("{} [{}]: ", prompt, default_str);
     io::stdout().flush().unwrap();
-    
+
     io::stdin().read_line(&mut input).unwrap();
-    
+
     let input = input.trim().to_lowercase();
     if input.is_empty() {
         default
@@ -70,7 +76,7 @@ pub fn confirm(prompt: &str, default: bool) -> bool {
 /// Prompt user for input
 pub fn prompt(prompt: &str, default: Option<&str>) -> Result<String> {
     let mut input = String::new();
-    
+
     match default {
         Some(default_value) => {
             print!("{} [{}]: ", prompt, default_value);
@@ -79,15 +85,15 @@ pub fn prompt(prompt: &str, default: Option<&str>) -> Result<String> {
             print!("{}: ", prompt);
         }
     }
-    
+
     io::stdout().flush()?;
     io::stdin().read_line(&mut input)?;
-    
+
     let input = input.trim();
     if input.is_empty() {
         match default {
             Some(default_value) => Ok(default_value.to_string()),
-            None => Err(anyhow::anyhow!("Input required"))
+            None => Err(anyhow::anyhow!("Input required")),
         }
     } else {
         Ok(input.to_string())
@@ -96,8 +102,11 @@ pub fn prompt(prompt: &str, default: Option<&str>) -> Result<String> {
 
 /// Print a table row with aligned columns
 pub fn print_table_row(columns: &[&str], widths: &[usize]) {
-    assert!(columns.len() == widths.len(), "Column and width counts must match");
-    
+    assert!(
+        columns.len() == widths.len(),
+        "Column and width counts must match"
+    );
+
     for (idx, (col, width)) in columns.iter().zip(widths.iter()).enumerate() {
         if idx > 0 {
             print!(" ");

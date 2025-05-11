@@ -1,7 +1,7 @@
 // use std::path::PathBuf; // Commented until used
-use tokio::sync::mpsc;
-use anyhow::Result;
 use crate::error::ServiceError;
+use anyhow::Result;
+use tokio::sync::mpsc;
 
 pub struct ServiceDaemon {
     shutdown_rx: mpsc::Receiver<()>,

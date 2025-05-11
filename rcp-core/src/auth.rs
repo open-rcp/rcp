@@ -1,9 +1,9 @@
 //! # Authentication Module for RCP
-//! 
+//!
 //! This module provides authentication mechanisms for the Rust/Remote Control Protocol,
 //! supporting various authentication methods suitable for both individual users
 //! and enterprise deployments. The authentication system is designed to be:
-//! 
+//!
 //! - Secure by default
 //! - Flexible for different deployment scenarios
 //! - Extensible for future authentication methods
@@ -31,7 +31,7 @@ pub enum AuthMethod {
 
     /// Two-factor authentication
     TwoFactor,
-    
+
     /// Username and password authentication
     Password(String, String),
 }

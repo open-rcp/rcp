@@ -3,7 +3,7 @@
 //! This crate provides the core functionality for the Rust/Remote Control Protocol (RCP),
 //! a versatile protocol designed for managing applications across various deployment scenarios,
 //! from individual use to enterprise data centers.
-//! 
+//!
 //! ## Architecture
 //!
 //! The RCP Core establishes the foundation for all RCP components:

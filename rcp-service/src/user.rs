@@ -1,6 +1,6 @@
+use crate::error::ServiceError;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use crate::error::ServiceError;
 
 pub struct ServiceUser {
     pub username: String,
@@ -21,7 +21,7 @@ pub struct UserManager {
 impl UserManager {
     pub fn new() -> Self {
         Self {
-            users: HashMap::new()
+            users: HashMap::new(),
         }
     }
 

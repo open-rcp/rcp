@@ -216,35 +216,42 @@ fn default_working_dir() -> String {
 impl Default for ApplicationConfig {
     fn default() -> Self {
         let mut applications = std::collections::HashMap::new();
-        
+
         // Add default text editor based on platform
         #[cfg(target_os = "macos")]
-        applications.insert("textedit".to_string(), VirtualAppConfig {
-            id: "textedit".to_string(),
-            name: "TextEdit".to_string(),
-            executable_path: "/System/Applications/TextEdit.app/Contents/MacOS/TextEdit".to_string(),
-            working_dir: None,
-            args: vec![],
-            env: std::collections::HashMap::new(),
-            required_permissions: vec!["app:textedit".to_string()],
-            file_associations: vec!["txt".to_string(), "rtf".to_string()],
-            start_maximized: false,
-            settings: serde_json::json!({}),
-        });
+        applications.insert(
+            "textedit".to_string(),
+            VirtualAppConfig {
+                id: "textedit".to_string(),
+                name: "TextEdit".to_string(),
+                executable_path: "/System/Applications/TextEdit.app/Contents/MacOS/TextEdit"
+                    .to_string(),
+                working_dir: None,
+                args: vec![],
+                env: std::collections::HashMap::new(),
+                required_permissions: vec!["app:textedit".to_string()],
+                file_associations: vec!["txt".to_string(), "rtf".to_string()],
+                start_maximized: false,
+                settings: serde_json::json!({}),
+            },
+        );
 
         #[cfg(target_os = "windows")]
-        applications.insert("notepad".to_string(), VirtualAppConfig {
-            id: "notepad".to_string(),
-            name: "Notepad".to_string(),
-            executable_path: "C:\\Windows\\System32\\notepad.exe".to_string(),
-            working_dir: None,
-            args: vec![],
-            env: std::collections::HashMap::new(),
-            required_permissions: vec!["app:notepad".to_string()],
-            file_associations: vec!["txt".to_string()],
-            start_maximized: false,
-            settings: serde_json::json!({}),
-        });
+        applications.insert(
+            "notepad".to_string(),
+            VirtualAppConfig {
+                id: "notepad".to_string(),
+                name: "Notepad".to_string(),
+                executable_path: "C:\\Windows\\System32\\notepad.exe".to_string(),
+                working_dir: None,
+                args: vec![],
+                env: std::collections::HashMap::new(),
+                required_permissions: vec!["app:notepad".to_string()],
+                file_associations: vec!["txt".to_string()],
+                start_maximized: false,
+                settings: serde_json::json!({}),
+            },
+        );
 
         Self {
             applications,

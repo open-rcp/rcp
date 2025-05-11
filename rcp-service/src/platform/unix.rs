@@ -1,6 +1,6 @@
-use anyhow::Result;
 use crate::error::ServiceError;
 use crate::platform::Platform;
+use anyhow::Result;
 
 pub struct UnixPlatform;
 
@@ -19,8 +19,9 @@ impl Platform for UnixPlatform {
         // TODO: Implement socket file cleanup
         let socket_path = Self::get_socket_path()?;
         if std::path::Path::new(&socket_path).exists() {
-            std::fs::remove_file(socket_path)
-                .map_err(|e| ServiceError::Service(format!("Failed to remove socket file: {}", e)))?;
+            std::fs::remove_file(socket_path).map_err(|e| {
+                ServiceError::Service(format!("Failed to remove socket file: {}", e))
+            })?;
         }
         Ok(())
     }

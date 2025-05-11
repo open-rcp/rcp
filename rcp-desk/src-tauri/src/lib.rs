@@ -1,30 +1,30 @@
+use rcp_client::{Client, ClientBuilder};
+use rcp_core::AuthMethod;
 use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 use std::sync::Arc;
-use tauri::{generate_handler, command, State};
-use tokio::sync::Mutex;
+use tauri::{command, generate_handler, State};
 use tauri_plugin_dialog;
 use tauri_plugin_shell;
-use rcp_client::{ClientBuilder, Client};
-use rcp_core::AuthMethod;
-use uuid::Uuid;
 use thiserror::Error;
+use tokio::sync::Mutex;
+use uuid::Uuid;
 
 #[serde_as]
 #[derive(Debug, Error, Serialize, Clone)]
 pub enum ClientError {
     #[error("Client error: {0}")]
     ClientError(String),
-    
+
     #[error("Connection error: {0}")]
     ConnectionError(String),
-    
+
     #[error("Authentication error: {0}")]
     AuthError(String),
-    
+
     #[error("Application error: {0}")]
     AppError(String),
-    
+
     #[error("IO error: {0}")]
     IoError(String),
 }
@@ -66,19 +66,15 @@ pub struct AppInfo {
 
 mod commands {
     use super::*;
-    
+
     #[command]
-    pub async fn connect(
-        state: State<'_, ClientState>,
-        host: String,
-        port: u16
-    ) -> Result<bool> {
+    pub async fn connect(state: State<'_, ClientState>, host: String, port: u16) -> Result<bool> {
         let mut client_lock = state.client.lock().await;
-        
+
         if client_lock.is_some() {
             return Ok(false);
         }
-        
+
         // Build client
         let client = ClientBuilder::new()
             .host(&host)
@@ -86,46 +82,46 @@ mod commands {
             .client_name("RCP-Desk")
             .client_id(Uuid::new_v4())
             .build();
-        
+
         // Connect to server
         client.connect().await?;
-        
+
         // Store client
         *client_lock = Some(client);
-        
+
         Ok(true)
     }
-    
+
     #[command]
     pub async fn login(
         state: State<'_, ClientState>,
         username: String,
         password: String,
-        _remember_credentials: bool
+        _remember_credentials: bool,
     ) -> Result<AuthResult> {
         let mut client_lock = state.client.lock().await;
-        
+
         if let Some(client) = &mut *client_lock {
             // Set auth method
-            client.set_auth_method(AuthMethod::Password(username, password)).await?;
-            
+            client
+                .set_auth_method(AuthMethod::Password(username, password))
+                .await?;
+
             // Authenticate
             match client.authenticate().await {
                 Ok(_) => {
                     // Start command processing
                     client.start().await?;
-                    
+
                     Ok(AuthResult {
                         success: true,
                         message: None,
                     })
                 }
-                Err(e) => {
-                    Ok(AuthResult {
-                        success: false,
-                        message: Some(e.to_string()),
-                    })
-                }
+                Err(e) => Ok(AuthResult {
+                    success: false,
+                    message: Some(e.to_string()),
+                }),
             }
         } else {
             Ok(AuthResult {
@@ -134,11 +130,11 @@ mod commands {
             })
         }
     }
-    
+
     #[command]
     pub async fn get_available_apps(state: State<'_, ClientState>) -> Result<Vec<AppInfo>> {
         let client_lock = state.client.lock().await;
-        
+
         if let Some(_client) = &*client_lock {
             // In a real implementation, we would query the server for available apps
             // For now, let's return some demo apps
@@ -165,52 +161,52 @@ mod commands {
                     last_used: Some("2025-05-07T09:15:00Z".to_string()),
                 },
             ];
-            
+
             Ok(apps)
         } else {
-            Err(ClientError::ConnectionError("Not connected to server".to_string()))
+            Err(ClientError::ConnectionError(
+                "Not connected to server".to_string(),
+            ))
         }
     }
-    
+
     #[command]
-    pub async fn launch_app(
-        state: State<'_, ClientState>,
-        _app_id: String
-    ) -> Result<bool> {
+    pub async fn launch_app(state: State<'_, ClientState>, _app_id: String) -> Result<bool> {
         let client_lock = state.client.lock().await;
-        
+
         if let Some(_client) = &*client_lock {
             // In a real implementation, this would launch the app via rcp-client
             // and return the streaming session information
-            
+
             // For now, let's simulate success
             tokio::time::sleep(tokio::time::Duration::from_millis(500)).await;
-            
+
             Ok(true)
         } else {
-            Err(ClientError::ConnectionError("Not connected to server".to_string()))
+            Err(ClientError::ConnectionError(
+                "Not connected to server".to_string(),
+            ))
         }
     }
-    
+
     #[command]
-    pub async fn close_app(
-        state: State<'_, ClientState>,
-        _app_id: String
-    ) -> Result<bool> {
+    pub async fn close_app(state: State<'_, ClientState>, _app_id: String) -> Result<bool> {
         let client_lock = state.client.lock().await;
-        
+
         if let Some(_client) = &*client_lock {
             // In a real implementation, this would close the app via rcp-client
-            
+
             // For now, let's simulate success
             tokio::time::sleep(tokio::time::Duration::from_millis(300)).await;
-            
+
             Ok(true)
         } else {
-            Err(ClientError::ConnectionError("Not connected to server".to_string()))
+            Err(ClientError::ConnectionError(
+                "Not connected to server".to_string(),
+            ))
         }
     }
-    
+
     #[command]
     pub fn get_saved_credentials() -> Option<ConnectionConfig> {
         // In a real implementation, this would retrieve saved credentials from secure storage

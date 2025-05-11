@@ -1,36 +1,36 @@
-use thiserror::Error;
 use std::io;
+use thiserror::Error;
 
 /// Error types specific to the CLI
 #[derive(Error, Debug)]
 pub enum CliError {
     #[error("Not connected to RCP service")]
     NotConnected,
-    
+
     #[error("Connection failed: {0}")]
     ConnectionFailed(String),
-    
+
     #[error("Service error: {0}")]
     ServiceError(String),
-    
+
     #[error("Authentication failed: {0}")]
     AuthFailed(String),
-    
+
     #[error("Command failed: {0}")]
     CommandFailed(String),
-    
+
     #[error("Operation timed out")]
     Timeout,
-    
+
     #[error("Configuration error: {0}")]
     ConfigError(String),
-    
+
     #[error("IO error: {0}")]
     IoError(#[from] io::Error),
-    
+
     #[error("Invalid argument: {0}")]
     InvalidArgument(String),
-    
+
     #[error("Unknown error: {0}")]
     Unknown(String),
 }

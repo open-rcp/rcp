@@ -7,8 +7,7 @@ fn test_auth_method_equality() {
     let method1 = AuthMethod::PreSharedKey;
     let method2 = AuthMethod::PreSharedKey;
     let method3 = AuthMethod::PublicKey;
-    
+
     assert_eq!(method1, method2);
     assert_ne!(method1, method3);
 }
-
