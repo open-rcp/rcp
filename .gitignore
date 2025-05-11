@@ -18,4 +18,3 @@ target/
 temp/
 rustdesk/
 node_modules/
-.svelte-kit/
