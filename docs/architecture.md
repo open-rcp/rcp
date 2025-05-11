@@ -2,7 +2,7 @@
 
 ## System Architecture
 
-The Rust Control Protocol (RCP) is organized as a modular service-oriented system with several components that work together:
+The Rust/Remote Control Protocol (RCP) is organized as a modular service-oriented system with several components that work together:
 
 ```
 ┌─────────────────┐    ┌─────────────┐       ┌─────────────┐

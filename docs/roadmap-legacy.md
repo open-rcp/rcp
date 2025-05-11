@@ -1,6 +1,6 @@
 # RCP Project Milestone Roadmap
 
-This document outlines the major development milestones of the Remote Control Protocol (RCP) project, tracking progress, accomplishments, and future plans.
+This document outlines the major development milestones of the Rust/Remote Control Protocol (RCP) project, tracking progress, accomplishments, and future plans.
 
 ## Milestone 1: Core Protocol & Foundation
 

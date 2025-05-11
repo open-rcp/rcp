@@ -6,7 +6,7 @@ authors.workspace = true
 license.workspace = true
 repository.workspace = true
 homepage.workspace = true
-description = "WebSocket bridge for RCP (Rust Control Protocol)"
+description = "WebSocket bridge for RCP (Rust/Remote Control Protocol)"
 
 # Explicitly define both lib and bin targets
 [[bin]]

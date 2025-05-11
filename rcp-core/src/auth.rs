@@ -1,12 +1,23 @@
+//! # Authentication Module for RCP
+//! 
+//! This module provides authentication mechanisms for the Rust/Remote Control Protocol,
+//! supporting various authentication methods suitable for both individual users
+//! and enterprise deployments. The authentication system is designed to be:
+//! 
+//! - Secure by default
+//! - Flexible for different deployment scenarios
+//! - Extensible for future authentication methods
+//! - Compatible with clustering and multi-server deployments
+
 use rand::RngCore;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use uuid::Uuid;
 
-/// Length of challenge bytes
+/// Length of challenge bytes used in authentication
 pub const CHALLENGE_LENGTH: usize = 32;
 
-/// Length of salt bytes
+/// Length of salt bytes for password hashing
 pub const SALT_LENGTH: usize = 16;
 
 /// Authentication method types

@@ -4,6 +4,12 @@ use std::fmt;
 use std::sync::Arc;
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
 
+/// # RCP Protocol Implementation
+///
+/// This module provides the core protocol implementation for the Rust/Remote Control Protocol (RCP).
+/// It handles state transitions, frame processing, and protocol negotiation between clients and servers.
+/// The protocol is designed to support both individual deployments and enterprise/data center scenarios.
+
 /// Connection state for the protocol
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ConnectionState {

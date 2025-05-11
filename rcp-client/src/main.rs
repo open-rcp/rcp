@@ -5,7 +5,7 @@ use rcp_core::AuthMethod;
 use tracing_subscriber::FmtSubscriber;
 use uuid::Uuid;
 
-/// RCP Client - Command line interface for Rust Control Protocol
+/// RCP Client - Command line interface for Rust/Remote Control Protocol
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
 struct Cli {

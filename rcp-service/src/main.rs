@@ -13,7 +13,7 @@ use anyhow::Result;
 use log::{info, LevelFilter};
 use crate::manager::ServiceManager;
 
-/// RCP Service - Remote Control Protocol Runtime Service
+/// RCP Service - Rust/Remote Control Protocol Runtime Service
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 struct Cli {

@@ -153,7 +153,7 @@ https://www.contributor-covenant.org/translations.
 
 ## RCP Project Specifics
 
-The RCP project is committed to providing a secure and robust remote control protocol 
+The RCP project is committed to providing a secure and robust rust/remote control protocol 
 implementation. As such, we take concerns related to security, privacy, and code 
 quality particularly seriously. Contributors are encouraged to familiarize themselves
 with the security guidelines in our [SECURITY.md](./SECURITY.md) document.

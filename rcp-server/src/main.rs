@@ -10,7 +10,7 @@ use error::Result;
 use log::{info, LevelFilter};
 use server::Server;
 
-/// RCP Server - Remote Control Protocol Server
+/// RCP Server - Rust/Remote Control Protocol Server
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 struct Cli {

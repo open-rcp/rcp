@@ -6,7 +6,7 @@ authors.workspace = true
 license.workspace = true
 repository.workspace = true
 homepage.workspace = true
-description = "Command line interface for RCP (Rust Control Protocol) server administration"
+description = "Command line interface for RCP (Rust/Remote Control Protocol) server administration"
 
 [dependencies]
 rcp-core = { workspace = true }

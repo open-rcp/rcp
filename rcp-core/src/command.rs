@@ -1,7 +1,25 @@
+//! # Command System for RCP
+//! 
+//! This module defines the command structure and types for the Rust/Remote Control Protocol.
+//! Commands are the core communication mechanism between clients and servers,
+//! enabling application control, resource management, and system administration.
+//! 
+//! The command system is designed to support:
+//! - Application launching and control
+//! - Remote interaction (input, display, audio)
+//! - File operations
+//! - System monitoring and management
+//! - Server clustering (in enterprise deployments)
+//! 
+//! All commands are application-agnostic, with application-specific management
+//! handled at the server or admin level. Users interact only with their
+//! assigned applications and directories.
+
 use crate::{Error, Result};
 use serde::{Deserialize, Serialize};
 
 /// Command IDs for the RCP protocol.
+/// These IDs define the core operations supported by the protocol.
 #[repr(u8)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum CommandId {

@@ -1,6 +1,6 @@
 # RCP Project Outline and Development Guidelines
 
-This document outlines the Remote Control Protocol (RCP) project structure, components, and planned development roadmap.
+This document outlines the Rust/Remote Control Protocol (RCP) project structure, components, and planned development roadmap.
 
 ## Project Components
 
