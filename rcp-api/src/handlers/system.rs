@@ -1,11 +1,11 @@
 use axum::{
-    extract::{State, Query},
+    extract::{Query, State},
     response::Json,
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{AppState, ApiError, db};
 use crate::handlers::auth::AuthUser;
+use crate::{db, ApiError, AppState};
 
 /// System status response
 #[derive(Debug, Serialize)]
@@ -63,31 +63,37 @@ pub async fn system_status(
 ) -> Result<Json<SystemStatusResponse>, ApiError> {
     // Get service client to call the RCP service
     let service_client = state.service_client.lock().await;
-    
+
     // Get service status
-    let service_status = service_client.get_status().await
+    let service_status = service_client
+        .get_status()
+        .await
         .map_err(|e| ApiError::ServiceError(format!("Failed to get service status: {}", e)))?;
-    
+
     // Get active user count
-    let active_user_count = sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM users WHERE active = 1")
-        .fetch_one(&state.db_pool)
-        .await?;
-    
+    let active_user_count =
+        sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM users WHERE active = 1")
+            .fetch_one(&state.db_pool)
+            .await?;
+
     // Extract status values from JSON
-    let uptime = service_status.get("uptime")
+    let uptime = service_status
+        .get("uptime")
         .and_then(|v| v.as_u64())
         .unwrap_or(0);
-    
-    let active_servers = service_status.get("active_servers")
+
+    let active_servers = service_status
+        .get("active_servers")
         .and_then(|v| v.as_array())
         .map(|arr| arr.len() as u32)
         .unwrap_or(0);
-    
-    let active_connections = service_status.get("active_connections")
+
+    let active_connections = service_status
+        .get("active_connections")
         .and_then(|v| v.as_u64())
         .map(|n| n as u32)
         .unwrap_or(0);
-    
+
     // Prepare response
     let response = SystemStatusResponse {
         version: env!("CARGO_PKG_VERSION").to_string(),
@@ -108,7 +114,7 @@ pub async fn system_status(
             api_uptime: 3600,
         },
     };
-    
+
     // Log the action
     db::add_audit_log(
         &state.db_pool,
@@ -116,9 +122,10 @@ pub async fn system_status(
         "get_system_status",
         None,
         None,
-        None
-    ).await?;
-    
+        None,
+    )
+    .await?;
+
     Ok(Json(response))
 }
 
@@ -130,7 +137,7 @@ pub async fn get_logs(
 ) -> Result<Json<Vec<LogEntry>>, ApiError> {
     // Get service client to call the RCP service
     let service_client = state.service_client.lock().await;
-    
+
     // Prepare log query command
     #[derive(Serialize)]
     struct LogQueryCommand {
@@ -141,13 +148,13 @@ pub async fn get_logs(
         limit: Option<u32>,
         offset: Option<u32>,
     }
-    
+
     // Clone the values before moving them into the command
     // Clone the values before moving them into the command
     let service = params.service.clone();
     let level = params.level.clone();
     let limit = params.limit.or(Some(100));
-    
+
     let query_command = LogQueryCommand {
         service: service.clone(),
         level: level.clone(),
@@ -156,18 +163,20 @@ pub async fn get_logs(
         limit,
         offset: params.offset.or(Some(0)),
     };
-    
+
     // Send log query to service
     let command = "get-logs";
     let args = serde_json::to_vec(&query_command)
         .map_err(|e| ApiError::ServerError(format!("Failed to serialize command args: {}", e)))?;
-    let response = service_client.send_command(command, &args).await
+    let response = service_client
+        .send_command(command, &args)
+        .await
         .map_err(|e| ApiError::ServiceError(format!("Failed to get logs: {}", e)))?;
-    
+
     // Parse response
     let log_entries: Vec<LogEntry> = serde_json::from_slice(&response)
         .map_err(|e| ApiError::ServiceError(format!("Failed to parse log entries: {}", e)))?;
-    
+
     // Log the action
     db::add_audit_log(
         &state.db_pool,
@@ -175,9 +184,12 @@ pub async fn get_logs(
         "get_logs",
         None,
         None,
-        Some(&format!("service={:?}, level={:?}, limit={:?}",
-            service, level, limit))
-    ).await?;
-    
+        Some(&format!(
+            "service={:?}, level={:?}, limit={:?}",
+            service, level, limit
+        )),
+    )
+    .await?;
+
     Ok(Json(log_entries))
 }

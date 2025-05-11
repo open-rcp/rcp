@@ -1,11 +1,11 @@
 use axum::{
-    extract::{State, Query, Json},
+    extract::{Json, Query, State},
     http::StatusCode,
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{AppState, ApiError, db};
 use crate::handlers::auth::AuthUser;
+use crate::{db, ApiError, AppState};
 
 /// System configuration response and update request
 #[derive(Debug, Serialize, Deserialize)]
@@ -54,10 +54,10 @@ pub async fn get_system_config(
 ) -> Result<Json<SystemConfig>, ApiError> {
     // In the refactored architecture, system configuration is delegated to the RCP service
     let service_client = state.service_client.lock().await;
-    
+
     // Get system config from service (not using response directly, using defaults)
     service_client.get_status().await?;
-    
+
     // Extract config or provide default
     let system_config = SystemConfig {
         service_address: state.config.bind_address.clone(),
@@ -65,12 +65,12 @@ pub async fn get_system_config(
         tls_enabled: false, // Default value
         certificate_path: None,
         key_path: None,
-        max_servers: 100, // Default value
+        max_servers: 100,               // Default value
         max_connections_per_server: 50, // Default value
-        log_level: "info".to_string(), // Default value
-        log_retention_days: 30, // Default value
+        log_level: "info".to_string(),  // Default value
+        log_retention_days: 30,         // Default value
     };
-    
+
     // Log the action
     db::add_audit_log(
         &state.db_pool,
@@ -78,9 +78,10 @@ pub async fn get_system_config(
         "get_system_config",
         Some("system"),
         None,
-        None
-    ).await?;
-    
+        None,
+    )
+    .await?;
+
     Ok(Json(system_config))
 }
 
@@ -92,31 +93,39 @@ pub async fn update_system_config(
 ) -> Result<StatusCode, ApiError> {
     // Validate configuration
     if system_config.service_port == 0 {
-        return Err(ApiError::ValidationError("Service port must be greater than 0".to_string()));
+        return Err(ApiError::ValidationError(
+            "Service port must be greater than 0".to_string(),
+        ));
     }
-    
-    if system_config.tls_enabled && (system_config.certificate_path.is_none() || system_config.key_path.is_none()) {
-        return Err(ApiError::ValidationError("Certificate and key paths are required when TLS is enabled".to_string()));
+
+    if system_config.tls_enabled
+        && (system_config.certificate_path.is_none() || system_config.key_path.is_none())
+    {
+        return Err(ApiError::ValidationError(
+            "Certificate and key paths are required when TLS is enabled".to_string(),
+        ));
     }
-    
+
     if !["debug", "info", "warn", "error"].contains(&system_config.log_level.as_str()) {
-        return Err(ApiError::ValidationError("Log level must be one of: debug, info, warn, error".to_string()));
+        return Err(ApiError::ValidationError(
+            "Log level must be one of: debug, info, warn, error".to_string(),
+        ));
     }
-    
+
     // In refactored architecture, we delegate system config to RCP service
     let service_client = state.service_client.lock().await;
-    
+
     // Create command to update configuration
     let config_json = serde_json::to_value(&system_config)
         .map_err(|e| ApiError::ServerError(format!("Failed to serialize config: {}", e)))?;
-    
+
     // Send update configuration command to service
     let command = "update-config";
     let args = serde_json::to_vec(&config_json)
         .map_err(|e| ApiError::ServerError(format!("Failed to serialize command args: {}", e)))?;
-    
+
     service_client.send_command(command, &args).await?;
-    
+
     // Log the action
     db::add_audit_log(
         &state.db_pool,
@@ -124,10 +133,13 @@ pub async fn update_system_config(
         "update_system_config",
         Some("system"),
         None,
-        Some(&format!("log_level={}, tls_enabled={}", 
-            system_config.log_level, system_config.tls_enabled))
-    ).await?;
-    
+        Some(&format!(
+            "log_level={}, tls_enabled={}",
+            system_config.log_level, system_config.tls_enabled
+        )),
+    )
+    .await?;
+
     Ok(StatusCode::NO_CONTENT)
 }
 
@@ -139,22 +151,22 @@ pub async fn get_audit_logs(
 ) -> Result<Json<Vec<AuditLogEntry>>, ApiError> {
     // In refactored architecture, audit logs are sent to the RCP service
     let service_client = state.service_client.lock().await;
-    
+
     // Create command to fetch audit logs
     let query_json = serde_json::to_value(&params)
         .map_err(|e| ApiError::ServerError(format!("Failed to serialize query: {}", e)))?;
-    
+
     // Send audit log query command to service
     let command = "get-audit-logs";
     let args = serde_json::to_vec(&query_json)
         .map_err(|e| ApiError::ServerError(format!("Failed to serialize command args: {}", e)))?;
-    
+
     let response = service_client.send_command(command, &args).await?;
-    
+
     // Parse response to audit logs
     let audit_logs: Vec<AuditLogEntry> = serde_json::from_slice(&response)
         .map_err(|e| ApiError::ServerError(format!("Failed to parse audit logs: {}", e)))?;
-    
+
     // Log the action
     db::add_audit_log(
         &state.db_pool,
@@ -162,9 +174,13 @@ pub async fn get_audit_logs(
         "get_audit_logs",
         None,
         None,
-        Some(&format!("limit={}, offset={}", 
-            params.limit.unwrap_or(100), params.offset.unwrap_or(0)))
-    ).await?;
-    
+        Some(&format!(
+            "limit={}, offset={}",
+            params.limit.unwrap_or(100),
+            params.offset.unwrap_or(0)
+        )),
+    )
+    .await?;
+
     Ok(Json(audit_logs))
 }

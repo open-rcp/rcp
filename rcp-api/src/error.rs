@@ -1,6 +1,6 @@
 use axum::{
-    response::{Response, IntoResponse},
     http::StatusCode,
+    response::{IntoResponse, Response},
     Json,
 };
 use serde_json::json;
@@ -12,35 +12,35 @@ pub enum ApiError {
     /// Not found error
     #[error("Resource not found: {0}")]
     NotFoundError(String),
-    
+
     /// Bad request error
     #[error("Bad request: {0}")]
     BadRequestError(String),
-    
+
     /// Authentication error
     #[error("Authentication error: {0}")]
     AuthError(String),
-    
+
     /// Forbidden error
     #[error("Forbidden: {0}")]
     ForbiddenError(String),
-    
+
     /// Database error
     #[error("Database error: {0}")]
     DatabaseError(String),
-    
+
     /// Service error
     #[error("Service error: {0}")]
     ServiceError(String),
-    
+
     /// Server error
     #[error("Server error: {0}")]
     ServerError(String),
-    
+
     /// Validation error
     #[error("Validation error: {0}")]
     ValidationError(String),
-    
+
     /// Conflict error
     #[error("Conflict error: {0}")]
     ConflictError(String),
@@ -50,12 +50,8 @@ pub enum ApiError {
 impl From<sqlx::Error> for ApiError {
     fn from(error: sqlx::Error) -> Self {
         match error {
-            sqlx::Error::RowNotFound => {
-                ApiError::NotFoundError("Resource not found".to_string())
-            }
-            sqlx::Error::Database(e) => {
-                ApiError::DatabaseError(format!("Database error: {}", e))
-            }
+            sqlx::Error::RowNotFound => ApiError::NotFoundError("Resource not found".to_string()),
+            sqlx::Error::Database(e) => ApiError::DatabaseError(format!("Database error: {}", e)),
             _ => ApiError::DatabaseError(format!("Database error: {}", error)),
         }
     }

@@ -14,13 +14,13 @@
 // - Launch/Terminate - Control application instances for users
 //
 use axum::{
-    extract::{State, Path, Json},
+    extract::{Json, Path, State},
     http::StatusCode,
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{AppState, ApiError, db};
 use crate::handlers::auth::AuthUser;
+use crate::{db, ApiError, AppState};
 
 /// Application information response
 #[derive(Debug, Serialize, Deserialize)]
@@ -86,18 +86,20 @@ pub async fn list_apps(
 ) -> Result<Json<Vec<AppResponse>>, ApiError> {
     // Get service client to call the RCP service
     let service_client = state.service_client.lock().await;
-    
+
     // Call the RCP service to list apps
     let command = "list-apps";
     let args = serde_json::to_vec(&serde_json::json!({}))?;
-    
-    let response = service_client.send_command(command, &args).await
+
+    let response = service_client
+        .send_command(command, &args)
+        .await
         .map_err(|e| ApiError::ServiceError(format!("Failed to list applications: {}", e)))?;
-    
+
     // Parse apps from response
     let apps: Vec<AppResponse> = serde_json::from_slice(&response)
         .map_err(|e| ApiError::ServiceError(format!("Failed to parse application list: {}", e)))?;
-    
+
     // Log the action
     db::add_audit_log(
         &state.db_pool,
@@ -105,9 +107,10 @@ pub async fn list_apps(
         "list_apps",
         None,
         None,
-        None
-    ).await?;
-    
+        None,
+    )
+    .await?;
+
     Ok(Json(apps))
 }
 
@@ -119,28 +122,31 @@ pub async fn get_app(
 ) -> Result<Json<AppResponse>, ApiError> {
     // Get service client to call the RCP service
     let service_client = state.service_client.lock().await;
-    
+
     // Call the RCP service to get the app
     let command = "get-app";
     let args = serde_json::to_vec(&serde_json::json!({
         "id": id
     }))?;
-    
-    let response = service_client.send_command(command, &args).await
+
+    let response = service_client
+        .send_command(command, &args)
+        .await
         .map_err(|e| ApiError::ServiceError(format!("Failed to get application: {}", e)))?;
-    
+
     // Check for error response
-    let response_value: serde_json::Value = serde_json::from_slice(&response)
-        .map_err(|e| ApiError::ServiceError(format!("Failed to parse application response: {}", e)))?;
-    
+    let response_value: serde_json::Value = serde_json::from_slice(&response).map_err(|e| {
+        ApiError::ServiceError(format!("Failed to parse application response: {}", e))
+    })?;
+
     if let Some(error) = response_value.get("error").and_then(|e| e.as_str()) {
         return Err(ApiError::NotFoundError(error.to_string()));
     }
-    
+
     // Parse app from response
     let app: AppResponse = serde_json::from_value(response_value)
         .map_err(|e| ApiError::ServiceError(format!("Failed to parse application data: {}", e)))?;
-    
+
     // Log the action
     db::add_audit_log(
         &state.db_pool,
@@ -148,9 +154,10 @@ pub async fn get_app(
         "get_app",
         Some("application"),
         Some(&id),
-        None
-    ).await?;
-    
+        None,
+    )
+    .await?;
+
     Ok(Json(app))
 }
 
@@ -162,34 +169,38 @@ pub async fn create_app(
 ) -> Result<(StatusCode, Json<AppResponse>), ApiError> {
     // Validate input
     if payload.path.is_empty() {
-        return Err(ApiError::ValidationError("Application path is required".to_string()));
+        return Err(ApiError::ValidationError(
+            "Application path is required".to_string(),
+        ));
     }
-    
+
     // Get service client to call the RCP service
     let service_client = state.service_client.lock().await;
-    
+
     // Call the RCP service to create the app
     let command = "create-app";
     let args = serde_json::to_vec(&payload)?;
-    
-    let response = service_client.send_command(command, &args).await
+
+    let response = service_client
+        .send_command(command, &args)
+        .await
         .map_err(|e| ApiError::ServiceError(format!("Failed to create application: {}", e)))?;
-    
+
     // Check for error response
     let response_value: serde_json::Value = serde_json::from_slice(&response)
         .map_err(|e| ApiError::ServiceError(format!("Failed to parse response: {}", e)))?;
-    
+
     if let Some(error) = response_value.get("error").and_then(|e| e.as_str()) {
         if error.contains("already exists") {
             return Err(ApiError::ConflictError(error.to_string()));
         }
         return Err(ApiError::ValidationError(error.to_string()));
     }
-    
+
     // Parse app from response
     let app: AppResponse = serde_json::from_value(response_value)
         .map_err(|e| ApiError::ServiceError(format!("Failed to parse application data: {}", e)))?;
-    
+
     // Log the action
     db::add_audit_log(
         &state.db_pool,
@@ -197,9 +208,10 @@ pub async fn create_app(
         "create_app",
         Some("application"),
         Some(&app.id),
-        Some(&format!("name={}, path={}", payload.name, payload.path))
-    ).await?;
-    
+        Some(&format!("name={}, path={}", payload.name, payload.path)),
+    )
+    .await?;
+
     Ok((StatusCode::CREATED, Json(app)))
 }
 
@@ -212,36 +224,38 @@ pub async fn update_app(
 ) -> Result<Json<AppResponse>, ApiError> {
     // Get service client to call the RCP service
     let service_client = state.service_client.lock().await;
-    
+
     // Call the RCP service to update the app
     let command = "update-app";
     let mut update_payload = serde_json::to_value(payload)?;
-    
+
     // Add the ID to the payload
     if let serde_json::Value::Object(ref mut map) = update_payload {
         map.insert("id".to_string(), serde_json::Value::String(id.clone()));
     }
-    
+
     let args = serde_json::to_vec(&update_payload)?;
-    
-    let response = service_client.send_command(command, &args).await
+
+    let response = service_client
+        .send_command(command, &args)
+        .await
         .map_err(|e| ApiError::ServiceError(format!("Failed to update application: {}", e)))?;
-    
+
     // Check for error response
     let response_value: serde_json::Value = serde_json::from_slice(&response)
         .map_err(|e| ApiError::ServiceError(format!("Failed to parse response: {}", e)))?;
-    
+
     if let Some(error) = response_value.get("error").and_then(|e| e.as_str()) {
         if error.contains("not found") {
             return Err(ApiError::NotFoundError(error.to_string()));
         }
         return Err(ApiError::ValidationError(error.to_string()));
     }
-    
+
     // Parse app from response
     let app: AppResponse = serde_json::from_value(response_value)
         .map_err(|e| ApiError::ServiceError(format!("Failed to parse application data: {}", e)))?;
-    
+
     // Log the action
     db::add_audit_log(
         &state.db_pool,
@@ -249,9 +263,10 @@ pub async fn update_app(
         "update_app",
         Some("application"),
         Some(&id),
-        Some("Application updated")
-    ).await?;
-    
+        Some("Application updated"),
+    )
+    .await?;
+
     Ok(Json(app))
 }
 
@@ -263,27 +278,29 @@ pub async fn delete_app(
 ) -> Result<StatusCode, ApiError> {
     // Get service client to call the RCP service
     let service_client = state.service_client.lock().await;
-    
+
     // Call the RCP service to delete the app
     let command = "delete-app";
     let args = serde_json::to_vec(&serde_json::json!({
         "id": id
     }))?;
-    
-    let response = service_client.send_command(command, &args).await
+
+    let response = service_client
+        .send_command(command, &args)
+        .await
         .map_err(|e| ApiError::ServiceError(format!("Failed to delete application: {}", e)))?;
-    
+
     // Check for error response
     let response_value: serde_json::Value = serde_json::from_slice(&response)
         .map_err(|e| ApiError::ServiceError(format!("Failed to parse response: {}", e)))?;
-    
+
     if let Some(error) = response_value.get("error").and_then(|e| e.as_str()) {
         if error.contains("not found") {
             return Err(ApiError::NotFoundError(error.to_string()));
         }
         return Err(ApiError::ValidationError(error.to_string()));
     }
-    
+
     // Log the action
     db::add_audit_log(
         &state.db_pool,
@@ -291,14 +308,15 @@ pub async fn delete_app(
         "delete_app",
         Some("application"),
         Some(&id),
-        None
-    ).await?;
-    
+        None,
+    )
+    .await?;
+
     Ok(StatusCode::NO_CONTENT)
 }
 
 /// Enable an application configuration in RCP
-/// 
+///
 /// This doesn't install the application (which should be pre-installed by administrators),
 /// but rather enables its configuration within the RCP system, making it available to users.
 pub async fn enable_app(
@@ -308,28 +326,30 @@ pub async fn enable_app(
 ) -> Result<StatusCode, ApiError> {
     // Get service client to call the RCP service
     let service_client = state.service_client.lock().await;
-    
+
     // Call the RCP service to enable the app configuration
     let command = "update-app";
     let args = serde_json::to_vec(&serde_json::json!({
         "id": id,
         "enabled": true
     }))?;
-    
-    let response = service_client.send_command(command, &args).await
+
+    let response = service_client
+        .send_command(command, &args)
+        .await
         .map_err(|e| ApiError::ServiceError(format!("Failed to enable application: {}", e)))?;
-    
+
     // Check for error response
     let response_value: serde_json::Value = serde_json::from_slice(&response)
         .map_err(|e| ApiError::ServiceError(format!("Failed to parse response: {}", e)))?;
-    
+
     if let Some(error) = response_value.get("error").and_then(|e| e.as_str()) {
         if error.contains("not found") {
             return Err(ApiError::NotFoundError(error.to_string()));
         }
         return Err(ApiError::ValidationError(error.to_string()));
     }
-    
+
     // Log the action
     db::add_audit_log(
         &state.db_pool,
@@ -337,9 +357,10 @@ pub async fn enable_app(
         "enable_app",
         Some("application"),
         Some(&id),
-        None
-    ).await?;
-    
+        None,
+    )
+    .await?;
+
     Ok(StatusCode::OK)
 }
 
@@ -351,28 +372,30 @@ pub async fn disable_app(
 ) -> Result<StatusCode, ApiError> {
     // Get service client to call the RCP service
     let service_client = state.service_client.lock().await;
-    
+
     // Call the RCP service to disable the app configuration
     let command = "update-app";
     let args = serde_json::to_vec(&serde_json::json!({
         "id": id,
         "enabled": false
     }))?;
-    
-    let response = service_client.send_command(command, &args).await
+
+    let response = service_client
+        .send_command(command, &args)
+        .await
         .map_err(|e| ApiError::ServiceError(format!("Failed to disable application: {}", e)))?;
-    
+
     // Check for error response
     let response_value: serde_json::Value = serde_json::from_slice(&response)
         .map_err(|e| ApiError::ServiceError(format!("Failed to parse response: {}", e)))?;
-    
+
     if let Some(error) = response_value.get("error").and_then(|e| e.as_str()) {
         if error.contains("not found") {
             return Err(ApiError::NotFoundError(error.to_string()));
         }
         return Err(ApiError::ValidationError(error.to_string()));
     }
-    
+
     // Log the action
     db::add_audit_log(
         &state.db_pool,
@@ -380,9 +403,10 @@ pub async fn disable_app(
         "disable_app",
         Some("application"),
         Some(&id),
-        None
-    ).await?;
-    
+        None,
+    )
+    .await?;
+
     Ok(StatusCode::OK)
 }
 
@@ -394,7 +418,7 @@ pub async fn launch_app(
 ) -> Result<Json<serde_json::Value>, ApiError> {
     // Get service client to call the RCP service
     let service_client = state.service_client.lock().await;
-    
+
     // Call the RCP service to launch the app
     let command = "launch-app";
     let args = serde_json::to_vec(&serde_json::json!({
@@ -402,21 +426,23 @@ pub async fn launch_app(
         "user_id": user_id,
         "launching_user_id": auth_user.id
     }))?;
-    
-    let response = service_client.send_command(command, &args).await
+
+    let response = service_client
+        .send_command(command, &args)
+        .await
         .map_err(|e| ApiError::ServiceError(format!("Failed to launch application: {}", e)))?;
-    
+
     // Check for error response
     let response_value: serde_json::Value = serde_json::from_slice(&response)
         .map_err(|e| ApiError::ServiceError(format!("Failed to parse response: {}", e)))?;
-    
+
     if let Some(error) = response_value.get("error").and_then(|e| e.as_str()) {
         if error.contains("not found") {
             return Err(ApiError::NotFoundError(error.to_string()));
         }
         return Err(ApiError::ValidationError(error.to_string()));
     }
-    
+
     // Log the action
     db::add_audit_log(
         &state.db_pool,
@@ -424,9 +450,10 @@ pub async fn launch_app(
         "launch_app",
         Some("application"),
         Some(&id),
-        Some(&format!("for_user={}", user_id))
-    ).await?;
-    
+        Some(&format!("for_user={}", user_id)),
+    )
+    .await?;
+
     Ok(Json(response_value))
 }
 
@@ -438,27 +465,31 @@ pub async fn terminate_app_instance(
 ) -> Result<StatusCode, ApiError> {
     // Get service client to call the RCP service
     let service_client = state.service_client.lock().await;
-    
+
     // Call the RCP service to terminate the app instance
     let command = "terminate-app-instance";
     let args = serde_json::to_vec(&serde_json::json!({
         "instance_id": instance_id
     }))?;
-    
-    let response = service_client.send_command(command, &args).await
-        .map_err(|e| ApiError::ServiceError(format!("Failed to terminate application instance: {}", e)))?;
-    
+
+    let response = service_client
+        .send_command(command, &args)
+        .await
+        .map_err(|e| {
+            ApiError::ServiceError(format!("Failed to terminate application instance: {}", e))
+        })?;
+
     // Check for error response
     let response_value: serde_json::Value = serde_json::from_slice(&response)
         .map_err(|e| ApiError::ServiceError(format!("Failed to parse response: {}", e)))?;
-    
+
     if let Some(error) = response_value.get("error").and_then(|e| e.as_str()) {
         if error.contains("not found") {
             return Err(ApiError::NotFoundError(error.to_string()));
         }
         return Err(ApiError::ValidationError(error.to_string()));
     }
-    
+
     // Log the action
     db::add_audit_log(
         &state.db_pool,
@@ -466,9 +497,10 @@ pub async fn terminate_app_instance(
         "terminate_app_instance",
         Some("app_instance"),
         Some(&instance_id),
-        None
-    ).await?;
-    
+        None,
+    )
+    .await?;
+
     Ok(StatusCode::OK)
 }
 
@@ -479,18 +511,23 @@ pub async fn list_app_instances(
 ) -> Result<Json<serde_json::Value>, ApiError> {
     // Get service client to call the RCP service
     let service_client = state.service_client.lock().await;
-    
+
     // Call the RCP service to list app instances
     let command = "list-app-instances";
     let args = serde_json::to_vec(&serde_json::json!({}))?;
-    
-    let response = service_client.send_command(command, &args).await
-        .map_err(|e| ApiError::ServiceError(format!("Failed to list application instances: {}", e)))?;
-    
+
+    let response = service_client
+        .send_command(command, &args)
+        .await
+        .map_err(|e| {
+            ApiError::ServiceError(format!("Failed to list application instances: {}", e))
+        })?;
+
     // Parse response
-    let instances: serde_json::Value = serde_json::from_slice(&response)
-        .map_err(|e| ApiError::ServiceError(format!("Failed to parse application instances: {}", e)))?;
-    
+    let instances: serde_json::Value = serde_json::from_slice(&response).map_err(|e| {
+        ApiError::ServiceError(format!("Failed to parse application instances: {}", e))
+    })?;
+
     // Log the action
     db::add_audit_log(
         &state.db_pool,
@@ -498,8 +535,9 @@ pub async fn list_app_instances(
         "list_app_instances",
         None,
         None,
-        None
-    ).await?;
-    
+        None,
+    )
+    .await?;
+
     Ok(Json(instances))
 }

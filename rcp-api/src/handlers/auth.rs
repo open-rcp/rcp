@@ -1,16 +1,16 @@
 use axum::{
-    extract::{State, Json},
-    http::{StatusCode, Request, header},
-    response::{Response, IntoResponse},
     async_trait,
+    extract::{Json, State},
+    http::{header, Request, StatusCode},
     middleware::Next,
+    response::{IntoResponse, Response},
 };
+use chrono::{Duration, Utc};
+use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
-use jsonwebtoken::{encode, decode, Header, EncodingKey, DecodingKey, Validation};
-use chrono::{Utc, Duration};
 use std::sync::Arc;
 
-use crate::{AppState, ApiError, db};
+use crate::{db, ApiError, AppState};
 
 /// Login request
 #[derive(Debug, Deserialize)]
@@ -38,9 +38,9 @@ pub struct UserInfo {
 /// JWT claims structure
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
-    sub: String, // user_id
-    exp: usize,  // expiration time
-    iat: usize,  // issued at
+    sub: String,  // user_id
+    exp: usize,   // expiration time
+    iat: usize,   // issued at
     role: String, // user role
 }
 
@@ -58,68 +58,79 @@ pub async fn login(
 ) -> Result<Json<AuthResponse>, ApiError> {
     // Get service client to call the RCP service
     let service_client = state.service_client.lock().await;
-    
+
     // Prepare authentication request to the service
     let auth_request = serde_json::json!({
         "username": payload.username,
         "password": payload.password
     });
-    
+
     // Send authentication request to service
     let command = "authenticate-user";
     let args = serde_json::to_vec(&auth_request)?;
-    
-    let response = service_client.send_command(command, &args).await
+
+    let response = service_client
+        .send_command(command, &args)
+        .await
         .map_err(|e| ApiError::AuthError(format!("Authentication failed: {}", e)))?;
-    
+
     // Parse the authentication response
     let auth_result: serde_json::Value = serde_json::from_slice(&response)?;
-    
+
     // Check if authentication was successful
     if let Some(error) = auth_result.get("error").and_then(|e| e.as_str()) {
         return Err(ApiError::AuthError(error.to_string()));
     }
-    
+
     // Extract user information
-    let user_id = auth_result.get("id")
+    let user_id = auth_result
+        .get("id")
         .and_then(|id| id.as_str())
-        .ok_or_else(|| ApiError::ServiceError("Invalid response from service: missing user ID".to_string()))?
+        .ok_or_else(|| {
+            ApiError::ServiceError("Invalid response from service: missing user ID".to_string())
+        })?
         .to_string();
-    
-    let username = auth_result.get("username")
+
+    let username = auth_result
+        .get("username")
         .and_then(|u| u.as_str())
-        .ok_or_else(|| ApiError::ServiceError("Invalid response from service: missing username".to_string()))?
+        .ok_or_else(|| {
+            ApiError::ServiceError("Invalid response from service: missing username".to_string())
+        })?
         .to_string();
-    
-    let role = auth_result.get("role")
+
+    let role = auth_result
+        .get("role")
         .and_then(|r| r.as_str())
-        .ok_or_else(|| ApiError::ServiceError("Invalid response from service: missing role".to_string()))?
+        .ok_or_else(|| {
+            ApiError::ServiceError("Invalid response from service: missing role".to_string())
+        })?
         .to_string();
-    
+
     // Create JWT token for API authentication
     let config = Arc::clone(&state.config);
     let expiration = Utc::now() + Duration::minutes(config.jwt_expiration_minutes as i64);
     let exp = expiration.timestamp() as usize;
     let iat = Utc::now().timestamp() as usize;
-    
+
     let claims = Claims {
         sub: user_id.clone(),
         exp,
         iat,
         role: role.clone(),
     };
-    
+
     let token = encode(
         &Header::default(),
         &claims,
         &EncodingKey::from_secret(config.jwt_secret.as_bytes()),
     )
     .map_err(|e| ApiError::ServerError(format!("Failed to create token: {}", e)))?;
-    
+
     // Store token in API database for local validation
     let expires_at = expiration.to_rfc3339();
     db::create_token(&state.db_pool, 60).await?;
-    
+
     // Log the action
     db::add_audit_log(
         &state.db_pool,
@@ -128,8 +139,9 @@ pub async fn login(
         Some("user"),
         Some(&user_id),
         None,
-    ).await?;
-    
+    )
+    .await?;
+
     // Return auth response
     let response = AuthResponse {
         token,
@@ -140,7 +152,7 @@ pub async fn login(
         },
         expires_at,
     };
-    
+
     Ok(Json(response))
 }
 
@@ -157,27 +169,33 @@ where
         _state: &S,
     ) -> Result<Self, Self::Rejection> {
         // Get app state
-        let app_state = parts.extensions.get::<AppState>()
+        let app_state = parts
+            .extensions
+            .get::<AppState>()
             .ok_or_else(|| ApiError::ServerError("Application state not found".to_string()))?;
-        
+
         // Get authorization header
-        let auth_header = parts.headers
+        let auth_header = parts
+            .headers
             .get(header::AUTHORIZATION)
             .ok_or_else(|| ApiError::AuthError("Missing Authorization header".to_string()))?;
-        
-        let auth_str = auth_header.to_str()
+
+        let auth_str = auth_header
+            .to_str()
             .map_err(|_| ApiError::AuthError("Invalid Authorization header".to_string()))?;
-        
+
         // Extract token from Bearer format
         if !auth_str.starts_with("Bearer ") {
-            return Err(ApiError::AuthError("Invalid Authorization format".to_string()));
+            return Err(ApiError::AuthError(
+                "Invalid Authorization format".to_string(),
+            ));
         }
-        
+
         let token = auth_str[7..].trim();
         if token.is_empty() {
             return Err(ApiError::AuthError("Empty JWT token".to_string()));
         }
-        
+
         // Decode and validate token
         let token_data = decode::<Claims>(
             token,
@@ -185,38 +203,39 @@ where
             &Validation::default(),
         )
         .map_err(|e| ApiError::AuthError(format!("Invalid token: {}", e)))?;
-        
+
         let claims = token_data.claims;
-        
+
         // Verify token is valid with the service
         let service_client = app_state.service_client.lock().await;
-        
+
         // Create token verification command
         let verify_request = serde_json::json!({
             "user_id": claims.sub.clone(),
             "token": token
         });
-        
+
         // Send verification request to service
         let command = "verify-token";
-        let args = serde_json::to_vec(&verify_request)
-            .map_err(|e| ApiError::ServerError(format!("Failed to serialize token verification: {}", e)))?;
-            
+        let args = serde_json::to_vec(&verify_request).map_err(|e| {
+            ApiError::ServerError(format!("Failed to serialize token verification: {}", e))
+        })?;
+
         let verification_result = service_client.send_command(command, &args).await;
-        
+
         // Check if verification was successful - if not, proceed with token contents
         // This allows the API to work even if the service is temporarily unavailable
         if let Ok(response) = verification_result {
             let result: serde_json::Value = serde_json::from_slice(&response)
                 .map_err(|_| ApiError::AuthError("Invalid response from service".to_string()))?;
-                
+
             if let Some(valid) = result.get("valid").and_then(|v| v.as_bool()) {
                 if !valid {
                     return Err(ApiError::AuthError("Token rejected by service".to_string()));
                 }
             }
         }
-        
+
         // Create auth user
         Ok(AuthUser {
             id: claims.sub.clone(),
@@ -232,9 +251,11 @@ pub async fn require_admin<B>(
     next: Next<B>,
 ) -> Result<Response, ApiError> {
     if auth_user.role != "admin" {
-        return Err(ApiError::ForbiddenError("Admin access required".to_string()));
+        return Err(ApiError::ForbiddenError(
+            "Admin access required".to_string(),
+        ));
     }
-    
+
     Ok(next.run(request).await)
 }
 
@@ -245,9 +266,11 @@ pub async fn require_operator<B>(
     next: Next<B>,
 ) -> Result<Response, ApiError> {
     if auth_user.role != "admin" && auth_user.role != "operator" {
-        return Err(ApiError::ForbiddenError("Operator access required".to_string()));
+        return Err(ApiError::ForbiddenError(
+            "Operator access required".to_string(),
+        ));
     }
-    
+
     Ok(next.run(request).await)
 }
 
@@ -257,57 +280,62 @@ pub async fn refresh_token(
     auth_user: AuthUser,
 ) -> Result<Json<AuthResponse>, ApiError> {
     let service_client = state.service_client.lock().await;
-    
+
     // Create token refresh command
     let refresh_request = serde_json::json!({
         "user_id": auth_user.id
     });
-    
+
     // Send refresh request to service
     let command = "refresh-token";
     let args = serde_json::to_vec(&refresh_request)?;
-    
-    let response = service_client.send_command(command, &args).await
+
+    let response = service_client
+        .send_command(command, &args)
+        .await
         .map_err(|e| ApiError::AuthError(format!("Token refresh failed: {}", e)))?;
-    
+
     // Parse the refresh response
     let refresh_result: serde_json::Value = serde_json::from_slice(&response)?;
-    
+
     // Check if refresh was successful
     if let Some(error) = refresh_result.get("error").and_then(|e| e.as_str()) {
         return Err(ApiError::AuthError(error.to_string()));
     }
-    
+
     // Extract user information from the refresh
-    let username = refresh_result.get("username")
+    let username = refresh_result
+        .get("username")
         .and_then(|u| u.as_str())
-        .ok_or_else(|| ApiError::ServiceError("Invalid response from service: missing username".to_string()))?
+        .ok_or_else(|| {
+            ApiError::ServiceError("Invalid response from service: missing username".to_string())
+        })?
         .to_string();
-    
+
     // Create new JWT token for API authentication
     let config = Arc::clone(&state.config);
     let expiration = Utc::now() + Duration::minutes(config.jwt_expiration_minutes as i64);
     let exp = expiration.timestamp() as usize;
     let iat = Utc::now().timestamp() as usize;
-    
+
     let claims = Claims {
         sub: auth_user.id.clone(),
         exp,
         iat,
         role: auth_user.role.clone(),
     };
-    
+
     let token = encode(
         &Header::default(),
         &claims,
         &EncodingKey::from_secret(config.jwt_secret.as_bytes()),
     )
     .map_err(|e| ApiError::ServerError(format!("Failed to create token: {}", e)))?;
-    
+
     // Store token in API database for local validation
     let expires_at = expiration.to_rfc3339();
     db::create_token(&state.db_pool, 60).await?;
-    
+
     // Log the action
     db::add_audit_log(
         &state.db_pool,
@@ -316,8 +344,9 @@ pub async fn refresh_token(
         Some("user"),
         Some(&auth_user.id),
         None,
-    ).await?;
-    
+    )
+    .await?;
+
     // Return auth response
     let response = AuthResponse {
         token,
@@ -328,7 +357,7 @@ pub async fn refresh_token(
         },
         expires_at,
     };
-    
+
     Ok(Json(response))
 }
 
@@ -338,28 +367,35 @@ pub async fn auth_middleware<B>(
     next: Next<B>,
 ) -> Result<Response, ApiError> {
     // Extract app state from request extensions
-    let state = request.extensions()
+    let state = request
+        .extensions()
         .get::<AppState>()
         .cloned()
-        .ok_or_else(|| ApiError::ServerError("Application state missing from request".to_string()))?;
+        .ok_or_else(|| {
+            ApiError::ServerError("Application state missing from request".to_string())
+        })?;
     // Extract auth header
-    let auth_header = request.headers()
+    let auth_header = request
+        .headers()
         .get(header::AUTHORIZATION)
         .ok_or_else(|| ApiError::AuthError("Missing Authorization header".to_string()))?;
-    
-    let auth_str = auth_header.to_str()
+
+    let auth_str = auth_header
+        .to_str()
         .map_err(|_| ApiError::AuthError("Invalid Authorization header".to_string()))?;
-    
+
     // Extract token from Bearer format
     if !auth_str.starts_with("Bearer ") {
-        return Err(ApiError::AuthError("Invalid Authorization format".to_string()));
+        return Err(ApiError::AuthError(
+            "Invalid Authorization format".to_string(),
+        ));
     }
-    
+
     let token = auth_str[7..].trim();
     if token.is_empty() {
         return Err(ApiError::AuthError("Empty JWT token".to_string()));
     }
-    
+
     // Decode and validate token
     let token_data = decode::<Claims>(
         token,
@@ -367,17 +403,17 @@ pub async fn auth_middleware<B>(
         &Validation::default(),
     )
     .map_err(|e| ApiError::AuthError(format!("Invalid token: {}", e)))?;
-    
+
     let claims = token_data.claims;
-    
+
     // Create auth user and add to request extensions
     let auth_user = AuthUser {
         id: claims.sub,
         role: claims.role,
     };
-    
+
     request.extensions_mut().insert(auth_user);
-    
+
     // Continue to the next middleware or handler
     Ok(next.run(request).await)
 }
@@ -388,29 +424,36 @@ pub async fn admin_middleware<B>(
     next: Next<B>,
 ) -> Result<Response, ApiError> {
     // Extract app state from request extensions
-    let state = request.extensions()
+    let state = request
+        .extensions()
         .get::<AppState>()
         .cloned()
-        .ok_or_else(|| ApiError::ServerError("Application state missing from request".to_string()))?;
-        
+        .ok_or_else(|| {
+            ApiError::ServerError("Application state missing from request".to_string())
+        })?;
+
     // Extract auth header
-    let auth_header = request.headers()
+    let auth_header = request
+        .headers()
         .get(header::AUTHORIZATION)
         .ok_or_else(|| ApiError::AuthError("Missing Authorization header".to_string()))?;
-    
-    let auth_str = auth_header.to_str()
+
+    let auth_str = auth_header
+        .to_str()
         .map_err(|_| ApiError::AuthError("Invalid Authorization header".to_string()))?;
-    
+
     // Extract token from Bearer format
     if !auth_str.starts_with("Bearer ") {
-        return Err(ApiError::AuthError("Invalid Authorization format".to_string()));
+        return Err(ApiError::AuthError(
+            "Invalid Authorization format".to_string(),
+        ));
     }
-    
+
     let token = auth_str[7..].trim();
     if token.is_empty() {
         return Err(ApiError::AuthError("Empty JWT token".to_string()));
     }
-    
+
     // Decode and validate token
     let token_data = decode::<Claims>(
         token,
@@ -418,22 +461,24 @@ pub async fn admin_middleware<B>(
         &Validation::default(),
     )
     .map_err(|e| ApiError::AuthError(format!("Invalid token: {}", e)))?;
-    
+
     let claims = token_data.claims;
-    
+
     // Check if the user is an admin
     if claims.role != "admin" {
-        return Err(ApiError::ForbiddenError("Admin access required".to_string()));
+        return Err(ApiError::ForbiddenError(
+            "Admin access required".to_string(),
+        ));
     }
-    
+
     // Create auth user and add to request extensions
     let auth_user = AuthUser {
         id: claims.sub,
         role: claims.role,
     };
-    
+
     request.extensions_mut().insert(auth_user);
-    
+
     // Continue to the next middleware or handler
     Ok(next.run(request).await)
 }
@@ -467,7 +512,8 @@ pub async fn logout(
         None,
         None,
         None,
-    ).await?;
-    
+    )
+    .await?;
+
     Ok(StatusCode::OK)
 }

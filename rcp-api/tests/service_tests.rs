@@ -1,16 +1,16 @@
 use rcp_api::service::ServiceClient;
+use serde_json::json;
 use std::time::Duration;
 use tokio::test;
-use wiremock::{MockServer, Mock, ResponseTemplate};
-use wiremock::matchers::{method, path, header};
-use serde_json::json;
+use wiremock::matchers::{header, method, path};
+use wiremock::{Mock, MockServer, ResponseTemplate};
 
 /// Test connection to service with valid URL
 #[test]
 async fn test_connect_valid_url() {
     // Start mock server
     let mock_server = MockServer::start().await;
-    
+
     // Mock service health check endpoint
     Mock::given(method("GET"))
         .and(path("/health"))
@@ -20,11 +20,11 @@ async fn test_connect_valid_url() {
         })))
         .mount(&mock_server)
         .await;
-    
+
     // Connect to mock server
     let service_url = format!("http://{}", mock_server.address());
     let result = ServiceClient::connect(&service_url, None).await;
-    
+
     // Should connect successfully
     assert!(result.is_ok());
 }
@@ -35,9 +35,9 @@ async fn test_connect_timeout() {
     // Try to connect to a non-existent server with short timeout
     let service_url = "http://localhost:1234"; // Assuming this port is not in use
     let timeout = Duration::from_millis(100);
-    
+
     let result = ServiceClient::connect(service_url, Some(timeout)).await;
-    
+
     // Should fail to connect
     assert!(result.is_err());
 }
@@ -47,12 +47,12 @@ async fn test_connect_timeout() {
 async fn test_send_command() {
     // Start mock server
     let mock_server = MockServer::start().await;
-    
+
     // Test command data
     let command = "test-command";
     let args = serde_json::to_vec(&json!({ "key": "value" })).unwrap();
     let expected_response = json!({ "result": "success" });
-    
+
     // Mock command endpoint
     Mock::given(method("POST"))
         .and(path("/command"))
@@ -62,14 +62,14 @@ async fn test_send_command() {
         .expect(1)
         .mount(&mock_server)
         .await;
-    
+
     // Connect to mock server
     let service_url = format!("http://{}", mock_server.address());
     let client = ServiceClient::connect(&service_url, None).await.unwrap();
-    
+
     // Send command
     let response = client.send_command(command, &args).await.unwrap();
-    
+
     // Parse and verify response
     let response_json: serde_json::Value = serde_json::from_slice(&response).unwrap();
     assert_eq!(response_json, expected_response);
@@ -80,11 +80,11 @@ async fn test_send_command() {
 async fn test_send_command_error() {
     // Start mock server
     let mock_server = MockServer::start().await;
-    
+
     // Test command data
     let command = "error-command";
     let args = serde_json::to_vec(&json!({ "key": "value" })).unwrap();
-    
+
     // Mock command endpoint with error response
     Mock::given(method("POST"))
         .and(path("/command"))
@@ -93,11 +93,11 @@ async fn test_send_command_error() {
         .expect(1)
         .mount(&mock_server)
         .await;
-    
+
     // Connect to mock server
     let service_url = format!("http://{}", mock_server.address());
     let client = ServiceClient::connect(&service_url, None).await.unwrap();
-    
+
     // Send command - should fail
     let response = client.send_command(command, &args).await;
     assert!(response.is_err());
@@ -108,7 +108,7 @@ async fn test_send_command_error() {
 async fn test_health_check_healthy() {
     // Start mock server
     let mock_server = MockServer::start().await;
-    
+
     // Mock health endpoint
     Mock::given(method("GET"))
         .and(path("/health"))
@@ -117,11 +117,11 @@ async fn test_health_check_healthy() {
         })))
         .mount(&mock_server)
         .await;
-    
+
     // Connect to mock server
     let service_url = format!("http://{}", mock_server.address());
     let client = ServiceClient::connect(&service_url, None).await.unwrap();
-    
+
     // Check health
     let is_healthy = client.health_check().await.unwrap();
     assert!(is_healthy);
@@ -132,7 +132,7 @@ async fn test_health_check_healthy() {
 async fn test_health_check_unhealthy() {
     // Start mock server
     let mock_server = MockServer::start().await;
-    
+
     // Mock health endpoint with error
     Mock::given(method("GET"))
         .and(path("/health"))
@@ -141,11 +141,11 @@ async fn test_health_check_unhealthy() {
         })))
         .mount(&mock_server)
         .await;
-    
+
     // Connect to mock server
     let service_url = format!("http://{}", mock_server.address());
     let client = ServiceClient::connect(&service_url, None).await.unwrap();
-    
+
     // Check health - should be unhealthy
     let is_healthy = client.health_check().await.unwrap();
     assert!(!is_healthy);

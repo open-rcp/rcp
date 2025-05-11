@@ -1,18 +1,18 @@
-use anyhow::{Result, Context};
+use crate::config::ApiConfig;
+use anyhow::{Context, Result};
 use reqwest::{Client, StatusCode};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use tokio::time::Duration;
-use crate::config::ApiConfig;
 
 /// Service client for communication with the RCP service
 pub struct ServiceClient {
     /// HTTP client for making requests
     client: Client,
-    
+
     /// Base URL for the RCP service
     base_url: String,
-    
+
     /// API key for authentication with the service
     api_key: String,
 }
@@ -22,19 +22,19 @@ pub struct ServiceClient {
 pub struct ServerInfo {
     /// Server ID
     pub id: String,
-    
+
     /// Server name
     pub name: String,
-    
+
     /// Server status (running, stopped, etc)
     pub status: String,
-    
+
     /// Server address
     pub address: Option<String>,
-    
+
     /// Server port
     pub port: Option<u16>,
-    
+
     /// Creation timestamp
     pub created_at: String,
 }
@@ -44,19 +44,19 @@ pub struct ServerInfo {
 pub struct SessionInfo {
     /// Session ID
     pub id: String,
-    
+
     /// User ID associated with this session
     pub user_id: String,
-    
+
     /// Server ID associated with this session
     pub server_id: String,
-    
+
     /// Session status
     pub status: String,
-    
+
     /// Session start time
     pub started_at: String,
-    
+
     /// Session end time (if completed)
     pub ended_at: Option<String>,
 }
@@ -66,7 +66,7 @@ pub struct SessionInfo {
 pub struct CreateServerRequest {
     /// Server name
     pub name: String,
-    
+
     /// Server configuration
     pub config: serde_json::Value,
 }
@@ -76,7 +76,7 @@ pub struct CreateServerRequest {
 pub struct CreateSessionRequest {
     /// User ID for the session
     pub user_id: String,
-    
+
     /// Server ID to connect to
     pub server_id: String,
 }
@@ -90,14 +90,14 @@ impl ServiceClient {
             .connect_timeout(Duration::from_secs(10))
             .build()
             .expect("Failed to create HTTP client");
-            
+
         ServiceClient {
             client,
             base_url: config.service_connection_string.clone(),
             api_key: config.jwt_secret.clone(),
         }
     }
-    
+
     /// Connect to the RCP service
     pub async fn connect(service_socket: &str, timeout: Option<Duration>) -> Result<Self> {
         // Configure the HTTP client with reasonable timeout
@@ -106,38 +106,39 @@ impl ServiceClient {
             .connect_timeout(timeout.unwrap_or(Duration::from_secs(10)))
             .build()
             .expect("Failed to create HTTP client");
-            
+
         let service_client = ServiceClient {
             client,
             base_url: service_socket.to_string(),
             api_key: "default".to_string(), // Will be overridden later
         };
-        
+
         // Test the connection with a ping
         service_client.ping().await?;
-        
+
         Ok(service_client)
     }
-    
+
     /// Health check the RCP service
     pub async fn ping(&self) -> Result<String> {
         let url = format!("{}/health", self.base_url);
-        
-        let response = self.client
+
+        let response = self
+            .client
             .get(&url)
             .header("Authorization", format!("Bearer {}", self.api_key))
             .send()
             .await
             .context("Failed to connect to RCP service")?;
-            
+
         match response.status() {
             StatusCode::OK => {
-                let body: serde_json::Value = response.json().await
+                let body: serde_json::Value = response
+                    .json()
+                    .await
                     .context("Failed to parse response from RCP service")?;
-                    
-                Ok(body["version"].as_str()
-                    .unwrap_or("unknown")
-                    .to_string())
+
+                Ok(body["version"].as_str().unwrap_or("unknown").to_string())
             }
             _ => {
                 let status = response.status();
@@ -146,21 +147,24 @@ impl ServiceClient {
             }
         }
     }
-    
+
     /// Get all servers
     pub async fn get_servers(&self) -> Result<Vec<ServerInfo>> {
         let url = format!("{}/servers", self.base_url);
-        
-        let response = self.client
+
+        let response = self
+            .client
             .get(&url)
             .header("Authorization", format!("Bearer {}", self.api_key))
             .send()
             .await
             .context("Failed to fetch servers from RCP service")?;
-            
+
         match response.status() {
             StatusCode::OK => {
-                let servers = response.json().await
+                let servers = response
+                    .json()
+                    .await
                     .context("Failed to parse servers from RCP service")?;
                 Ok(servers)
             }
@@ -171,26 +175,29 @@ impl ServiceClient {
             }
         }
     }
-    
+
     /// Alias for get_servers to maintain backward compatibility
     pub async fn list_servers(&self) -> Result<Vec<ServerInfo>> {
         self.get_servers().await
     }
-    
+
     /// Get server by ID
     pub async fn get_server(&self, server_id: &str) -> Result<ServerInfo> {
         let url = format!("{}/servers/{}", self.base_url, server_id);
-        
-        let response = self.client
+
+        let response = self
+            .client
             .get(&url)
             .header("Authorization", format!("Bearer {}", self.api_key))
             .send()
             .await
             .context("Failed to fetch server from RCP service")?;
-            
+
         match response.status() {
             StatusCode::OK => {
-                let server = response.json().await
+                let server = response
+                    .json()
+                    .await
                     .context("Failed to parse server from RCP service")?;
                 Ok(server)
             }
@@ -204,22 +211,25 @@ impl ServiceClient {
             }
         }
     }
-    
+
     /// Create a new server
     pub async fn create_server(&self, request: CreateServerRequest) -> Result<ServerInfo> {
         let url = format!("{}/servers", self.base_url);
-        
-        let response = self.client
+
+        let response = self
+            .client
             .post(&url)
             .header("Authorization", format!("Bearer {}", self.api_key))
             .json(&request)
             .send()
             .await
             .context("Failed to create server in RCP service")?;
-            
+
         match response.status() {
             StatusCode::CREATED => {
-                let server = response.json().await
+                let server = response
+                    .json()
+                    .await
                     .context("Failed to parse created server from RCP service")?;
                 Ok(server)
             }
@@ -230,21 +240,24 @@ impl ServiceClient {
             }
         }
     }
-    
+
     /// Start a server
     pub async fn start_server(&self, server_id: &str) -> Result<ServerInfo> {
         let url = format!("{}/servers/{}/start", self.base_url, server_id);
-        
-        let response = self.client
+
+        let response = self
+            .client
             .post(&url)
             .header("Authorization", format!("Bearer {}", self.api_key))
             .send()
             .await
             .context("Failed to start server in RCP service")?;
-            
+
         match response.status() {
             StatusCode::OK => {
-                let server = response.json().await
+                let server = response
+                    .json()
+                    .await
                     .context("Failed to parse server from RCP service")?;
                 Ok(server)
             }
@@ -258,21 +271,24 @@ impl ServiceClient {
             }
         }
     }
-    
+
     /// Stop a server
     pub async fn stop_server(&self, server_id: &str) -> Result<ServerInfo> {
         let url = format!("{}/servers/{}/stop", self.base_url, server_id);
-        
-        let response = self.client
+
+        let response = self
+            .client
             .post(&url)
             .header("Authorization", format!("Bearer {}", self.api_key))
             .send()
             .await
             .context("Failed to stop server in RCP service")?;
-            
+
         match response.status() {
             StatusCode::OK => {
-                let server = response.json().await
+                let server = response
+                    .json()
+                    .await
                     .context("Failed to parse server from RCP service")?;
                 Ok(server)
             }
@@ -286,18 +302,19 @@ impl ServiceClient {
             }
         }
     }
-    
+
     /// Delete a server
     pub async fn delete_server(&self, server_id: &str) -> Result<()> {
         let url = format!("{}/servers/{}", self.base_url, server_id);
-        
-        let response = self.client
+
+        let response = self
+            .client
             .delete(&url)
             .header("Authorization", format!("Bearer {}", self.api_key))
             .send()
             .await
             .context("Failed to delete server in RCP service")?;
-            
+
         match response.status() {
             StatusCode::NO_CONTENT => Ok(()),
             StatusCode::NOT_FOUND => {
@@ -310,21 +327,24 @@ impl ServiceClient {
             }
         }
     }
-    
+
     /// Get all sessions
     pub async fn get_sessions(&self) -> Result<Vec<SessionInfo>> {
         let url = format!("{}/sessions", self.base_url);
-        
-        let response = self.client
+
+        let response = self
+            .client
             .get(&url)
             .header("Authorization", format!("Bearer {}", self.api_key))
             .send()
             .await
             .context("Failed to fetch sessions from RCP service")?;
-            
+
         match response.status() {
             StatusCode::OK => {
-                let sessions = response.json().await
+                let sessions = response
+                    .json()
+                    .await
                     .context("Failed to parse sessions from RCP service")?;
                 Ok(sessions)
             }
@@ -335,7 +355,7 @@ impl ServiceClient {
             }
         }
     }
-    
+
     /// Get sessions for a specific server
     pub async fn list_sessions(&self, server_id: Option<String>) -> Result<Vec<SessionInfo>> {
         let base_url = format!("{}/sessions", self.base_url);
@@ -344,17 +364,20 @@ impl ServiceClient {
         } else {
             base_url
         };
-        
-        let response = self.client
+
+        let response = self
+            .client
             .get(&url)
             .header("Authorization", format!("Bearer {}", self.api_key))
             .send()
             .await
             .context("Failed to fetch sessions from RCP service")?;
-            
+
         match response.status() {
             StatusCode::OK => {
-                let sessions = response.json().await
+                let sessions = response
+                    .json()
+                    .await
                     .context("Failed to parse sessions from RCP service")?;
                 Ok(sessions)
             }
@@ -365,21 +388,24 @@ impl ServiceClient {
             }
         }
     }
-    
+
     /// Get session by ID
     pub async fn get_session(&self, session_id: &str) -> Result<SessionInfo> {
         let url = format!("{}/sessions/{}", self.base_url, session_id);
-        
-        let response = self.client
+
+        let response = self
+            .client
             .get(&url)
             .header("Authorization", format!("Bearer {}", self.api_key))
             .send()
             .await
             .context("Failed to fetch session from RCP service")?;
-            
+
         match response.status() {
             StatusCode::OK => {
-                let session = response.json().await
+                let session = response
+                    .json()
+                    .await
                     .context("Failed to parse session from RCP service")?;
                 Ok(session)
             }
@@ -393,22 +419,25 @@ impl ServiceClient {
             }
         }
     }
-    
+
     /// Create a new session
     pub async fn create_session(&self, request: CreateSessionRequest) -> Result<SessionInfo> {
         let url = format!("{}/sessions", self.base_url);
-        
-        let response = self.client
+
+        let response = self
+            .client
             .post(&url)
             .header("Authorization", format!("Bearer {}", self.api_key))
             .json(&request)
             .send()
             .await
             .context("Failed to create session in RCP service")?;
-            
+
         match response.status() {
             StatusCode::CREATED => {
-                let session = response.json().await
+                let session = response
+                    .json()
+                    .await
                     .context("Failed to parse created session from RCP service")?;
                 Ok(session)
             }
@@ -419,21 +448,24 @@ impl ServiceClient {
             }
         }
     }
-    
+
     /// End a session
     pub async fn end_session(&self, session_id: &str) -> Result<SessionInfo> {
         let url = format!("{}/sessions/{}/end", self.base_url, session_id);
-        
-        let response = self.client
+
+        let response = self
+            .client
             .post(&url)
             .header("Authorization", format!("Bearer {}", self.api_key))
             .send()
             .await
             .context("Failed to end session in RCP service")?;
-            
+
         match response.status() {
             StatusCode::OK => {
-                let session = response.json().await
+                let session = response
+                    .json()
+                    .await
                     .context("Failed to parse session from RCP service")?;
                 Ok(session)
             }
@@ -447,18 +479,19 @@ impl ServiceClient {
             }
         }
     }
-    
+
     /// Disconnect a session
     pub async fn disconnect_session(&self, session_id: &str) -> Result<()> {
         let url = format!("{}/sessions/{}/disconnect", self.base_url, session_id);
-        
-        let response = self.client
+
+        let response = self
+            .client
             .post(&url)
             .header("Authorization", format!("Bearer {}", self.api_key))
             .send()
             .await
             .context("Failed to disconnect session in RCP service")?;
-            
+
         match response.status() {
             StatusCode::NO_CONTENT => Ok(()),
             StatusCode::NOT_FOUND => {
@@ -471,12 +504,13 @@ impl ServiceClient {
             }
         }
     }
-    
+
     /// Send a command to the RCP service
     pub async fn send_command(&self, command: &str, args: &[u8]) -> Result<Vec<u8>> {
         let url = format!("{}/command/{}", self.base_url, command);
-        
-        let response = self.client
+
+        let response = self
+            .client
             .post(&url)
             .header("Authorization", format!("Bearer {}", self.api_key))
             .header("Content-Type", "application/octet-stream")
@@ -484,10 +518,12 @@ impl ServiceClient {
             .send()
             .await
             .context("Failed to send command to RCP service")?;
-            
+
         match response.status() {
             StatusCode::OK => {
-                let bytes = response.bytes().await
+                let bytes = response
+                    .bytes()
+                    .await
                     .context("Failed to read command response from RCP service")?;
                 Ok(bytes.to_vec())
             }
@@ -501,21 +537,24 @@ impl ServiceClient {
             }
         }
     }
-    
+
     /// Get service status
     pub async fn get_status(&self) -> Result<serde_json::Value> {
         let url = format!("{}/status", self.base_url);
-        
-        let response = self.client
+
+        let response = self
+            .client
             .get(&url)
             .header("Authorization", format!("Bearer {}", self.api_key))
             .send()
             .await
             .context("Failed to fetch status from RCP service")?;
-            
+
         match response.status() {
             StatusCode::OK => {
-                let status = response.json().await
+                let status = response
+                    .json()
+                    .await
                     .context("Failed to parse status from RCP service")?;
                 Ok(status)
             }

@@ -36,6 +36,7 @@ wiremock = "0.5"
 tempfile = "3.8"
 futures-util = "0.3"
 tokio-test = "0.4"
+hyper = "1.6.0"
 
 [lib]
 name = "rcp_api"
