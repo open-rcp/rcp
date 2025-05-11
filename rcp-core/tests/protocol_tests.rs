@@ -70,7 +70,7 @@ impl AsyncWrite for TestConnection {
 #[tokio::test]
 async fn test_protocol_state_transitions() {
     // Test protocol state transitions through authentication flow
-    let mut conn = TestConnection::new();
+    let conn = TestConnection::new();
     let mut proto = Protocol::new(conn);
 
     // Check initial state
