@@ -19,23 +19,41 @@ fn test_session_id() {
 fn test_connection_state() {
     // Test ConnectionState enum values
     let state = ConnectionState::Connected;
-    assert!(state == ConnectionState::Connected, "State should be Connected");
-    assert!(state != ConnectionState::Authenticated, "State should not be Authenticated");
-    
+    assert!(
+        state == ConnectionState::Connected,
+        "State should be Connected"
+    );
+    assert!(
+        state != ConnectionState::Authenticated,
+        "State should not be Authenticated"
+    );
+
     // Test state transitions
     let initial_state = ConnectionState::Connected;
     let auth_state = ConnectionState::Authenticated;
     let closing_state = ConnectionState::Closing;
-    
-    assert!(initial_state != auth_state, "Connected should not equal Authenticated");
-    assert!(initial_state != closing_state, "Connected should not equal Closing");
+
+    assert!(
+        initial_state != auth_state,
+        "Connected should not equal Authenticated"
+    );
+    assert!(
+        initial_state != closing_state,
+        "Connected should not equal Closing"
+    );
 }
 
 #[test]
 fn test_server_config() {
     let config = create_test_config();
-    
+
     // Verify the configuration is correctly set up
-    assert_eq!(config.address, "0.0.0.0", "Default address should be 0.0.0.0");
-    assert!(config.auth.required, "Authentication should be required by default");
+    assert_eq!(
+        config.address, "0.0.0.0",
+        "Default address should be 0.0.0.0"
+    );
+    assert!(
+        config.auth.required,
+        "Authentication should be required by default"
+    );
 }

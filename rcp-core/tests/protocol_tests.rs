@@ -122,34 +122,41 @@ async fn test_protocol_send_receive() {
 #[tokio::test]
 async fn test_protocol_bidirectional() {
     // Test bidirectional communication with framed protocol
-    
+
     // Create a frame to send
     let command_id = CommandId::Ping as u8;
     let send_frame = Frame::new(command_id, b"ping".to_vec());
     let serialized = send_frame.serialize();
-    
+
     // Initialize connection with the serialized data
     let conn = TestConnection::with_data(&serialized);
     let mut proto = Protocol::new(conn);
-    
+
     // Read the frame back from the connection
-    let received_frame = proto.read_frame().await.expect("Read error").expect("No frame");
-    
+    let received_frame = proto
+        .read_frame()
+        .await
+        .expect("Read error")
+        .expect("No frame");
+
     // Verify the frame matches what was sent
     assert_eq!(received_frame.command_id(), command_id);
     assert_eq!(received_frame.payload(), b"ping");
-    
+
     // Create a response frame and write it
     let response_frame = Frame::new(CommandId::Ack as u8, b"pong".to_vec());
-    proto.write_frame(&response_frame).await.expect("Failed to write frame");
-    
+    proto
+        .write_frame(&response_frame)
+        .await
+        .expect("Failed to write frame");
+
     // Extract the connection to check the written data
     let inner_conn = proto.into_inner();
     let written_data = inner_conn.written_data();
-    
+
     // Verify response was written
     assert!(!written_data.is_empty());
-    
+
     // We could parse the written data back into a frame for full verification
     let mut buffer = BytesMut::from(written_data);
     let parsed_response = Frame::parse(&mut buffer).unwrap().unwrap();

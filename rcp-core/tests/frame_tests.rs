@@ -82,25 +82,25 @@ fn test_frame_with_multiple_chunks() {
     let payload = b"test-payload".to_vec();
     let frame = Frame::new(command_id, payload.clone());
     let serialized = frame.serialize();
-    
+
     // Split the serialized data into header and payload parts - header size is 8 bytes
     let header_size = 8; // Use direct constant instead of accessing internal module
     let header_part = &serialized[..header_size];
     let payload_part = &serialized[header_size..];
-    
+
     // Parse in chunks
     let mut buffer = BytesMut::new();
-    
+
     // Add just the header first
     buffer.extend_from_slice(header_part);
-    
+
     // Should not be able to parse yet because we're missing the payload
     let result = Frame::parse(&mut buffer).unwrap();
     assert!(result.is_none());
-    
+
     // Now add the payload
     buffer.extend_from_slice(payload_part);
-    
+
     // Now we should be able to parse the complete frame
     let parsed_frame = Frame::parse(&mut buffer).unwrap().unwrap();
     assert_eq!(parsed_frame.command_id(), command_id);
@@ -111,19 +111,19 @@ fn test_frame_with_multiple_chunks() {
 fn test_invalid_frame_header() {
     // Test handling of invalid frame headers
     let mut invalid_header = BytesMut::with_capacity(8);
-    
+
     // Create an invalid header with invalid protocol version
     invalid_header.put_u8(0xFF); // Invalid protocol version (should be 0x01)
     invalid_header.put_u8(0x01); // Command ID
     invalid_header.put_u16(0); // Reserved bytes
     invalid_header.put_u32(10); // Payload size
-    
+
     // Add some payload data to meet the size requirements
     invalid_header.extend_from_slice(&[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
-    
+
     // Attempt to parse the invalid header
     let result = Frame::parse(&mut invalid_header);
-    
+
     // Should result in an error because of invalid protocol version
     assert!(result.is_err());
 }
