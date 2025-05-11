@@ -6,7 +6,7 @@ authors.workspace = true
 license.workspace = true
 repository.workspace = true
 homepage.workspace = true
-description = "Client library for the Rust Control Protocol (RCP)"
+description = "Client library for the Rust/Remote Control Protocol (RCP)"
 
 # Explicitly define both lib and bin targets
 [[bin]]

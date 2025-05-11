@@ -1,4 +1,4 @@
-# Contributing to RCP (Rust Control Protocol)
+# Contributing to RCP (Rust/Remote Control Protocol)
 
 Thank you for your interest in contributing to RCP! This document provides guidelines and instructions for contributing to the project.
 

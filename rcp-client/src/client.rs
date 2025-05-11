@@ -333,7 +333,7 @@ impl Client {
         let auth_payload = AuthPayload {
             client_id: self.config.client_id.unwrap_or_else(Uuid::new_v4),
             client_name: self.config.client_name.clone(),
-            auth_method: self.config.auth_method,
+            auth_method: self.config.auth_method.clone(),
             auth_data: Vec::new(),
         };
 
@@ -674,6 +674,23 @@ impl Client {
     /// Check if the client is authenticated
     pub async fn is_authenticated(&self) -> bool {
         *self.state.read().await == ClientState::Ready
+    }    /// Set the authentication method
+    pub async fn set_auth_method(&mut self, method: AuthMethod) -> Result<()> {
+        // Make a clone of the method for later use
+        let method_clone = method.clone();
+        
+        // Update auth method in config
+        self.config.auth_method = method_clone;
+        
+        // If method is Password, extract username and password and store as PSK
+        if let AuthMethod::Password(username, password) = method {
+            // In a real implementation, this would use a different auth mechanism
+            // For now, use the password as PSK and username as part of client name
+            self.config.auth_psk = Some(password);
+            self.config.client_name = format!("{}@{}", username, self.config.client_name);
+        }
+        
+        Ok(())
     }
 }
 

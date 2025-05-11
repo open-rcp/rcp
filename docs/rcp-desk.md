@@ -1,29 +1,29 @@
 # RCP Desk
 
-This document outlines the RCP Desk, a unified administrative interface for managing RCP deployments across web and desktop platforms.
+This document outlines the RCP Desk, an end-user client application for accessing RCP virtual applications.
 
 ## Overview
 
-RCP Desk is a comprehensive management interface that provides administrators with tools to monitor, configure, and control RCP servers and services. It replaces the previous management dashboard concept with a more unified approach using modern web technologies.
+RCP Desk is a user-friendly client application that allows end users to connect to RCP servers and launch virtual applications. It provides a seamless experience for accessing remote applications as if they were running locally.
 
 Built with SvelteKit and enhanced with Tauri for desktop deployments, RCP Desk offers:
 
-- Cross-platform support (Web, Windows, macOS, Linux)
-- Real-time monitoring and management
-- Responsive design for various screen sizes
-- High-performance interface with minimal resource usage
-- Modern, intuitive user experience
+- Cross-platform support (Windows, macOS, Linux)
+- Seamless remote application experience
+- Simple connection management
+- File transfer capabilities
+- High-performance screen streaming
+- Modern, intuitive user interface
 
 ## Architecture
 
-RCP Desk follows a unified codebase approach:
+RCP Desk follows a streamlined codebase approach:
 
 ```
 rcp-desk/
 ├── src/              # Shared components and logic
 ├── assets/           # Images, icons, and other static assets
-├── web/              # Web-specific implementation (SvelteKit)
-└── app/              # Desktop app implementation (Tauri)
+└── src-tauri/        # Desktop app implementation (Tauri)
 ```
 
 ### Technology Stack

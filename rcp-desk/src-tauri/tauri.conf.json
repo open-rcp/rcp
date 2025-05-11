@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "rcp-desk",
+  "productName": "RCP Desk",
   "version": "0.1.0",
   "identifier": "com.open-rcp.rcp-desk",
   "build": {
@@ -12,9 +12,9 @@
   "app": {
     "windows": [
       {
-        "title": "rcp-desk",
-        "width": 800,
-        "height": 600
+        "title": "RCP Desk",
+        "width": 1024,
+        "height": 768
       }
     ],
     "security": {

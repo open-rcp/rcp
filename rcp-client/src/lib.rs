@@ -1,6 +1,6 @@
 //! RCP Client Library
 //!
-//! This library provides a client implementation for the Remote Control Protocol (RCP).
+//! This library provides a client implementation for the Rust/Remote Control Protocol (RCP).
 //! It allows applications to connect to RCP servers and use their services like display
 //! streaming, input control, clipboard sharing, and file transfers.
 

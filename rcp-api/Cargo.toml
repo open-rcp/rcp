@@ -2,7 +2,7 @@
 name = "rcp-api"
 version = "0.1.0"
 edition = "2021"
-description = "API server for the Rust Control Protocol (RCP)"
+description = "API server for the Rust/Remote Control Protocol (RCP)"
 authors = ["Akash Shah <itsalfredakku@gmail.com>"]
 
 [dependencies]

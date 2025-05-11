@@ -1,6 +1,6 @@
 # RCP API
 
-This document specifies the API for the Remote Control Protocol (RCP), providing a RESTful interface for managing RCP servers, client connections, and monitoring system usage.
+This document specifies the API for the Rust/Remote Control Protocol (RCP), providing a RESTful interface for managing RCP servers, client connections, and monitoring system usage.
 
 ## API Overview
 

@@ -9,11 +9,11 @@ mod service;
 mod user;
 
 use clap::Parser;
-use error::Result;
+use anyhow::Result;
 use log::{info, LevelFilter};
-use service::ServiceManager;
+use crate::manager::ServiceManager;
 
-/// RCP Service - Remote Control Protocol Runtime Service
+/// RCP Service - Rust/Remote Control Protocol Runtime Service
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 struct Cli {
@@ -71,7 +71,7 @@ async fn main() -> Result<()> {
         .format_timestamp_millis()
         .init();
 
-    info!("RCP Service v{} initializing...", env!("CARGO                            _PKG_VERSION"));
+    info!("RCP Service v{} initializing...", env!("CARGO_PKG_VERSION"));
 
     // Process commands if provided
     if let Some(cmd) = cli.command {
@@ -80,8 +80,10 @@ async fn main() -> Result<()> {
                 info!("Starting RCP Service...");
                 if cli.foreground {
                     // Run in foreground
-                    let manager = ServiceManager::new(&cli.config)?;
-                    manager.run().await?;
+                    let (shutdown_tx, _shutdown_rx) = tokio::sync::mpsc::channel(1);
+                    let work_dir = std::path::PathBuf::from(&cli.config).parent().unwrap_or_else(|| std::path::Path::new(".")).to_path_buf();
+                    let manager = ServiceManager::new(work_dir, shutdown_tx);
+                    manager.start().await?;
                 } else {
                     // Run as daemon
                     daemon::start(&cli.config)?;
@@ -113,8 +115,10 @@ async fn main() -> Result<()> {
     } else if cli.foreground {
         // No command, run in foreground
         info!("Starting RCP Service in foreground...");
-        let manager = ServiceManager::new(&cli.config)?;
-        manager.run().await?;
+        let (shutdown_tx, _shutdown_rx) = tokio::sync::mpsc::channel(1);
+        let work_dir = std::path::PathBuf::from(&cli.config).parent().unwrap_or_else(|| std::path::Path::new(".")).to_path_buf();
+        let manager = ServiceManager::new(work_dir, shutdown_tx);
+        manager.start().await?;
     } else {
         // No command, run as daemon
         info!("Starting RCP Service as daemon...");

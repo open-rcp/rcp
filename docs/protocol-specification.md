@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Rust Control Protocol (RCP) is designed for secure remote application control over TCP/IP networks. This document describes version 1.0 of the protocol.
+The Rust/Remote Control Protocol (RCP) is designed for secure remote application control over TCP/IP networks. This document describes version 1.0 of the protocol.
 
 ## Protocol Design Goals
 

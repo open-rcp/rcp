@@ -1,6 +1,6 @@
-# 🦀 RCP — Rust Control Protocol
+# 🦀 RCP — Rust/Remote Control Protocol
 
-**RCP/1.0** (Rust Control Protocol) is a low-level, high-performance protocol designed to enable secure remote control of desktop applications over TCP/IP using the Rust programming language. Built for performance, portability, and flexibility, RCP is designed to be the foundation for remote app virtualization or distributed desktop protocols.
+**RCP/1.0** (Rust/Remote Control Protocol) is a low-level, high-performance protocol designed to enable secure remote control of desktop applications over TCP/IP using the Rust programming language. Built for performance, portability, and flexibility, RCP is designed to be the foundation for remote app virtualization or distributed desktop protocols.
 
 > 🔒 Secure. ⚡ Fast. 🧩 Modular. 🦀 Rust-native.
 
@@ -30,9 +30,10 @@ rcp/
 ├── rcp-server/             # RCP listener, app session manager
 ├── rcp-client/             # RCP client, app control interface
 ├── rcp-service/            # Runtime service with app lifecycle management
-├── rcp-cli/                # Command-line interface for management/control/service
+├── rcp-cli/                # Command-line tool for server administration only
 ├── rcp-api/                # RESTful API for remote management
-├── rcp-desk/               # Unified admin interface (SvelteKit+Tauri, Web+Desktop)
+├── rcp-admin/              # Administrative interface for server management
+├── rcp-desk/               # End-user client for virtual applications
 ├── rcp-ws-bridge/          # (optional) WebSocket proxy for browser clients
 ├── examples/               # Minimal demos (spawn notepad, etc.)
 └── docs/                   # Protocol spec & architecture documentation
@@ -116,36 +117,40 @@ rcp-client -H 127.0.0.1 -p 8716 connect
 rcp-client -H 127.0.0.1 -p 8716 connect --psk customkey
 ```
 
-### 🖥️ Using the Management UI
+### 🖥️ Using the Admin Interface
 
 ```bash
-# Start the management interface (SvelteKit+Tauri)
-cargo run -p rcp-desk
+# Start the server management interface (SvelteKit+Tauri)
+cargo run -p rcp-admin
 ```
 
-The desk management UI provides a complete interface for:
+The admin interface provides a complete interface for:
 - Managing server configurations
 - Monitoring active sessions
 - Configuring application access
 - Viewing analytics and logs
 - User management
 
-#### Web Interface
+#### Web-based Admin Interface
 
 ```bash
-# Start the web interface
-cargo run -p rcp-desk -- --web
+# Start the web-based admin interface
+cargo run -p rcp-admin -- --web
 ```
 
-#### Desktop App
+### 🖱️ Using the End-User Client
 
 ```bash
-# Build and install the desktop app
-cargo run -p rcp-desk -- --desktop-install
-
-# Run the desktop app
+# Start the virtual application client
 cargo run -p rcp-desk
 ```
+
+The client app provides an intuitive interface for:
+- Connecting to RCP servers
+- Launching virtual applications
+- Managing file transfers
+- Setting preferences
+- Managing sessions
 
 ---
 
@@ -161,9 +166,10 @@ RCP provides comprehensive documentation to help you understand, implement, and 
 
 ### Component Documentation
 - [RCP Service](docs/rcp-service.md) - Documentation for the runtime service component
-- [RCP CLI](docs/rcp-cli.md) - Documentation for the command-line interface
+- [RCP CLI](docs/rcp-cli.md) - Documentation for the command-line interface (server administration)
 - [RCP API](docs/rcp-api.md) - Documentation for the RESTful API
-- [RCP Desk](docs/rcp-desk.md) - Documentation for the unified admin interface
+- [RCP Admin](docs/rcp-admin.md) - Documentation for the administrative interface
+- [RCP Desk](docs/rcp-desk.md) - Documentation for the end-user client application
 
 ### Development Resources
 - [BUILD](BUILD.md) - Instructions for building and developing RCP

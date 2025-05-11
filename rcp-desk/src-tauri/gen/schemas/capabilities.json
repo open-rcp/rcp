@@ -1,0 +1,1 @@
+{"default-capability":{"identifier":"default-capability","description":"Default capabilities for RCP Desk","local":true,"windows":["main"],"permissions":["core:default","dialog:default","shell:default"]}}

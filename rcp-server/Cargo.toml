@@ -6,7 +6,7 @@ authors.workspace = true
 license.workspace = true
 repository.workspace = true
 homepage.workspace = true
-description = "Server implementation for the Rust Control Protocol (RCP)"
+description = "Server implementation for the Rust/Remote Control Protocol (RCP)"
 
 [features]
 default = []

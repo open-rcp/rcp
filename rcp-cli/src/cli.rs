@@ -1,8 +1,6 @@
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
-use tokio::sync::Mutex;
-use std::sync::Arc;
 use crate::error::CliError;
 use crate::service::{ServiceClient, ServiceStatus};
 
@@ -26,6 +24,12 @@ pub struct CliConfig {
     
     #[serde(default)]
     pub auth: AuthConfig,
+    
+    #[serde(default = "default_json_output")]
+    pub json_output: bool,
+    
+    #[serde(default = "default_quiet")]
+    pub quiet: bool,
 }
 
 impl Default for CliConfig {
@@ -37,6 +41,8 @@ impl Default for CliConfig {
             timeout_seconds: default_timeout_seconds(),
             connection: ConnectionConfig::default(),
             auth: AuthConfig::default(),
+            json_output: default_json_output(),
+            quiet: default_quiet(),
         }
     }
 }
@@ -84,6 +90,8 @@ fn default_log_level() -> String { "info".to_string() }
 fn default_format() -> String { "table".to_string() }
 fn default_color() -> bool { true }
 fn default_timeout_seconds() -> u64 { 5 }
+fn default_json_output() -> bool { false }
+fn default_quiet() -> bool { false }
 
 fn default_socket_path() -> String {
     if cfg!(windows) {

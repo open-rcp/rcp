@@ -1,6 +1,6 @@
 # RCP Implementation Guidelines
 
-This guide provides detailed instructions for implementing and using the Rust Control Protocol (RCP) in your applications.
+This guide provides detailed instructions for implementing and using the Rust/Remote Control Protocol (RCP) in your applications.
 
 ## Table of Contents
 
@@ -19,7 +19,7 @@ This guide provides detailed instructions for implementing and using the Rust Co
 
 ## Introduction
 
-The Rust Control Protocol (RCP) is a lightweight, secure protocol for remote control and service sharing between applications. It is designed to be efficient, extensible, and easy to integrate into Rust applications.
+The Rust/Remote Control Protocol (RCP) is a lightweight, secure protocol for remote control and service sharing between applications. It is designed to be efficient, extensible, and easy to integrate into Rust applications.
 
 Key features:
 - Binary protocol with minimal overhead
@@ -924,4 +924,4 @@ See the `examples/` directory for complete working examples:
 
 ---
 
-For more information, refer to the [Architecture Overview](architecture.md), [Protocol Specification](spec.md), [RCP Service](rcp-service.md), [RCP CLI](rcp-cli.md), [RCP API](rcp-api.md), and [RCP Desk](rcp-desk.md) documents.
+For more information, refer to the [Architecture Overview](architecture.md), [Protocol Specification](protocol-specification.md), [RCP Service](rcp-service.md), [RCP CLI](rcp-cli.md), [RCP API](rcp-api.md), [RCP Admin](rcp-admin.md), and [RCP Desk](rcp-desk.md) documents.

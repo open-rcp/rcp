@@ -1,6 +1,6 @@
 # RCP Release Process
 
-This document outlines the process for creating and publishing new releases of the RCP (Rust Control Protocol) project.
+This document outlines the process for creating and publishing new releases of the RCP (Rust/Remote Control Protocol) project.
 
 ## Version Numbering
 

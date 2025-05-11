@@ -1,6 +1,6 @@
 # RCP Build & Development Guide
 
-This document provides comprehensive instructions for building and developing the RCP (Rust Control Protocol) project across different operating systems. The guide includes setting up development environments, building various components, and running the project for testing.
+This document provides comprehensive instructions for building and developing the RCP (Rust/Remote Control Protocol) project across different operating systems. The guide includes setting up development environments, building various components, and running the project for testing.
 
 ## Prerequisites
 

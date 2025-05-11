@@ -2,7 +2,7 @@
 
 ## Overview
 
-The RCP (Rust Control Protocol) project takes security seriously. This document outlines our security policy, including how to report vulnerabilities, which versions are supported with security updates, and security-related expectations for contributors.
+The RCP (Rust/Remote Control Protocol) project takes security seriously. This document outlines our security policy, including how to report vulnerabilities, which versions are supported with security updates, and security-related expectations for contributors.
 
 ## Supported Versions
 
