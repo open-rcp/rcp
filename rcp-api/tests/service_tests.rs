@@ -51,14 +51,14 @@ async fn test_send_command() {
     // Test command data
     let command = "test-command";
     let args = serde_json::to_vec(&json!({ "key": "value" })).unwrap();
-    let expected_response = json!({ "result": "success" });
+    let expected_response_value = json!({ "result": "success" });
 
     // Mock command endpoint
     Mock::given(method("POST"))
         .and(path("/command"))
         .and(header("Content-Type", "application/octet-stream"))
         .and(header("X-RCP-Command", command))
-        .respond_with(ResponseTemplate::new(200).set_body_json(expected_response))
+        .respond_with(ResponseTemplate::new(200).set_body_json(expected_response_value.clone()))
         .expect(1)
         .mount(&mock_server)
         .await;
@@ -72,7 +72,7 @@ async fn test_send_command() {
 
     // Parse and verify response
     let response_json: serde_json::Value = serde_json::from_slice(&response).unwrap();
-    assert_eq!(response_json, expected_response);
+    assert_eq!(response_json, expected_response_value);
 }
 
 /// Test sending command with error response
@@ -113,7 +113,8 @@ async fn test_health_check_healthy() {
     Mock::given(method("GET"))
         .and(path("/health"))
         .respond_with(ResponseTemplate::new(200).set_body_json(json!({
-            "status": "ok"
+            "status": "ok",
+            "version": "1.0.0"
         })))
         .mount(&mock_server)
         .await;
@@ -122,9 +123,9 @@ async fn test_health_check_healthy() {
     let service_url = format!("http://{}", mock_server.address());
     let client = ServiceClient::connect(&service_url, None).await.unwrap();
 
-    // Check health
-    let is_healthy = client.health_check().await.unwrap();
-    assert!(is_healthy);
+    // Check health using ping (not health_check which doesn't exist)
+    let version = client.ping().await.unwrap();
+    assert_eq!(version, "1.0.0");
 }
 
 /// Test health check with unhealthy service
@@ -137,7 +138,8 @@ async fn test_health_check_unhealthy() {
     Mock::given(method("GET"))
         .and(path("/health"))
         .respond_with(ResponseTemplate::new(500).set_body_json(json!({
-            "status": "error"
+            "status": "error",
+            "message": "Service unavailable"
         })))
         .mount(&mock_server)
         .await;
@@ -146,7 +148,7 @@ async fn test_health_check_unhealthy() {
     let service_url = format!("http://{}", mock_server.address());
     let client = ServiceClient::connect(&service_url, None).await.unwrap();
 
-    // Check health - should be unhealthy
-    let is_healthy = client.health_check().await.unwrap();
-    assert!(!is_healthy);
+    // Check health - should fail
+    let result = client.ping().await;
+    assert!(result.is_err());
 }
