@@ -34,10 +34,7 @@ async fn install_service(cli: &mut Cli, auto_start: bool, user: Option<String>) 
 
     let already_installed = match result {
         Ok(client) => {
-            match client.is_service_installed().await {
-                Ok(installed) => installed,
-                Err(_) => false, // Assume not installed if we can't check
-            }
+            (client.is_service_installed().await).unwrap_or(false) // Assume not installed if we can't check
         }
         Err(_) => {
             // Service not running, but that's okay for installation
@@ -65,10 +62,7 @@ async fn install_service(cli: &mut Cli, auto_start: bool, user: Option<String>) 
     let client_result = cli.get_service_client_mut();
 
     let installed = if let Ok(client) = client_result {
-        match client.install_service(&install_options).await {
-            Ok(_) => true,
-            Err(_) => false,
-        }
+        (client.install_service(&install_options).await).is_ok()
     } else {
         // Service isn't running, perform direct installation
         println!(
@@ -287,10 +281,7 @@ async fn start_service(cli: &mut Cli) -> Result<()> {
     let client_result = cli.get_service_client_mut();
 
     let started = if let Ok(client) = client_result {
-        match client.start_service().await {
-            Ok(_) => true,
-            Err(_) => false,
-        }
+        (client.start_service().await).is_ok()
     } else {
         // Service isn't running, perform direct start
         println!(

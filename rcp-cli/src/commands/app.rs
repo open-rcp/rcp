@@ -18,17 +18,22 @@ pub enum AppAction {
     Terminate,
 }
 
-/// Handle application commands - updated to work with flat parameters
+/// Options for application commands
+pub struct AppCommandOptions<'a> {
+    pub id: Option<&'a str>,
+    pub name: Option<&'a str>,
+    pub path: Option<&'a str>,
+    pub args: Option<&'a str>,
+    pub description: Option<&'a str>,
+    pub user_id: Option<&'a str>,
+    pub instance_id: Option<&'a str>,
+}
+
+/// Handle application commands - updated to work with options struct
 pub async fn handle_app_command(
     cli: &mut Cli,
     action: AppAction,
-    id: Option<&str>,
-    name: Option<&str>,
-    path: Option<&str>,
-    args: Option<&str>,
-    description: Option<&str>,
-    user_id: Option<&str>,
-    instance_id: Option<&str>,
+    options: AppCommandOptions<'_>,
 ) -> Result<()> {
     match action {
         AppAction::List => {
@@ -58,7 +63,7 @@ pub async fn handle_app_command(
         }
         AppAction::Get => {
             // Check if ID is provided
-            let id = id.ok_or(anyhow::anyhow!("Application ID is required for get action"))?;
+            let id = options.id.ok_or(anyhow::anyhow!("Application ID is required for get action"))?;
             let app = cli.get_app(id).await?;
 
             utils::print_section("Application Details");
@@ -88,10 +93,10 @@ pub async fn handle_app_command(
         }
         AppAction::Create => {
             // Check if required arguments are available
-            let name = name.ok_or(anyhow::anyhow!(
+            let name = options.name.ok_or(anyhow::anyhow!(
                 "Application name is required for create action"
             ))?;
-            let path = path.ok_or(anyhow::anyhow!(
+            let path = options.path.ok_or(anyhow::anyhow!(
                 "Application path is required for create action"
             ))?;
 
@@ -103,7 +108,7 @@ pub async fn handle_app_command(
                 }
             }
 
-            let app = cli.create_app(name, path, args, description).await?;
+            let app = cli.create_app(name, path, options.args, options.description).await?;
 
             println!(
                 "Application '{}' created successfully with ID: {}",
@@ -112,12 +117,12 @@ pub async fn handle_app_command(
         }
         AppAction::Update => {
             // Check if ID is provided
-            let id = id.ok_or(anyhow::anyhow!(
+            let id = options.id.ok_or(anyhow::anyhow!(
                 "Application ID is required for update action"
             ))?;
 
             // Validate path if provided
-            if let Some(path_val) = path {
+            if let Some(path_val) = options.path {
                 if !std::path::Path::new(path_val).exists() {
                     println!("{}", "Warning: Application path does not exist".yellow());
                     if !utils::confirm("Do you want to continue?", false) {
@@ -127,14 +132,14 @@ pub async fn handle_app_command(
             }
 
             let app = cli
-                .update_app(id, name, path, args, description, None)
+                .update_app(id, options.name, options.path, options.args, options.description, None)
                 .await?;
 
             println!("Application '{}' updated successfully", app.name);
         }
         AppAction::Delete => {
             // Check if ID is provided
-            let id = id.ok_or(anyhow::anyhow!(
+            let id = options.id.ok_or(anyhow::anyhow!(
                 "Application ID is required for delete action"
             ))?;
 
@@ -155,7 +160,7 @@ pub async fn handle_app_command(
         }
         AppAction::Enable => {
             // Check if ID is provided
-            let id = id.ok_or(anyhow::anyhow!(
+            let id = options.id.ok_or(anyhow::anyhow!(
                 "Application ID is required for enable action"
             ))?;
             cli.enable_app(id).await?;
@@ -163,7 +168,7 @@ pub async fn handle_app_command(
         }
         AppAction::Disable => {
             // Check if ID is provided
-            let id = id.ok_or(anyhow::anyhow!(
+            let id = options.id.ok_or(anyhow::anyhow!(
                 "Application ID is required for disable action"
             ))?;
             cli.disable_app(id).await?;
@@ -171,10 +176,10 @@ pub async fn handle_app_command(
         }
         AppAction::Launch => {
             // Check if ID is provided
-            let id = id.ok_or(anyhow::anyhow!(
+            let id = options.id.ok_or(anyhow::anyhow!(
                 "Application ID is required for launch action"
             ))?;
-            let result = cli.launch_app(id, user_id).await?;
+            let result = cli.launch_app(id, options.user_id).await?;
             println!(
                 "Application launched successfully: {}",
                 serde_json::to_string_pretty(&result)?
@@ -205,7 +210,7 @@ pub async fn handle_app_command(
         }
         AppAction::Terminate => {
             // Check if instance ID is provided
-            let instance_id = instance_id.ok_or(anyhow::anyhow!(
+            let instance_id = options.instance_id.ok_or(anyhow::anyhow!(
                 "Instance ID is required for terminate action"
             ))?;
 
