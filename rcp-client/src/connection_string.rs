@@ -126,9 +126,15 @@ impl ConnectionString {
         // Extract port if present
         host = input_str.clone();
         if let Some(port_idx) = input_str.rfind(':') {
-            if let Ok(port_num) = input_str[port_idx + 1..].parse::<u16>() {
-                port = Some(port_num);
-                host = input_str[0..port_idx].to_string();
+            match input_str[port_idx + 1..].parse::<u16>() {
+                Ok(port_num) => {
+                    port = Some(port_num);
+                    host = input_str[0..port_idx].to_string();
+                },
+                Err(_) => {
+                    // Invalid port format
+                    return Err(Error::Connection("Invalid port format".to_string()));
+                }
             }
         }
 
