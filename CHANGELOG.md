@@ -1,3 +1,54 @@
+## v0.1.0-beta (2025-05-12)
+
+### Features
+* chore: update Cargo.toml to include rcp-desk and change license to Apache-2.0
+* feat: Add initial package.json for rcp-desk with dependencies and scripts
+* feat: Implement initial version of rcp-cli with configuration management, service commands, and user management
+* feat: add comprehensive integration tests for RCP core library functionality
+* feat: add extensive tests for authentication, command, frame, and protocol functionalities
+* feat: add server configuration and server tests for improved functionality
+* feat: add session tests for connection state and server configuration validation
+* feat: initialize Tauri + SvelteKit application with basic greeting functionality
+
+### Bug Fixes
+* chore: update Cargo.toml to include rcp-desk and change license to Apache-2.0
+* fix: change mutable connection to immutable in state transitions test
+* fix: remove .svelte-kit directory from .gitignore and update version hash in internal.js
+* fix: remove duplicate environment variable declarations in ambient.d.ts
+* fix: remove unused imports from config module and clean up commands exposure
+* fix: update .gitignore to include specific node_modules and .svelte-kit directories
+* fix: update SvelteKit adapter and dependencies, improve server management UI
+* fix: update SvelteKit adapter to version 3.0.8 and clean up server status handling in admin interface
+* fix: update daemonize dependency to version 0.5 and clean up import in main.rs
+* fix: update documentation links for consistency in naming
+* fix: update documentation links for protocol specification and development guidelines
+* fix: update documentation to reflect the correct name "Rust/Remote Control Protocol" across multiple files
+
+### Improvements
+* refactor: adjust health check mock priorities and improve command endpoint path formatting
+* refactor: clean up unused imports and re-export statements in CLI and service modules
+* refactor: enhance error handling tests and update service command assertions
+* refactor: improve test assertions for clarity and consistency across multiple test files
+* refactor: remove unused UnixPlatform export from platform module
+* refactor: update auth failure test to reflect server error and adjust health check mock responses
+* refactor: update error handling test for server error response and improve service test documentation
+* refactor: update token property checks and expiration validation in db tests
+
+### Documentation
+* docs: update changelog for v0.1.0+7
+* docs: update changelog for v0.1.0+7
+* docs: update changelog for v0.1.0+7
+* docs: update changelog for v0.1.0+7
+* docs: update changelog for v0.1.0-beta
+* docs: update changelog for v0.1.0-beta
+* docs: update changelog for v0.1.0-beta
+* docs: update changelog for v0.1.0-beta
+* docs: update changelog for v0.1.0-beta
+* docs: update changelog for v0.1.0-beta
+* docs: update changelog for v0.1.0-beta
+* docs: update changelog for v0.1.0-beta
+* docs: update changelog for v0.1.0-pre
+
 ## v0.1.0-beta (2025-05-11)
 
 ### Features
