@@ -24,9 +24,11 @@ pub enum UserRole {
     Guest,
 }
 
-impl UserRole {
+impl std::str::FromStr for UserRole {
+    type Err = Error;
+
     /// Convert a string to a UserRole
-    pub fn from_str(s: &str) -> Result<Self> {
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
         match s.to_lowercase().as_str() {
             "admin" => Ok(UserRole::Admin),
             "user" => Ok(UserRole::User),
@@ -34,7 +36,9 @@ impl UserRole {
             _ => Err(Error::InvalidArgument(format!("Invalid user role: {}", s))),
         }
     }
+}
 
+impl UserRole {
     /// Convert a UserRole to a string
     pub fn as_str(&self) -> &'static str {
         match self {
@@ -380,11 +384,11 @@ mod tests {
 
     #[tokio::test]
     async fn test_role_conversion() {
-        assert_eq!(UserRole::from_str("admin").unwrap(), UserRole::Admin);
-        assert_eq!(UserRole::from_str("user").unwrap(), UserRole::User);
-        assert_eq!(UserRole::from_str("guest").unwrap(), UserRole::Guest);
+        assert_eq!("admin".parse::<UserRole>().unwrap(), UserRole::Admin);
+        assert_eq!("user".parse::<UserRole>().unwrap(), UserRole::User);
+        assert_eq!("guest".parse::<UserRole>().unwrap(), UserRole::Guest);
 
-        assert!(UserRole::from_str("invalid").is_err());
+        assert!("invalid".parse::<UserRole>().is_err());
 
         assert_eq!(UserRole::Admin.as_str(), "admin");
         assert_eq!(UserRole::User.as_str(), "user");

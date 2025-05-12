@@ -137,7 +137,7 @@ enum Commands {
     /// View logs
     Logs {
         /// Log level filter
-        #[arg(short, long, default_value = "info")]
+        #[arg(short = 'e', long, default_value = "info")]
         level: String,
         /// Maximum number of log entries
         #[arg(short, long, default_value = "100")]

@@ -108,6 +108,8 @@ fn default_quiet() -> bool {
 fn default_socket_path() -> String {
     if cfg!(windows) {
         "\\\\.\\pipe\\rcp-service".to_string()
+    } else if cfg!(target_os = "macos") {
+        "/Library/Application Support/RCP/rcp-service.sock".to_string()
     } else {
         "/var/run/rcp-service.sock".to_string()
     }

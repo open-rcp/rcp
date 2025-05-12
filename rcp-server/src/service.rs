@@ -820,7 +820,7 @@ pub mod services {
         /// Add a user to the system
         async fn add_user(&self, username: &str, password: &str, role: &str) -> Result<()> {
             // Parse the role
-            let user_role = UserRole::from_str(role)?;
+            let user_role = role.parse::<UserRole>()?;
 
             // Add the user
             self.user_manager
