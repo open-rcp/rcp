@@ -7,7 +7,7 @@ use tokio::test;
 async fn test_cli_creation() {
     // Create a basic CLI instance
     let _cli = Cli::new(CliConfig::default());
-    
+
     // Just assert that the CLI was created successfully
     assert!(true);
 }

@@ -6,7 +6,7 @@ fn main() {
     let minutes = utils::format_duration(150);
     let hours = utils::format_duration(3600);
     let days = utils::format_duration(86400 * 2);
-    
+
     println!("30 seconds: {}", seconds);
     println!("150 seconds: {}", minutes);
     println!("3600 seconds: {}", hours);

@@ -13,9 +13,9 @@ pub mod service;
 pub mod utils;
 
 // Define main types used in commands
-pub use cli::{Cli, CliConfig, ConnectionConfig, AuthConfig, UserInfo};
+pub use cli::{AuthConfig, Cli, CliConfig, ConnectionConfig, UserInfo};
 pub use error::CliError;
-pub use service::{ServiceClient, ServiceStatus, ServerInfo};
+pub use service::{ServerInfo, ServiceClient, ServiceStatus};
 
 // Re-export enums from main
 pub use clap::Parser;

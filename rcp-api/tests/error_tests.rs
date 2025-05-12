@@ -22,10 +22,10 @@ impl StdError for TestError {}
 #[test]
 fn test_auth_error() {
     let error = ApiError::AuthError("Invalid token".to_string());
-    
+
     // Format error before converting it into a response
     let error_str = format!("{:?}", error);
-    
+
     // Convert to response
     let response = error.into_response();
 
@@ -95,7 +95,7 @@ fn test_from_std_error() {
 
     // Convert to ApiError - manual conversion instead of using From trait
     let api_error = ApiError::ServerError(format!("Server error: {}", std_error));
-    
+
     // Format error before converting it into a response
     let err_string = format!("{:?}", api_error);
 

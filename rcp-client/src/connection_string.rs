@@ -130,7 +130,7 @@ impl ConnectionString {
                 Ok(port_num) => {
                     port = Some(port_num);
                     host = input_str[0..port_idx].to_string();
-                },
+                }
                 Err(_) => {
                     // Invalid port format
                     return Err(Error::Connection("Invalid port format".to_string()));

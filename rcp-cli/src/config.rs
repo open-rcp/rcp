@@ -1,7 +1,7 @@
-use anyhow::Result;
-use std::path::{Path, PathBuf};
-use std::fs;
 use crate::CliConfig;
+use anyhow::Result;
+use std::fs;
+use std::path::{Path, PathBuf};
 // We need the following imports for the config module
 // Even though they're reported as unused, they're needed for config file loading
 

@@ -8,18 +8,16 @@ async fn test_status_formatting() {
     let status = ServiceStatus {
         service_status: "running".to_string(),
         uptime: 3600,
-        active_servers: vec![
-            ServerInfo {
-                id: "server1".to_string(),
-                name: "Test Server 1".to_string(), 
-                status: "running".to_string(),
-                port: 8080,
-                active_connections: 2,
-            }
-        ],
+        active_servers: vec![ServerInfo {
+            id: "server1".to_string(),
+            name: "Test Server 1".to_string(),
+            status: "running".to_string(),
+            port: 8080,
+            active_connections: 2,
+        }],
         active_connections: 2,
     };
-    
+
     // Verify the structure
     assert_eq!(status.service_status, "running");
     assert_eq!(status.uptime, 3600);
@@ -39,7 +37,7 @@ async fn test_server_info() {
         port: 8080,
         active_connections: 5,
     };
-    
+
     // Verify the structure
     assert_eq!(server.id, "test-server");
     assert_eq!(server.name, "Test Server");
@@ -55,7 +53,7 @@ async fn test_connect_timeout() {
     // This should error quickly (if actual implementation is present)
     let socket_path = "/tmp/non-existent-socket-path-for-testing";
     let result = ServiceClient::connect(socket_path, 1).await;
-    
+
     // Should be an error of some kind - don't be too specific as implementation might change
     assert!(result.is_err());
 }

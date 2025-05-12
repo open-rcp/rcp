@@ -7,7 +7,7 @@ use tokio::test;
 async fn test_from_io_error() {
     let io_error = io::Error::new(io::ErrorKind::NotFound, "file not found");
     let rcp_error: Error = io_error.into();
-    
+
     match rcp_error {
         Error::IO(_) => (), // Successfully converted
         _ => panic!("Expected IO error variant"),
@@ -19,7 +19,7 @@ async fn test_from_io_error() {
 async fn test_from_core_error() {
     let core_error = rcp_core::Error::InvalidPayload;
     let rcp_error: Error = core_error.into();
-    
+
     match rcp_error {
         Error::Core(_) => (), // Successfully converted
         _ => panic!("Expected Core error variant"),
@@ -31,7 +31,7 @@ async fn test_from_core_error() {
 async fn test_result_with_error() {
     let result: Result<()> = Err(Error::Connection("test connection error".to_string()));
     assert!(result.is_err());
-    
+
     match result {
         Err(Error::Connection(msg)) => assert_eq!(msg, "test connection error"),
         _ => panic!("Expected Connection error with correct message"),
@@ -43,8 +43,11 @@ async fn test_result_with_error() {
 async fn test_error_display() {
     let error = Error::Auth("authentication failed".to_string());
     let display_string = format!("{}", error);
-    
-    assert_eq!(display_string, "Authentication error: authentication failed");
+
+    assert_eq!(
+        display_string,
+        "Authentication error: authentication failed"
+    );
 }
 
 /// Test Debug trait implementation for Error
@@ -52,7 +55,7 @@ async fn test_error_display() {
 async fn test_error_debug() {
     let error = Error::Timeout("operation timed out".to_string());
     let debug_string = format!("{:?}", error);
-    
+
     // Just check that it contains something sensible
     assert!(debug_string.contains("Timeout"));
     assert!(debug_string.contains("operation timed out"));

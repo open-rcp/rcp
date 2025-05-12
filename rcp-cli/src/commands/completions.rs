@@ -17,8 +17,8 @@ pub fn handle_completions_command(cmd: &mut Command, shell: Shell) -> Result<(),
 /// Generate completions to a file, useful for testing
 #[cfg(test)]
 pub fn generate_completions(
-    shell_name: &str, 
-    dir: Option<impl AsRef<Path>>
+    shell_name: &str,
+    dir: Option<impl AsRef<Path>>,
 ) -> Result<(), io::Error> {
     let mut cmd = Command::new("rcp-cli");
     let shell = match shell_name {
@@ -28,12 +28,12 @@ pub fn generate_completions(
         "powershell" => Shell::PowerShell,
         _ => Shell::Bash, // Default to bash
     };
-    
+
     if let Some(dir) = dir {
         generate_to(shell, &mut cmd, "rcp-cli", dir.as_ref())?;
     } else {
         generate(shell, &mut cmd, "rcp-cli", &mut io::stdout());
     }
-    
+
     Ok(())
 }

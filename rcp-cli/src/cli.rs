@@ -206,7 +206,7 @@ impl Cli {
             .add_user(username, password, role)
             .await
     }
-    
+
     /// Get a reference to the configuration
     pub fn get_config(&self) -> &CliConfig {
         &self.config

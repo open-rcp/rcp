@@ -9,7 +9,7 @@ async fn test_format_status() {
     let stopped_status = utils::format_status("stopped");
     let error_status = utils::format_status("error");
     let unknown_status = utils::format_status("unknown");
-    
+
     // Verify the formatting includes the status text
     assert!(running_status.to_string().contains("running"));
     assert!(stopped_status.to_string().contains("stopped"));
@@ -25,7 +25,7 @@ async fn test_format_duration() {
     let minutes = utils::format_duration(150);
     let hours = utils::format_duration(3600);
     let days = utils::format_duration(86400 * 2);
-    
+
     // Verify formatted strings
     assert_eq!(seconds, "30s");
     assert_eq!(minutes, "2m 30s");
@@ -37,26 +37,24 @@ async fn test_format_duration() {
 #[test]
 async fn test_print_table() {
     // This is mostly a visual test, but we can ensure the function doesn't panic
-    
+
     // Create a table with headers and rows
     let headers = ["Name", "Status", "Port", "Connections"];
     let rows = vec![
         ["Server1", "running", "8080", "5"],
         ["Server2", "stopped", "8081", "0"],
     ];
-    
+
     // Calculate column widths manually (since utils doesn't have this function)
-    let widths = headers.iter()
+    let widths = headers
+        .iter()
         .enumerate()
         .map(|(idx, header)| {
-            let max_row_width = rows.iter()
-                .map(|row| row[idx].len())
-                .max()
-                .unwrap_or(0);
+            let max_row_width = rows.iter().map(|row| row[idx].len()).max().unwrap_or(0);
             std::cmp::max(header.len(), max_row_width)
         })
         .collect::<Vec<_>>();
-    
+
     // Verify widths are sufficient for the content
     assert!(widths[0] >= "Server1".len());
     assert!(widths[1] >= "running".len());

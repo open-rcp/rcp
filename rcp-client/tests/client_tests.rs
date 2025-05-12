@@ -7,10 +7,10 @@ use uuid::Uuid;
 #[test]
 async fn test_client_builder_defaults() {
     let client = Client::builder().build();
-    
+
     // Test that state is initially disconnected
     assert_eq!(client.state().await, ClientState::Disconnected);
-    
+
     // Since we can't easily inspect private fields, we'll rely on behavior testing
     // or any public accessors in a real implementation
 }
@@ -31,9 +31,9 @@ async fn test_client_builder_custom() {
         .keep_alive_interval(60)
         .connection_timeout(15)
         .build();
-    
+
     assert_eq!(client.state().await, ClientState::Disconnected);
-    
+
     // Note: In a real test with access to the struct fields, we could verify each value was set correctly
 }
 
@@ -45,9 +45,9 @@ async fn test_client_builder_connection_string() {
         .connection_string("rcp://user:pass@example.com:8888")
         .unwrap()
         .build();
-    
+
     assert_eq!(client.state().await, ClientState::Disconnected);
-    
+
     // Note: In a real test with access to the struct fields, we could verify each value from
     // the connection string was set correctly (host, port, etc.)
 }
@@ -58,14 +58,14 @@ async fn test_client_builder_connection_string() {
 #[test]
 async fn test_client_connection_failure() {
     let client = Client::builder()
-        .host("non-existent-host")  // This host doesn't exist
-        .connection_timeout(1)      // Short timeout for faster test
+        .host("non-existent-host") // This host doesn't exist
+        .connection_timeout(1) // Short timeout for faster test
         .build();
-    
+
     // Attempt to connect should fail since there's no server
     let result = client.connect().await;
     assert!(result.is_err());
-    
+
     // State should be Disconnected
     assert_eq!(client.state().await, ClientState::Disconnected);
 }

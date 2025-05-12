@@ -1,9 +1,9 @@
-use rcp_client::{Service, ServiceType, ServiceMessage};
+use async_trait::async_trait;
+use rcp_client::{Service, ServiceMessage, ServiceType};
 use rcp_core::Frame;
 use tokio::sync::oneshot;
 use tokio::test;
 use uuid::Uuid;
-use async_trait::async_trait;
 
 /// Test service type conversions
 #[test]
@@ -34,11 +34,11 @@ impl MockService {
             service_type: ServiceType::Custom(99),
         }
     }
-    
+
     fn name(&self) -> &str {
         &self.name
     }
-    
+
     fn service_type(&self) -> ServiceType {
         self.service_type
     }
@@ -65,11 +65,11 @@ impl Service for MockService {
 async fn test_service_usage() {
     // Create a simple mock service
     let mut service = MockService::new();
-    
+
     // Start the service
     let start_result = service.start().await;
     assert!(start_result.is_ok());
-    
+
     // Create a simple service message
     let (tx, _rx) = oneshot::channel();
     let message = ServiceMessage {
@@ -77,11 +77,11 @@ async fn test_service_usage() {
         frame: Frame::new(0x01, b"test message".to_vec()),
         response_tx: Some(tx),
     };
-    
+
     // Handle the message
     let handle_result = service.handle_message(message).await;
     assert!(handle_result.is_ok());
-    
+
     // Stop the service
     let stop_result = service.stop().await;
     assert!(stop_result.is_ok());
