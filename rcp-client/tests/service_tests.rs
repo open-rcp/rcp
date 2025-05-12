@@ -20,6 +20,7 @@ async fn test_service_type_string() {
 /// Simple mock service implementation for testing
 #[derive(Debug)]
 struct MockService {
+    #[allow(dead_code)]
     id: uuid::Uuid,
     name: String,
     service_type: ServiceType,
