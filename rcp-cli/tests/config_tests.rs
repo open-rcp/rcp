@@ -11,10 +11,10 @@ async fn test_config_defaults() {
     // Verify default values
     assert_eq!(config.log_level, "info");
     assert_eq!(config.format, "table");
-    assert_eq!(config.color, true);
+    assert!(config.color);
     assert_eq!(config.timeout_seconds, 5);
-    assert_eq!(config.json_output, false);
-    assert_eq!(config.quiet, false);
+    assert!(!config.json_output);
+    assert!(!config.quiet);
 }
 
 /// Test loading configuration from file
@@ -52,10 +52,10 @@ async fn test_config_load() {
     // Verify loaded values
     assert_eq!(config.log_level, "debug");
     assert_eq!(config.format, "json");
-    assert_eq!(config.color, false);
+    assert!(!config.color);
     assert_eq!(config.timeout_seconds, 60);
-    assert_eq!(config.json_output, true);
-    assert_eq!(config.quiet, true);
+    assert!(config.json_output);
+    assert!(config.quiet);
     assert_eq!(config.connection.socket, "/tmp/test-socket");
     assert_eq!(config.auth.token_path, "/tmp/test-token");
 
@@ -93,10 +93,10 @@ async fn test_config_save() {
 
     assert_eq!(loaded_config.log_level, "debug");
     assert_eq!(loaded_config.format, "json");
-    assert_eq!(loaded_config.color, false);
+    assert!(!loaded_config.color);
     assert_eq!(loaded_config.timeout_seconds, 60);
-    assert_eq!(loaded_config.json_output, true);
-    assert_eq!(loaded_config.quiet, true);
+    assert!(loaded_config.json_output);
+    assert!(loaded_config.quiet);
     assert_eq!(loaded_config.connection.socket, "/tmp/test-socket");
     assert_eq!(loaded_config.auth.token_path, "/tmp/test-token");
 

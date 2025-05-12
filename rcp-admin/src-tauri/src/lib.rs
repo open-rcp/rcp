@@ -15,6 +15,12 @@ pub struct RcpState {
     is_connected: Arc<Mutex<bool>>,
 }
 
+impl Default for RcpState {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl RcpState {
     pub fn new() -> Self {
         Self {

@@ -16,14 +16,13 @@ use crate::AppState;
 /// Create API router with all routes and middleware
 pub fn create_router(app_state: AppState) -> Router {
     // Base router with middleware
-    let router = Router::new()
+
+    Router::new()
         .nest("/api/v1", api_routes())
         .with_state(app_state.clone())
         .layer(TraceLayer::new_for_http())
         .layer(compression_layer(&app_state))
-        .layer(cors_layer(&app_state));
-
-    router
+        .layer(cors_layer(&app_state))
 }
 
 /// API routes
@@ -110,7 +109,7 @@ fn api_routes() -> Router<AppState> {
 /// Configure CORS middleware based on application config
 fn cors_layer(app_state: &AppState) -> CorsLayer {
     if app_state.config.enable_cors {
-        let origins = if app_state.config.cors_origins.contains(&"*".to_string()) {
+        if app_state.config.cors_origins.contains(&"*".to_string()) {
             // Allow any origin
             CorsLayer::new()
                 .allow_origin(Any)
@@ -128,9 +127,7 @@ fn cors_layer(app_state: &AppState) -> CorsLayer {
                 .allow_methods(Any)
                 .allow_headers(Any)
                 .max_age(Duration::from_secs(3600))
-        };
-
-        origins
+        }
     } else {
         // CORS disabled
         CorsLayer::new()

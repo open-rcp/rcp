@@ -10,12 +10,11 @@ use service::Service;
 // Import error types
 #[path = "../src/error.rs"]
 mod error;
-use error::ServiceError;
 
 #[tokio::test]
 async fn test_service_creation() {
     // Create a channel for shutdown signals
-    let (tx, mut rx) = mpsc::channel::<()>(1);
+    let (tx, rx) = mpsc::channel::<()>(1);
 
     // Create the service
     let service = Service::new(tx);
@@ -27,7 +26,7 @@ async fn test_service_creation() {
 #[tokio::test]
 async fn test_service_start() {
     // Create a channel for shutdown signals
-    let (tx, mut rx) = mpsc::channel::<()>(1);
+    let (tx, rx) = mpsc::channel::<()>(1);
 
     // Create the service
     let service = Service::new(tx);

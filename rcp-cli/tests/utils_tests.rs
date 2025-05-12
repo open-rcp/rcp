@@ -40,7 +40,7 @@ async fn test_print_table() {
 
     // Create a table with headers and rows
     let headers = ["Name", "Status", "Port", "Connections"];
-    let rows = vec![
+    let rows = [
         ["Server1", "running", "8080", "5"],
         ["Server2", "stopped", "8081", "0"],
     ];

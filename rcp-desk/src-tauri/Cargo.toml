@@ -25,5 +25,5 @@ tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
 uuid = { workspace = true }
 directories = "5.0.1"
-webrtc = "0.6.0"  # For screen streaming
+# webrtc = "0.6.0"  # For screen streaming
 image = "0.24.7"  # For image processing

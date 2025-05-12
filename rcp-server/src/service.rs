@@ -27,6 +27,7 @@ pub trait Service: Debug + Send + Sync {
 pub mod services {
     use super::*;
     use crate::error::Error;
+    use crate::user::{UserInfo, UserManager, UserRole};
     use log::{error, info};
     use rcp_core::{CommandId, Frame, LaunchAppCommand};
     use serde_json;
@@ -772,19 +773,289 @@ pub mod services {
         }
     }
 
+    /// User management service for handling user accounts
+    #[derive(Debug)]
+    pub struct UserService {
+        /// Service name
+        name: String,
+
+        /// Service ID
+        #[allow(dead_code)]
+        id: Uuid,
+
+        /// Sender for outgoing frames
+        frame_sender: Sender<Frame>,
+
+        /// Receiver for outgoing frames
+        frame_receiver: Receiver<Frame>,
+
+        /// Whether the service is running
+        running: bool,
+
+        /// User manager for handling user operations
+        user_manager: UserManager,
+    }
+
+    impl Default for UserService {
+        fn default() -> Self {
+            Self::new()
+        }
+    }
+
+    impl UserService {
+        /// Create a new user service
+        pub fn new() -> Self {
+            let (tx, rx) = mpsc::channel(100);
+
+            Self {
+                name: "user".to_string(),
+                id: Uuid::new_v4(),
+                frame_sender: tx,
+                frame_receiver: rx,
+                running: false,
+                user_manager: UserManager::new(),
+            }
+        }
+
+        /// Add a user to the system
+        async fn add_user(&self, username: &str, password: &str, role: &str) -> Result<()> {
+            // Parse the role
+            let user_role = role.parse::<UserRole>()?;
+
+            // Add the user
+            self.user_manager
+                .add_user(username.to_string(), password.to_string(), user_role)
+                .await?;
+
+            Ok(())
+        }
+
+        /// Handle authentication requests
+        async fn authenticate(&self, username: &str, password: &str) -> Result<String> {
+            // Authenticate the user
+            // Just check if authentication succeeds, we don't need the user object here
+            self.user_manager.authenticate(username, password).await?;
+
+            // Generate a session token (in a real implementation, this would be a JWT)
+            let token = Uuid::new_v4().to_string();
+
+            // In a real implementation, we would store this token in a session store
+            info!("User {} authenticated successfully", username);
+
+            Ok(token)
+        }
+
+        /// Get user information
+        #[allow(dead_code)]
+        async fn get_user_info(&self, username: &str) -> Result<UserInfo> {
+            // Get the user
+            let user = self.user_manager.get_user(username).await?;
+
+            // Convert to UserInfo
+            Ok(UserInfo {
+                id: user.id.to_string(),
+                username: user.username,
+                role: user.role.as_str().to_string(),
+                created_at: user.created_at,
+                last_login: user.last_login,
+            })
+        }
+
+        /// List all users
+        async fn list_users(&self) -> Vec<UserInfo> {
+            self.user_manager.list_users().await
+        }
+    }
+
+    #[async_trait]
+    impl Service for UserService {
+        fn name(&self) -> &str {
+            &self.name
+        }
+
+        async fn start(&mut self) -> Result<()> {
+            if self.running {
+                return Err(Error::Service("User service already running".to_string()));
+            }
+
+            self.running = true;
+            info!("User service started");
+            Ok(())
+        }
+
+        async fn stop(&mut self) -> Result<()> {
+            if !self.running {
+                return Err(Error::Service("User service not running".to_string()));
+            }
+
+            self.running = false;
+            info!("User service stopped");
+            Ok(())
+        }
+
+        async fn process_frame(&mut self, frame: &Frame) -> Result<()> {
+            if !self.running {
+                return Err(Error::Service("User service not running".to_string()));
+            }
+
+            // Handle user management commands
+            // This would normally use proper command types defined in rcp_core
+            // For this example, we're using a simple approach
+
+            // Command format: JSON with "action" and parameters
+            let cmd: serde_json::Value = serde_json::from_slice(frame.payload())
+                .map_err(|e| Error::Protocol(format!("Invalid user command: {}", e)))?;
+
+            let action = cmd["action"].as_str().ok_or_else(|| {
+                Error::Protocol("Missing 'action' field in user command".to_string())
+            })?;
+
+            match action {
+                "add_user" => {
+                    let username = cmd["username"]
+                        .as_str()
+                        .ok_or_else(|| Error::Protocol("Missing 'username' field".to_string()))?;
+
+                    let password = cmd["password"]
+                        .as_str()
+                        .ok_or_else(|| Error::Protocol("Missing 'password' field".to_string()))?;
+
+                    let role = cmd["role"]
+                        .as_str()
+                        .ok_or_else(|| Error::Protocol("Missing 'role' field".to_string()))?;
+
+                    self.add_user(username, password, role).await?;
+
+                    // Send success response
+                    let response = serde_json::json!({
+                        "status": "success",
+                        "message": format!("User '{}' added successfully", username)
+                    });
+
+                    let response_frame = Frame::new(
+                        CommandId::Ack as u8,
+                        serde_json::to_vec(&response).unwrap_or_default(),
+                    );
+
+                    self.frame_sender
+                        .send(response_frame)
+                        .await
+                        .map_err(|e| Error::Service(format!("Failed to send response: {}", e)))?;
+                }
+
+                "authenticate" => {
+                    let username = cmd["username"]
+                        .as_str()
+                        .ok_or_else(|| Error::Protocol("Missing 'username' field".to_string()))?;
+
+                    let password = cmd["password"]
+                        .as_str()
+                        .ok_or_else(|| Error::Protocol("Missing 'password' field".to_string()))?;
+
+                    match self.authenticate(username, password).await {
+                        Ok(token) => {
+                            // Send success response with token
+                            let response = serde_json::json!({
+                                "status": "success",
+                                "token": token
+                            });
+
+                            let response_frame = Frame::new(
+                                CommandId::Ack as u8,
+                                serde_json::to_vec(&response).unwrap_or_default(),
+                            );
+
+                            self.frame_sender.send(response_frame).await.map_err(|e| {
+                                Error::Service(format!("Failed to send response: {}", e))
+                            })?;
+                        }
+
+                        Err(e) => {
+                            // Send error response
+                            let response = serde_json::json!({
+                                "status": "error",
+                                "message": format!("Authentication failed: {}", e)
+                            });
+
+                            let response_frame = Frame::new(
+                                CommandId::Error as u8,
+                                serde_json::to_vec(&response).unwrap_or_default(),
+                            );
+
+                            self.frame_sender.send(response_frame).await.map_err(|e| {
+                                Error::Service(format!("Failed to send response: {}", e))
+                            })?;
+                        }
+                    }
+                }
+
+                "list_users" => {
+                    let users = self.list_users().await;
+
+                    // Send response with user list
+                    let response = serde_json::json!({
+                        "status": "success",
+                        "users": users
+                    });
+
+                    let response_frame = Frame::new(
+                        CommandId::Ack as u8,
+                        serde_json::to_vec(&response).unwrap_or_default(),
+                    );
+
+                    self.frame_sender
+                        .send(response_frame)
+                        .await
+                        .map_err(|e| Error::Service(format!("Failed to send response: {}", e)))?;
+                }
+
+                _ => {
+                    // Send error for unknown action
+                    let response = serde_json::json!({
+                        "status": "error",
+                        "message": format!("Unknown action: {}", action)
+                    });
+
+                    let response_frame = Frame::new(
+                        CommandId::Error as u8,
+                        serde_json::to_vec(&response).unwrap_or_default(),
+                    );
+
+                    self.frame_sender
+                        .send(response_frame)
+                        .await
+                        .map_err(|e| Error::Service(format!("Failed to send response: {}", e)))?;
+                }
+            }
+
+            Ok(())
+        }
+
+        async fn get_frame(&mut self) -> Result<Option<Frame>> {
+            // Check if there are any frames in the channel
+            match self.frame_receiver.try_recv() {
+                Ok(frame) => Ok(Some(frame)),
+                Err(_) => Ok(None),
+            }
+        }
+    }
+
     /// Service factory for creating service instances
     pub struct ServiceFactory;
 
     impl ServiceFactory {
         /// Create a new service instance by name
         pub fn create(name: &str) -> Option<Box<dyn Service + Send>> {
-            use self::services::{AppService, ClipboardService, DisplayService, InputService};
+            use self::services::{
+                AppService, ClipboardService, DisplayService, InputService, UserService,
+            };
 
             match name {
                 "display" => Some(Box::new(DisplayService::new())),
                 "input" => Some(Box::new(InputService::new())),
                 "clipboard" => Some(Box::new(ClipboardService::new())),
                 "app" => Some(Box::new(AppService::new())),
+                "user" => Some(Box::new(UserService::new())),
                 _ => None,
             }
         }
@@ -792,7 +1063,7 @@ pub mod services {
         /// Get a list of available service names
         #[allow(dead_code)]
         pub fn available_services() -> Vec<&'static str> {
-            vec!["display", "input", "clipboard", "app"]
+            vec!["display", "input", "clipboard", "app", "user"]
         }
     }
 }

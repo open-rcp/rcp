@@ -3,6 +3,7 @@ mod error;
 mod server;
 mod service;
 mod session;
+mod user;
 
 use clap::Parser;
 use config::ServerConfig;

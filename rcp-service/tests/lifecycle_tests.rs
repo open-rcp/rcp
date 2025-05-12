@@ -11,12 +11,11 @@ use lifecycle::ServiceLifecycle;
 // Import error types
 #[path = "../src/error.rs"]
 mod error;
-use error::ServiceError;
 
 #[tokio::test]
 async fn test_lifecycle_creation() {
     // Create a channel for shutdown signals
-    let (tx, mut rx) = mpsc::channel::<()>(1);
+    let (tx, rx) = mpsc::channel::<()>(1);
 
     // Create the service lifecycle
     let lifecycle = ServiceLifecycle::new(tx);
@@ -28,7 +27,7 @@ async fn test_lifecycle_creation() {
 #[tokio::test]
 async fn test_lifecycle_start() {
     // Create a channel for shutdown signals
-    let (tx, mut rx) = mpsc::channel::<()>(1);
+    let (tx, rx) = mpsc::channel::<()>(1);
 
     // Create the service lifecycle
     let lifecycle = ServiceLifecycle::new(tx);

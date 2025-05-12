@@ -9,12 +9,11 @@ use manager::ServiceManager;
 // Import error types
 #[path = "../src/error.rs"]
 mod error;
-use error::ServiceError;
 
 #[tokio::test]
 async fn test_manager_creation() {
     // Create a channel for shutdown signals
-    let (tx, mut rx) = mpsc::channel::<()>(1);
+    let (tx, rx) = mpsc::channel::<()>(1);
 
     // Create a ServiceManager with work directory
     let work_dir = PathBuf::from(".");
@@ -27,7 +26,7 @@ async fn test_manager_creation() {
 #[tokio::test]
 async fn test_manager_start_stop() {
     // Create a channel for shutdown signals
-    let (tx, mut rx) = mpsc::channel::<()>(1);
+    let (tx, rx) = mpsc::channel::<()>(1);
 
     // Create a ServiceManager
     let work_dir = PathBuf::from(".");
@@ -45,7 +44,7 @@ async fn test_manager_start_stop() {
 #[tokio::test]
 async fn test_manager_double_start() {
     // Create a channel for shutdown signals
-    let (tx, mut rx) = mpsc::channel::<()>(1);
+    let (tx, rx) = mpsc::channel::<()>(1);
 
     // Create a ServiceManager
     let work_dir = PathBuf::from(".");
@@ -72,7 +71,7 @@ async fn test_manager_double_start() {
 #[tokio::test]
 async fn test_manager_stop_without_start() {
     // Create a channel for shutdown signals
-    let (tx, mut rx) = mpsc::channel::<()>(1);
+    let (tx, rx) = mpsc::channel::<()>(1);
 
     // Create a ServiceManager
     let work_dir = PathBuf::from(".");

@@ -67,10 +67,8 @@ pub fn confirm(prompt: &str, default: bool) -> bool {
     let input = input.trim().to_lowercase();
     if input.is_empty() {
         default
-    } else if input == "y" || input == "yes" {
-        true
     } else {
-        false
+        input == "y" || input == "yes"
     }
 }
 
