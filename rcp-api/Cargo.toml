@@ -26,8 +26,17 @@ log = "0.4"
 env_logger = "0.10"
 clap = { version = "4.3", features = ["derive"] }
 reqwest = { version = "0.11", features = ["json", "rustls-tls"] }
-sqlx = { version = "0.6", features = ["runtime-tokio-rustls", "sqlite", "migrate", "chrono", "uuid"] }
+sqlx = { version = "0.6", features = ["runtime-tokio-rustls", "sqlite", "migrate", "chrono", "uuid", "offline"] }
 futures = "0.3"
+toml = "0.8"
+num_cpus = "1.16"
+
+[dev-dependencies]
+wiremock = "0.5"
+tempfile = "3.8"
+futures-util = "0.3"
+tokio-test = "0.4"
+hyper = "1.6.0"
 
 [lib]
 name = "rcp_api"

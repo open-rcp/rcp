@@ -1,13 +1,12 @@
 use axum::{
-    extract::{State, Path, Json},
+    extract::{Json, Path, State},
     http::StatusCode,
 };
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use std::time::SystemTime;
 
-use crate::{AppState, ApiError, db};
 use crate::handlers::auth::AuthUser;
+use crate::{db, ApiError, AppState};
 
 /// Server information response
 #[derive(Debug, Serialize)]
@@ -37,24 +36,27 @@ pub async fn list_servers(
     auth_user: AuthUser,
 ) -> Result<Json<Vec<ServerResponse>>, ApiError> {
     // Get service client to call the RCP service
-    let mut service_client = state.service_client.lock().await;
-    
+    let service_client = state.service_client.lock().await;
+
     // Get server list from service
-    let servers = service_client.list_servers().await
+    let servers = service_client
+        .list_servers()
+        .await
         .map_err(|e| ApiError::ServiceError(format!("Failed to list servers: {}", e)))?;
-    
+
     // Convert to response format
-    let responses = servers.into_iter()
+    let responses = servers
+        .into_iter()
         .map(|server| ServerResponse {
             id: server.id,
             name: server.name,
             status: server.status,
-            port: server.port,
-            connections: server.connections,
-            started_at: server.started_at,
+            port: server.port.unwrap_or(0),
+            connections: 0, // Default value since the field doesn't exist
+            started_at: Some(server.created_at.clone()), // Using created_at as a substitute
         })
         .collect();
-    
+
     // Log the action
     db::add_audit_log(
         &state.db_pool,
@@ -62,9 +64,10 @@ pub async fn list_servers(
         "list_servers",
         None,
         None,
-        None
-    ).await?;
-    
+        None,
+    )
+    .await?;
+
     Ok(Json(responses))
 }
 
@@ -75,27 +78,30 @@ pub async fn get_server(
     Path(name): Path<String>,
 ) -> Result<Json<ServerResponse>, ApiError> {
     // Get service client to call the RCP service
-    let mut service_client = state.service_client.lock().await;
-    
+    let service_client = state.service_client.lock().await;
+
     // Get server list from service
-    let servers = service_client.list_servers().await
+    let servers = service_client
+        .list_servers()
+        .await
         .map_err(|e| ApiError::ServiceError(format!("Failed to list servers: {}", e)))?;
-    
+
     // Find the specific server
-    let server = servers.into_iter()
+    let server = servers
+        .into_iter()
         .find(|s| s.name == name)
         .ok_or_else(|| ApiError::NotFoundError(format!("Server '{}' not found", name)))?;
-    
+
     // Convert to response format
     let response = ServerResponse {
         id: server.id,
         name: server.name,
         status: server.status,
-        port: server.port,
-        connections: server.connections,
-        started_at: server.started_at,
+        port: server.port.unwrap_or(0),
+        connections: 0, // Default value since the field doesn't exist
+        started_at: Some(server.created_at.clone()), // Using created_at as a substitute
     };
-    
+
     // Log the action
     db::add_audit_log(
         &state.db_pool,
@@ -103,9 +109,10 @@ pub async fn get_server(
         "get_server",
         Some("server"),
         Some(&response.id),
-        None
-    ).await?;
-    
+        None,
+    )
+    .await?;
+
     Ok(Json(response))
 }
 
@@ -118,7 +125,7 @@ pub async fn create_server(
     // First check if a server with this name already exists in the database
     let now = chrono::Utc::now().to_rfc3339();
     let server_id = Uuid::new_v4().to_string();
-    
+
     // Create server configuration in the database
     sqlx::query(
         r#"
@@ -144,7 +151,7 @@ pub async fn create_server(
             ApiError::DatabaseError(format!("Failed to create server: {}", e))
         }
     })?;
-    
+
     // Log the action
     db::add_audit_log(
         &state.db_pool,
@@ -152,9 +159,10 @@ pub async fn create_server(
         "create_server",
         Some("server"),
         Some(&server_id),
-        Some(&format!("name={}, port={}", payload.name, payload.port))
-    ).await?;
-    
+        Some(&format!("name={}, port={}", payload.name, payload.port)),
+    )
+    .await?;
+
     // Return the created server info
     let response = ServerResponse {
         id: server_id,
@@ -164,7 +172,7 @@ pub async fn create_server(
         connections: 0,
         started_at: None,
     };
-    
+
     Ok((StatusCode::CREATED, Json(response)))
 }
 
@@ -175,12 +183,14 @@ pub async fn start_server(
     Path(name): Path<String>,
 ) -> Result<StatusCode, ApiError> {
     // Get service client to call the RCP service
-    let mut service_client = state.service_client.lock().await;
-    
+    let service_client = state.service_client.lock().await;
+
     // Start the server
-    service_client.start_server(&name).await
+    service_client
+        .start_server(&name)
+        .await
         .map_err(|e| ApiError::ServiceError(format!("Failed to start server: {}", e)))?;
-    
+
     // Log the action
     db::add_audit_log(
         &state.db_pool,
@@ -188,9 +198,10 @@ pub async fn start_server(
         "start_server",
         Some("server"),
         None,
-        Some(&format!("name={}", name))
-    ).await?;
-    
+        Some(&format!("name={}", name)),
+    )
+    .await?;
+
     Ok(StatusCode::OK)
 }
 
@@ -201,12 +212,14 @@ pub async fn stop_server(
     Path(name): Path<String>,
 ) -> Result<StatusCode, ApiError> {
     // Get service client to call the RCP service
-    let mut service_client = state.service_client.lock().await;
-    
+    let service_client = state.service_client.lock().await;
+
     // Stop the server
-    service_client.stop_server(&name).await
+    service_client
+        .stop_server(&name)
+        .await
         .map_err(|e| ApiError::ServiceError(format!("Failed to stop server: {}", e)))?;
-    
+
     // Log the action
     db::add_audit_log(
         &state.db_pool,
@@ -214,9 +227,10 @@ pub async fn stop_server(
         "stop_server",
         Some("server"),
         None,
-        Some(&format!("name={}", name))
-    ).await?;
-    
+        Some(&format!("name={}", name)),
+    )
+    .await?;
+
     Ok(StatusCode::OK)
 }
 
@@ -227,15 +241,19 @@ pub async fn restart_server(
     Path(name): Path<String>,
 ) -> Result<StatusCode, ApiError> {
     // Get service client to call the RCP service
-    let mut service_client = state.service_client.lock().await;
-    
+    let service_client = state.service_client.lock().await;
+
     // Restart the server
-    service_client.stop_server(&name).await
+    service_client
+        .stop_server(&name)
+        .await
         .map_err(|e| ApiError::ServiceError(format!("Failed to stop server: {}", e)))?;
-        
-    service_client.start_server(&name).await
+
+    service_client
+        .start_server(&name)
+        .await
         .map_err(|e| ApiError::ServiceError(format!("Failed to start server: {}", e)))?;
-    
+
     // Log the action
     db::add_audit_log(
         &state.db_pool,
@@ -243,9 +261,10 @@ pub async fn restart_server(
         "restart_server",
         Some("server"),
         None,
-        Some(&format!("name={}", name))
-    ).await?;
-    
+        Some(&format!("name={}", name)),
+    )
+    .await?;
+
     Ok(StatusCode::OK)
 }
 
@@ -256,32 +275,39 @@ pub async fn delete_server(
     Path(name): Path<String>,
 ) -> Result<StatusCode, ApiError> {
     // First try to stop the server if it's running
-    let mut service_client = state.service_client.lock().await;
-    
+    let service_client = state.service_client.lock().await;
+
     // Get server list to check if the server exists and is running
-    let servers = service_client.list_servers().await
+    let servers = service_client
+        .list_servers()
+        .await
         .map_err(|e| ApiError::ServiceError(format!("Failed to list servers: {}", e)))?;
-    
+
     let server = servers.iter().find(|s| s.name == name);
-    
+
     if let Some(server) = server {
         if server.status.to_lowercase() == "running" {
             // Stop the server first
-            service_client.stop_server(&name).await
+            service_client
+                .stop_server(&name)
+                .await
                 .map_err(|e| ApiError::ServiceError(format!("Failed to stop server: {}", e)))?;
         }
     }
-    
+
     // Delete the server configuration from the database
     let result = sqlx::query("DELETE FROM server_configs WHERE name = ?")
         .bind(&name)
         .execute(&state.db_pool)
         .await?;
-    
+
     if result.rows_affected() == 0 {
-        return Err(ApiError::NotFoundError(format!("Server '{}' not found", name)));
+        return Err(ApiError::NotFoundError(format!(
+            "Server '{}' not found",
+            name
+        )));
     }
-    
+
     // Log the action
     db::add_audit_log(
         &state.db_pool,
@@ -289,8 +315,9 @@ pub async fn delete_server(
         "delete_server",
         Some("server"),
         None,
-        Some(&format!("name={}", name))
-    ).await?;
-    
+        Some(&format!("name={}", name)),
+    )
+    .await?;
+
     Ok(StatusCode::NO_CONTENT)
 }
