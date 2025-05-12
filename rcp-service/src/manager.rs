@@ -2,6 +2,7 @@ use crate::error::ServiceError;
 use std::path::PathBuf;
 use tokio::sync::mpsc;
 
+#[allow(dead_code)]
 pub struct ServiceManager {
     shutdown_tx: mpsc::Sender<()>,
     work_dir: PathBuf,
@@ -20,6 +21,7 @@ impl ServiceManager {
         Ok(())
     }
 
+    #[allow(dead_code)]
     pub async fn stop(&self) -> Result<(), ServiceError> {
         self.shutdown_tx
             .send(())

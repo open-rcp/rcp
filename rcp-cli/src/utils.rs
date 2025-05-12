@@ -35,6 +35,7 @@ pub fn format_duration(seconds: u64) -> String {
 }
 
 /// Parse a duration string like "1h", "30m", "1d", etc.
+#[allow(dead_code)]
 pub fn parse_time_string(time_str: &str) -> Result<Duration> {
     let std_duration = parse_duration(time_str)?;
     let seconds = std_duration.as_secs();
@@ -74,6 +75,7 @@ pub fn confirm(prompt: &str, default: bool) -> bool {
 }
 
 /// Prompt user for input
+#[allow(dead_code)]
 pub fn prompt(prompt: &str, default: Option<&str>) -> Result<String> {
     let mut input = String::new();
 

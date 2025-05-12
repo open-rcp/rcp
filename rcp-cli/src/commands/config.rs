@@ -1,9 +1,11 @@
 use crate::error::CliError;
+#[cfg(test)]
 use crate::{
     config::{load_config, save_config},
     CliConfig,
 };
 use anyhow::Result;
+#[cfg(test)]
 use std::path::{Path, PathBuf};
 
 /// Helper function for tests to check if this module is properly loaded
@@ -12,6 +14,7 @@ pub fn is_module_loaded() -> bool {
     true
 }
 
+#[allow(dead_code)]
 pub async fn handle_config_command() -> Result<(), CliError> {
     // TODO: Implement config command handling
     Ok(())
