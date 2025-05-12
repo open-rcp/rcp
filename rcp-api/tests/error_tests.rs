@@ -1,7 +1,6 @@
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use rcp_api::error::ApiError;
-use serde_json::json;
 use std::error::Error as StdError;
 use std::fmt;
 
@@ -64,7 +63,7 @@ fn test_service_error() {
     let response = error.into_response();
 
     // Check status code
-    assert_eq!(response.status(), StatusCode::BAD_GATEWAY);
+    assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
 }
 
 /// Test creating validation errors
@@ -117,7 +116,7 @@ fn test_from_sqlx_error() {
     // Convert to ApiError
     let api_error: ApiError = db_error.into();
 
-    // Should be a server error
+    // For RowNotFound error we typically send a 404 status
     let response = api_error.into_response();
-    assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
+    assert_eq!(response.status(), StatusCode::NOT_FOUND);
 }

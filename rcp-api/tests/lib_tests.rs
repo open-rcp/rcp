@@ -63,17 +63,18 @@ async fn test_health_check_unhealthy_service() {
     // Start mock server for unhealthy service
     let mock_server = MockServer::start().await;
 
-    // Mock health check endpoint with error
+    // Mock health check for initial connection (only responds once)
     Mock::given(method("GET"))
         .and(path("/health"))
-        .respond_with(ResponseTemplate::new(500).set_body_json(json!({
-            "status": "error",
-            "message": "Service unavailable"
+        .respond_with(ResponseTemplate::new(200).set_body_json(json!({
+            "status": "ok",
+            "version": "1.0.0"
         })))
+        .expect(1) // Only respond successfully once
         .mount(&mock_server)
         .await;
 
-    // Create service client connected to unhealthy mock
+    // Create service client connected to mock
     let service_url = format!("http://{}", mock_server.address());
     let service_client = ServiceClient::connect(&service_url, None)
         .await
@@ -92,16 +93,18 @@ async fn test_health_check_unhealthy_service() {
         config: Arc::new(config),
     };
 
-    // Override the mock to respond with errors after creation
+    // Add a failing mock for subsequent health checks with higher priority (0)
+    // This ensures it will be matched before any existing mocks
     Mock::given(method("GET"))
         .and(path("/health"))
-        .respond_with(ResponseTemplate::new(500))
+        .respond_with(ResponseTemplate::new(500).set_body_string("Service unavailable"))
+        .with_priority(0) // Higher priority (lower number) means it matches first
         .mount(&mock_server)
         .await;
 
-    // Check health status
+    // Now the health check will fail because our mock returns a 500 error
     let is_healthy_result = is_healthy(&app_state).await;
 
-    // Should be unhealthy
+    // Should be unhealthy since the mock server returns an error
     assert!(!is_healthy_result);
 }

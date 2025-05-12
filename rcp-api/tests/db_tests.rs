@@ -1,4 +1,4 @@
-use chrono::{Duration, Utc};
+use chrono::Utc;
 use rcp_api::db;
 use sqlx::{query, Row};
 use tokio::test;
