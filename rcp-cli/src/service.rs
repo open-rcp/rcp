@@ -169,8 +169,16 @@ impl ServiceClient {
     #[allow(dead_code)]
     pub async fn list_users(&mut self) -> Result<Vec<UserInfo>> {
         let response = self.send_command("list-users", &[]).await?;
-        let users: Vec<UserInfo> = serde_json::from_slice(&response)?;
-        Ok(users)
+        
+        // Parse the JSON response which should include a "users" field
+        let result: serde_json::Value = serde_json::from_slice(&response)?;
+        
+        if let Some(users) = result.get("users") {
+            let users: Vec<UserInfo> = serde_json::from_value(users.clone())?;
+            Ok(users)
+        } else {
+            Ok(Vec::new())
+        }
     }
 
     /// Add a user
@@ -191,6 +199,44 @@ impl ServiceClient {
 
         let args = serde_json::to_vec(&new_user)?;
         self.send_command("add-user", &args).await?;
+        Ok(())
+    }
+    
+    /// Delete a user
+    #[allow(dead_code)]
+    pub async fn delete_user(&mut self, username: &str) -> Result<()> {
+        let args = serde_json::to_vec(&username)?;
+        self.send_command("delete-user", &args).await?;
+        Ok(())
+    }
+    
+    /// Update a user's role
+    #[allow(dead_code)]
+    pub async fn update_user_role(&mut self, username: &str, role: &str) -> Result<()> {
+        #[derive(Serialize)]
+        struct UpdateRole<'a> {
+            username: &'a str,
+            role: &'a str,
+        }
+        
+        let update = UpdateRole { username, role };
+        let args = serde_json::to_vec(&update)?;
+        self.send_command("update-user-role", &args).await?;
+        Ok(())
+    }
+    
+    /// Reset a user's password (admin only)
+    #[allow(dead_code)]
+    pub async fn reset_user_password(&mut self, username: &str, new_password: &str) -> Result<()> {
+        #[derive(Serialize)]
+        struct ResetPassword<'a> {
+            username: &'a str,
+            new_password: &'a str,
+        }
+        
+        let reset = ResetPassword { username, new_password };
+        let args = serde_json::to_vec(&reset)?;
+        self.send_command("reset-user-password", &args).await?;
         Ok(())
     }
 

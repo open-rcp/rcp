@@ -4,6 +4,7 @@ pub mod error;
 pub mod server;
 pub mod service;
 pub mod session;
+pub mod user;
 
 // Re-export commonly used items for convenience
 pub use config::ServerConfig;
