@@ -1,214 +1,131 @@
 use crate::cli::Cli;
-use crate::error::CliError;
+use crate::utils;
 use anyhow::Result;
-use clap::{Args, Parser, Subcommand};
 
-/// User command and subcommands for user management operations
-#[derive(Parser, Debug)]
-pub struct UserCommand {
-    #[clap(subcommand)]
-    pub subcommand: UserSubcommand,
-}
-
-/// User management subcommands
-#[derive(Subcommand, Debug)]
-pub enum UserSubcommand {
-    /// List all users
-    #[clap(name = "list")]
+/// User action enum (only unit variants for clap's ValueEnum)
+#[derive(clap::ValueEnum, Clone, Debug)]
+pub enum UserAction {
     List,
-    
-    /// Add a new user
-    #[clap(name = "add")]
-    Add(AddUserArgs),
-    
-    /// Delete a user
-    #[clap(name = "delete")]
-    Delete(DeleteUserArgs),
-    
-    /// Update a user's role
-    #[clap(name = "update-role")]
-    UpdateRole(UpdateRoleArgs),
-    
-    /// Reset a user's password (admin only)
-    #[clap(name = "reset-password")]
-    ResetPassword(ResetPasswordArgs),
+    Add,
+    Remove,
+    UpdateRole,
+    ResetPassword,
 }
 
-/// Arguments for adding a user
-#[derive(Args, Debug)]
-pub struct AddUserArgs {
-    /// Username
-    #[clap(name = "username")]
-    pub username: String,
-    
-    /// Password (will prompt if not provided)
-    #[clap(name = "password", long)]
-    pub password: Option<String>,
-    
-    /// Role (admin, user, guest)
-    #[clap(name = "role", long, default_value = "user")]
-    pub role: String,
-}
+/// Handle user commands with flat parameters
+pub async fn handle_user_command(
+    cli: &mut Cli, 
+    action: UserAction, 
+    username: Option<&str>,
+    password: Option<&str>,
+    role: Option<&str>
+) -> Result<()> {
+    match action {
+        UserAction::List => {
+            let users = cli.list_users().await?;
 
-/// Arguments for deleting a user
-#[derive(Args, Debug)]
-pub struct DeleteUserArgs {
-    /// Username
-    #[clap(name = "username")]
-    pub username: String,
-}
+            if users.is_empty() {
+                println!("No users found");
+            } else {
+                println!("{:<20} {:<10}", "Username", "Role");
+                println!("{}", "-".repeat(40));
 
-/// Arguments for updating a user's role
-#[derive(Args, Debug)]
-pub struct UpdateRoleArgs {
-    /// Username
-    #[clap(name = "username")]
-    pub username: String,
-    
-    /// New role (admin, user, guest)
-    #[clap(name = "role")]
-    pub role: String,
-}
+                for user in users {
+                    println!("{:<20} {:<10}", user.username, user.role);
+                }
+            }
+        }
+        UserAction::Add => {
+            // Check if username is provided
+            let username = username.ok_or(anyhow::anyhow!("Username is required for add action"))?;
+            
+            // Get password, prompting if not provided
+            let password_value = match password {
+                Some(p) => p.to_string(),
+                None => {
+                    // Prompt for password
+                    utils::prompt("Password", None)?
+                }
+            };
 
-/// Arguments for resetting a user's password
-#[derive(Args, Debug)]
-pub struct ResetPasswordArgs {
-    /// Username
-    #[clap(name = "username")]
-    pub username: String,
-    
-    /// New password (will prompt if not provided)
-    #[clap(name = "password", long)]
-    pub password: Option<String>,
-}
+            // Validate the password
+            if password_value.len() < 8 {
+                return Err(anyhow::anyhow!("Password must be at least 8 characters"));
+            }
 
-/// Handle user management commands
-#[allow(dead_code)]
-pub async fn handle_user_command(cli: &mut Cli, cmd: &UserCommand) -> Result<(), CliError> {
-    match &cmd.subcommand {
-        UserSubcommand::List => {
-            list_users(cli).await?;
-        }
-        UserSubcommand::Add(args) => {
-            add_user(cli, args).await?;
-        }
-        UserSubcommand::Delete(args) => {
-            delete_user(cli, args).await?;
-        }
-        UserSubcommand::UpdateRole(args) => {
-            update_role(cli, args).await?;
-        }
-        UserSubcommand::ResetPassword(args) => {
-            reset_password(cli, args).await?;
-        }
-    }
-    
-    Ok(())
-}
+            // Confirm the password if it was prompted
+            if password.is_none() {
+                let confirm = utils::prompt("Confirm password", None)?;
+                if confirm != password_value {
+                    return Err(anyhow::anyhow!("Passwords do not match"));
+                }
+            }
 
-/// List all users
-async fn list_users(cli: &mut Cli) -> Result<(), CliError> {
-    let users = cli.list_users().await?;
-    
-    if users.is_empty() {
-        println!("No users found");
-    } else {
-        println!("{:<36} {:<20} {:<10}", "ID", "Username", "Role");
-        println!("{}", "-".repeat(70));
-        
-        for user in users {
-            println!("{:<36} {:<20} {:<10}", user.id, user.username, user.role);
+            // Default role to "user" if not provided
+            let role_value = role.unwrap_or("user");
+            
+            cli.add_user(username, &password_value, role_value).await?;
+            println!(
+                "User '{}' added successfully with role '{}'",
+                username, role_value
+            );
         }
-    }
-    
-    Ok(())
-}
+        UserAction::Remove => {
+            // Check if username is provided
+            let username = username.ok_or(anyhow::anyhow!("Username is required for remove action"))?;
+            
+            // Ask for confirmation
+            let confirm = utils::prompt(
+                &format!("Are you sure you want to delete user '{}'? (y/N)", username),
+                Some("N"),
+            )?;
 
-/// Add a new user
-async fn add_user(cli: &mut Cli, args: &AddUserArgs) -> Result<(), CliError> {
-    let password = match &args.password {
-        Some(p) => p.clone(),
-        None => {
-            // Prompt for password
-            crate::utils::prompt("Password", None)?
+            if !confirm.eq_ignore_ascii_case("y") && !confirm.eq_ignore_ascii_case("yes") {
+                println!("Operation cancelled");
+                return Ok(());
+            }
+
+            cli.delete_user(username).await?;
+            println!("User '{}' deleted successfully", username);
         }
-    };
-    
-    // Validate the password
-    if password.len() < 8 {
-        return Err(CliError::InvalidArgument(
-            "Password must be at least 8 characters".to_string(),
-        ));
-    }
-    
-    // Confirm the password
-    if args.password.is_none() {
-        let confirm = crate::utils::prompt("Confirm password", None)?;
-        if confirm != password {
-            return Err(CliError::InvalidArgument("Passwords do not match".to_string()));
+        UserAction::UpdateRole => {
+            // Check if username and role are provided
+            let username = username.ok_or(anyhow::anyhow!("Username is required for update_role action"))?;
+            let role_value = role.ok_or(anyhow::anyhow!("Role is required for update_role action"))?;
+
+            cli.update_user_role(username, role_value).await?;
+            println!("Updated role for user '{}' to '{}'", username, role_value);
+        }
+        UserAction::ResetPassword => {
+            // Check if username is provided
+            let username = username.ok_or(anyhow::anyhow!("Username is required for reset_password action"))?;
+            
+            // Get password, prompting if not provided
+            let password_value = match password {
+                Some(p) => p.to_string(),
+                None => {
+                    // Prompt for password
+                    utils::prompt("New password", None)?
+                }
+            };
+
+            // Validate the password
+            if password_value.len() < 8 {
+                return Err(anyhow::anyhow!("Password must be at least 8 characters"));
+            }
+
+            // Confirm the password if it was prompted
+            if password.is_none() {
+                let confirm = utils::prompt("Confirm new password", None)?;
+                if confirm != password_value {
+                    return Err(anyhow::anyhow!("Passwords do not match"));
+                }
+            }
+
+            cli.reset_user_password(username, &password_value).await?;
+            println!("Password for user '{}' reset successfully", username);
         }
     }
-    
-    cli.add_user(&args.username, &password, &args.role).await?;
-    println!("User '{}' added successfully with role '{}'", args.username, args.role);
-    
-    Ok(())
-}
 
-/// Delete a user
-async fn delete_user(cli: &mut Cli, args: &DeleteUserArgs) -> Result<(), CliError> {
-    // Ask for confirmation
-    let confirm = crate::utils::prompt(
-        &format!("Are you sure you want to delete user '{}'? (y/N)", args.username),
-        Some("N"),
-    )?;
-    
-    if !confirm.eq_ignore_ascii_case("y") && !confirm.eq_ignore_ascii_case("yes") {
-        println!("Operation cancelled");
-        return Ok(());
-    }
-    
-    cli.delete_user(&args.username).await?;
-    println!("User '{}' deleted successfully", args.username);
-    
-    Ok(())
-}
-
-/// Update a user's role
-async fn update_role(cli: &mut Cli, args: &UpdateRoleArgs) -> Result<(), CliError> {
-    cli.update_user_role(&args.username, &args.role).await?;
-    println!("Updated role for user '{}' to '{}'", args.username, args.role);
-    
-    Ok(())
-}
-
-/// Reset a user's password
-async fn reset_password(cli: &mut Cli, args: &ResetPasswordArgs) -> Result<(), CliError> {
-    let password = match &args.password {
-        Some(p) => p.clone(),
-        None => {
-            // Prompt for password
-            crate::utils::prompt("New password", None)?
-        }
-    };
-    
-    // Validate the password
-    if password.len() < 8 {
-        return Err(CliError::InvalidArgument(
-            "Password must be at least 8 characters".to_string(),
-        ));
-    }
-    
-    // Confirm the password
-    if args.password.is_none() {
-        let confirm = crate::utils::prompt("Confirm new password", None)?;
-        if confirm != password {
-            return Err(CliError::InvalidArgument("Passwords do not match".to_string()));
-        }
-    }
-    
-    cli.reset_user_password(&args.username, &password).await?;
-    println!("Password for user '{}' reset successfully", args.username);
-    
     Ok(())
 }

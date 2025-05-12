@@ -1,5 +1,7 @@
 use crate::error::CliError;
-use crate::service::{ServiceClient, ServiceStatus};
+use crate::service::{
+    AppInfo, AppInstanceInfo, ServiceClient, ServiceStatus
+};
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
@@ -221,7 +223,9 @@ impl Cli {
     /// Update a user's role
     #[allow(dead_code)]
     pub async fn update_user_role(&mut self, username: &str, role: &str) -> Result<()> {
-        self.get_service_client_mut()?.update_user_role(username, role).await
+        self.get_service_client_mut()?
+            .update_user_role(username, role)
+            .await
     }
 
     /// Reset a user's password
@@ -229,6 +233,90 @@ impl Cli {
     pub async fn reset_user_password(&mut self, username: &str, new_password: &str) -> Result<()> {
         self.get_service_client_mut()?
             .reset_user_password(username, new_password)
+            .await
+    }
+
+    /// List applications
+    #[allow(dead_code)]
+    pub async fn list_apps(&mut self) -> Result<Vec<AppInfo>> {
+        self.get_service_client_mut()?.list_apps().await
+    }
+
+    /// Get application details
+    #[allow(dead_code)]
+    pub async fn get_app(&mut self, id: &str) -> Result<AppInfo> {
+        self.get_service_client_mut()?.get_app(id).await
+    }
+
+    /// Create a new application
+    #[allow(dead_code)]
+    pub async fn create_app(
+        &mut self,
+        name: &str,
+        path: &str,
+        args: Option<&str>,
+        description: Option<&str>,
+    ) -> Result<AppInfo> {
+        self.get_service_client_mut()?
+            .create_app(name, path, args, description)
+            .await
+    }
+
+    /// Update an application
+    #[allow(dead_code)]
+    pub async fn update_app(
+        &mut self,
+        id: &str,
+        name: Option<&str>,
+        path: Option<&str>,
+        args: Option<&str>,
+        description: Option<&str>,
+        enabled: Option<bool>,
+    ) -> Result<AppInfo> {
+        self.get_service_client_mut()?
+            .update_app(id, name, path, args, description, enabled)
+            .await
+    }
+
+    /// Delete an application
+    #[allow(dead_code)]
+    pub async fn delete_app(&mut self, id: &str) -> Result<()> {
+        self.get_service_client_mut()?.delete_app(id).await
+    }
+
+    /// Enable an application
+    #[allow(dead_code)]
+    pub async fn enable_app(&mut self, id: &str) -> Result<()> {
+        self.get_service_client_mut()?.enable_app(id).await
+    }
+
+    /// Disable an application
+    #[allow(dead_code)]
+    pub async fn disable_app(&mut self, id: &str) -> Result<()> {
+        self.get_service_client_mut()?.disable_app(id).await
+    }
+
+    /// Launch an application
+    #[allow(dead_code)]
+    pub async fn launch_app(
+        &mut self,
+        id: &str,
+        user_id: Option<&str>,
+    ) -> Result<serde_json::Value> {
+        self.get_service_client_mut()?.launch_app(id, user_id).await
+    }
+
+    /// List running application instances
+    #[allow(dead_code)]
+    pub async fn list_app_instances(&mut self) -> Result<Vec<AppInstanceInfo>> {
+        self.get_service_client_mut()?.list_app_instances().await
+    }
+
+    /// Terminate an application instance
+    #[allow(dead_code)]
+    pub async fn terminate_app_instance(&mut self, instance_id: &str) -> Result<()> {
+        self.get_service_client_mut()?
+            .terminate_app_instance(instance_id)
             .await
     }
 

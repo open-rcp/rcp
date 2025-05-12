@@ -8,6 +8,72 @@ use tokio::time::timeout;
 use crate::cli::UserInfo;
 use crate::error::CliError;
 
+/// Application information returned by the service
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct AppInfo {
+    /// Application ID
+    pub id: String,
+
+    /// Application name
+    pub name: String,
+
+    /// Application path
+    pub path: String,
+
+    /// Command-line arguments to pass to the application
+    pub args: Option<String>,
+
+    /// Application description
+    pub description: Option<String>,
+
+    /// Whether the application is enabled
+    pub enabled: bool,
+
+    /// Creation timestamp
+    pub created_at: Option<String>,
+
+    /// Last update timestamp
+    pub updated_at: Option<String>,
+}
+
+/// Running application instance information
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct AppInstanceInfo {
+    /// Instance ID
+    pub instance_id: String,
+
+    /// Application ID
+    pub app_id: String,
+
+    /// Application name
+    pub app_name: String,
+
+    /// User ID who launched the application
+    pub user_id: Option<String>,
+
+    /// Process ID on the host system
+    pub pid: Option<u32>,
+
+    /// Instance status
+    pub status: String,
+
+    /// Start timestamp
+    pub start_time: String,
+
+    /// Resource usage information
+    pub resources: Option<ResourceUsage>,
+}
+
+/// Resource usage information
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct ResourceUsage {
+    /// CPU usage percentage
+    pub cpu_percent: f32,
+
+    /// Memory usage in MB
+    pub memory_mb: f32,
+}
+
 /// Client for communicating with the RCP service
 pub struct ServiceClient {
     #[cfg(unix)]
@@ -169,10 +235,10 @@ impl ServiceClient {
     #[allow(dead_code)]
     pub async fn list_users(&mut self) -> Result<Vec<UserInfo>> {
         let response = self.send_command("list-users", &[]).await?;
-        
+
         // Parse the JSON response which should include a "users" field
         let result: serde_json::Value = serde_json::from_slice(&response)?;
-        
+
         if let Some(users) = result.get("users") {
             let users: Vec<UserInfo> = serde_json::from_value(users.clone())?;
             Ok(users)
@@ -201,7 +267,7 @@ impl ServiceClient {
         self.send_command("add-user", &args).await?;
         Ok(())
     }
-    
+
     /// Delete a user
     #[allow(dead_code)]
     pub async fn delete_user(&mut self, username: &str) -> Result<()> {
@@ -209,7 +275,7 @@ impl ServiceClient {
         self.send_command("delete-user", &args).await?;
         Ok(())
     }
-    
+
     /// Update a user's role
     #[allow(dead_code)]
     pub async fn update_user_role(&mut self, username: &str, role: &str) -> Result<()> {
@@ -218,13 +284,13 @@ impl ServiceClient {
             username: &'a str,
             role: &'a str,
         }
-        
+
         let update = UpdateRole { username, role };
         let args = serde_json::to_vec(&update)?;
         self.send_command("update-user-role", &args).await?;
         Ok(())
     }
-    
+
     /// Reset a user's password (admin only)
     #[allow(dead_code)]
     pub async fn reset_user_password(&mut self, username: &str, new_password: &str) -> Result<()> {
@@ -233,8 +299,11 @@ impl ServiceClient {
             username: &'a str,
             new_password: &'a str,
         }
-        
-        let reset = ResetPassword { username, new_password };
+
+        let reset = ResetPassword {
+            username,
+            new_password,
+        };
         let args = serde_json::to_vec(&reset)?;
         self.send_command("reset-user-password", &args).await?;
         Ok(())
@@ -269,6 +338,171 @@ impl ServiceClient {
 
     pub async fn restart_service(&mut self) -> Result<()> {
         self.send_command("restart", &[]).await?;
+        Ok(())
+    }
+
+    /// List applications
+    #[allow(dead_code)]
+    pub async fn list_apps(&mut self) -> Result<Vec<AppInfo>> {
+        let response = self.send_command("list-apps", &[]).await?;
+
+        // Parse the JSON response
+        let apps: Vec<AppInfo> = serde_json::from_slice(&response)?;
+
+        Ok(apps)
+    }
+
+    /// Get application details by id
+    #[allow(dead_code)]
+    pub async fn get_app(&mut self, id: &str) -> Result<AppInfo> {
+        let args = serde_json::to_vec(&serde_json::json!({
+            "id": id
+        }))?;
+
+        let response = self.send_command("get-app", &args).await?;
+        let app: AppInfo = serde_json::from_slice(&response)?;
+
+        Ok(app)
+    }
+
+    /// Create a new application
+    #[allow(dead_code)]
+    pub async fn create_app(
+        &mut self,
+        name: &str,
+        path: &str,
+        args: Option<&str>,
+        description: Option<&str>,
+    ) -> Result<AppInfo> {
+        #[derive(Serialize)]
+        struct NewApp<'a> {
+            name: &'a str,
+            path: &'a str,
+            args: Option<&'a str>,
+            description: Option<&'a str>,
+        }
+
+        let new_app = NewApp {
+            name,
+            path,
+            args,
+            description,
+        };
+
+        let args = serde_json::to_vec(&new_app)?;
+        let response = self.send_command("create-app", &args).await?;
+
+        let app: AppInfo = serde_json::from_slice(&response)?;
+        Ok(app)
+    }
+
+    /// Update an application
+    #[allow(dead_code)]
+    pub async fn update_app(
+        &mut self,
+        id: &str,
+        name: Option<&str>,
+        path: Option<&str>,
+        args: Option<&str>,
+        description: Option<&str>,
+        enabled: Option<bool>,
+    ) -> Result<AppInfo> {
+        #[derive(Serialize)]
+        struct UpdateApp<'a> {
+            id: &'a str,
+            name: Option<&'a str>,
+            path: Option<&'a str>,
+            args: Option<&'a str>,
+            description: Option<&'a str>,
+            enabled: Option<bool>,
+        }
+
+        let update = UpdateApp {
+            id,
+            name,
+            path,
+            args,
+            description,
+            enabled,
+        };
+
+        let args = serde_json::to_vec(&update)?;
+        let response = self.send_command("update-app", &args).await?;
+
+        let app: AppInfo = serde_json::from_slice(&response)?;
+        Ok(app)
+    }
+
+    /// Delete an application
+    #[allow(dead_code)]
+    pub async fn delete_app(&mut self, id: &str) -> Result<()> {
+        let args = serde_json::to_vec(&serde_json::json!({
+            "id": id
+        }))?;
+
+        self.send_command("delete-app", &args).await?;
+        Ok(())
+    }
+
+    /// Enable an application
+    #[allow(dead_code)]
+    pub async fn enable_app(&mut self, id: &str) -> Result<()> {
+        let args = serde_json::to_vec(&serde_json::json!({
+            "id": id,
+            "enabled": true
+        }))?;
+
+        self.send_command("update-app", &args).await?;
+        Ok(())
+    }
+
+    /// Disable an application
+    #[allow(dead_code)]
+    pub async fn disable_app(&mut self, id: &str) -> Result<()> {
+        let args = serde_json::to_vec(&serde_json::json!({
+            "id": id,
+            "enabled": false
+        }))?;
+
+        self.send_command("update-app", &args).await?;
+        Ok(())
+    }
+
+    /// Launch an application
+    #[allow(dead_code)]
+    pub async fn launch_app(
+        &mut self,
+        id: &str,
+        user_id: Option<&str>,
+    ) -> Result<serde_json::Value> {
+        let args = serde_json::to_vec(&serde_json::json!({
+            "id": id,
+            "user_id": user_id
+        }))?;
+
+        let response = self.send_command("launch-app", &args).await?;
+        let result: serde_json::Value = serde_json::from_slice(&response)?;
+
+        Ok(result)
+    }
+
+    /// List running application instances
+    #[allow(dead_code)]
+    pub async fn list_app_instances(&mut self) -> Result<Vec<AppInstanceInfo>> {
+        let response = self.send_command("list-app-instances", &[]).await?;
+        let instances: Vec<AppInstanceInfo> = serde_json::from_slice(&response)?;
+
+        Ok(instances)
+    }
+
+    /// Terminate an application instance
+    #[allow(dead_code)]
+    pub async fn terminate_app_instance(&mut self, instance_id: &str) -> Result<()> {
+        let args = serde_json::to_vec(&serde_json::json!({
+            "instance_id": instance_id
+        }))?;
+
+        self.send_command("terminate-app-instance", &args).await?;
         Ok(())
     }
 }

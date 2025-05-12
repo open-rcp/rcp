@@ -67,7 +67,62 @@ enum Commands {
     /// Manage RCP users
     User {
         /// User action to perform
+        #[arg(value_enum)]
         action: UserAction,
+        
+        /// Username
+        #[arg(long, required_if_eq("action", "add"))]
+        #[arg(long, required_if_eq("action", "remove"))]
+        #[arg(long, required_if_eq("action", "update_role"))]
+        #[arg(long, required_if_eq("action", "reset_password"))]
+        username: Option<String>,
+        
+        /// Password for user
+        #[arg(long)]
+        password: Option<String>,
+        
+        /// Role for user
+        #[arg(long, required_if_eq("action", "update_role"))]
+        role: Option<String>,
+    },
+    /// Manage applications
+    App {
+        /// Application action to perform
+        #[arg(value_enum)]
+        action: AppAction,
+        
+        /// Application ID (for get, update, delete, enable, disable, launch)
+        #[arg(long, required_if_eq("action", "get"))]
+        #[arg(long, required_if_eq("action", "update"))]
+        #[arg(long, required_if_eq("action", "delete"))]
+        #[arg(long, required_if_eq("action", "enable"))]
+        #[arg(long, required_if_eq("action", "disable"))]
+        #[arg(long, required_if_eq("action", "launch"))]
+        id: Option<String>,
+        
+        /// Application name (for create, update)
+        #[arg(long, required_if_eq("action", "create"))]
+        name: Option<String>,
+        
+        /// Application path (for create, update)
+        #[arg(long, required_if_eq("action", "create"))]
+        path: Option<String>,
+        
+        /// Command-line arguments (for create, update)
+        #[arg(long)]
+        args: Option<String>,
+        
+        /// Application description (for create, update)
+        #[arg(long)]
+        description: Option<String>,
+        
+        /// User ID to run the application as (for launch)
+        #[arg(long)]
+        user_id: Option<String>,
+        
+        /// Instance ID (for terminate)
+        #[arg(long, required_if_eq("action", "terminate"))]
+        instance_id: Option<String>,
     },
     /// Manage configuration
     Config {
@@ -140,42 +195,24 @@ pub enum SessionAction {
 #[derive(clap::ValueEnum, Clone, Debug)]
 pub enum UserAction {
     List,
-    Add {
-        /// Username to add
-        #[clap(long)]
-        username: String,
-        
-        /// Password for the new user (will prompt if not provided)
-        #[clap(long)]
-        password: Option<String>,
-        
-        /// Role for the new user (admin, user, guest)
-        #[clap(long, default_value = "user")]
-        role: String,
-    },
-    Remove {
-        /// Username to remove
-        #[clap(long)]
-        username: String,
-    },
-    UpdateRole {
-        /// Username to update
-        #[clap(long)]
-        username: String,
-        
-        /// New role (admin, user, guest)
-        #[clap(long)]
-        role: String,
-    },
-    ResetPassword {
-        /// Username to reset password for
-        #[clap(long)]
-        username: String,
-        
-        /// New password (will prompt if not provided)
-        #[clap(long)]
-        password: Option<String>,
-    },
+    Add,
+    Remove,
+    UpdateRole,
+    ResetPassword,
+}
+
+#[derive(clap::ValueEnum, Clone, Debug)]
+pub enum AppAction {
+    List,
+    Get,
+    Create,
+    Update,
+    Delete,
+    Enable, 
+    Disable,
+    Launch,
+    ListInstances,
+    Terminate,
 }
 
 #[derive(clap::ValueEnum, Clone, Debug)]
@@ -261,7 +298,7 @@ async fn main() -> Result<()> {
         } => {
             commands::service::handle_service_command(
                 action.clone(),
-                auto_start.unwrap_or(false),
+                *auto_start.as_ref().unwrap_or(&false),
                 user.clone(),
                 &mut cli,
             )
@@ -273,102 +310,50 @@ async fn main() -> Result<()> {
         Commands::Session { action: _ } => {
             Ok(()) // Placeholder
         }
-        Commands::User { action } => {
-            match action {
-                UserAction::List => {
-                    let users = cli.list_users().await?;
-                    
-                    if users.is_empty() {
-                        println!("No users found");
-                    } else {
-                        println!("{:<36} {:<20} {:<10}", "ID", "Username", "Role");
-                        println!("{}", "-".repeat(70));
-                        
-                        for user in users {
-                            println!("{:<36} {:<20} {:<10}", user.id, user.username, user.role);
-                        }
-                    }
-                    
-                    Ok(())
-                }
-                UserAction::Add { username, password, role } => {
-                    let password = match password {
-                        Some(p) => p.clone(),
-                        None => {
-                            // Prompt for password
-                            utils::prompt("Password", None)?
-                        }
-                    };
-                    
-                    // Validate the password
-                    if password.len() < 8 {
-                        return Err(anyhow::anyhow!("Password must be at least 8 characters"));
-                    }
-                    
-                    // Confirm the password
-                    if password.is_none() {
-                        let confirm = utils::prompt("Confirm password", None)?;
-                        if confirm != password {
-                            return Err(anyhow::anyhow!("Passwords do not match"));
-                        }
-                    }
-                    
-                    cli.add_user(username, &password, role).await?;
-                    println!("User '{}' added successfully with role '{}'", username, role);
-                    
-                    Ok(())
-                }
-                UserAction::Remove { username } => {
-                    // Ask for confirmation
-                    let confirm = utils::prompt(
-                        &format!("Are you sure you want to delete user '{}'? (y/N)", username),
-                        Some("N"),
-                    )?;
-                    
-                    if !confirm.eq_ignore_ascii_case("y") && !confirm.eq_ignore_ascii_case("yes") {
-                        println!("Operation cancelled");
-                        return Ok(());
-                    }
-                    
-                    cli.delete_user(username).await?;
-                    println!("User '{}' deleted successfully", username);
-                    
-                    Ok(())
-                }
-                UserAction::UpdateRole { username, role } => {
-                    cli.update_user_role(username, role).await?;
-                    println!("Updated role for user '{}' to '{}'", username, role);
-                    
-                    Ok(())
-                }
-                UserAction::ResetPassword { username, password } => {
-                    let password = match password {
-                        Some(p) => p.clone(),
-                        None => {
-                            // Prompt for password
-                            utils::prompt("New password", None)?
-                        }
-                    };
-                    
-                    // Validate the password
-                    if password.len() < 8 {
-                        return Err(anyhow::anyhow!("Password must be at least 8 characters"));
-                    }
-                    
-                    // Confirm the password
-                    if password.is_none() {
-                        let confirm = utils::prompt("Confirm new password", None)?;
-                        if confirm != password {
-                            return Err(anyhow::anyhow!("Passwords do not match"));
-                        }
-                    }
-                    
-                    cli.reset_user_password(username, &password).await?;
-                    println!("Password for user '{}' reset successfully", username);
-                    
-                    Ok(())
-                }
-            }
+        Commands::User { action, username, password, role } => {
+            // Convert the UserAction enum from main to the one defined in the user module
+            let user_action = match action {
+                UserAction::List => commands::user::UserAction::List,
+                UserAction::Add => commands::user::UserAction::Add,
+                UserAction::Remove => commands::user::UserAction::Remove,
+                UserAction::UpdateRole => commands::user::UserAction::UpdateRole,
+                UserAction::ResetPassword => commands::user::UserAction::ResetPassword,
+            };
+            
+            commands::user::handle_user_command(
+                &mut cli, 
+                user_action, 
+                username.as_deref(), 
+                password.as_deref(), 
+                role.as_deref()
+            ).await
+        }
+        Commands::App { action, id, name, path, args: app_args, description, user_id, instance_id } => {
+            // Convert the AppAction enum from main to the one defined in the app module
+            let app_action = match action {
+                AppAction::List => commands::app::AppAction::List,
+                AppAction::Get => commands::app::AppAction::Get,
+                AppAction::Create => commands::app::AppAction::Create,
+                AppAction::Update => commands::app::AppAction::Update,
+                AppAction::Delete => commands::app::AppAction::Delete,
+                AppAction::Enable => commands::app::AppAction::Enable,
+                AppAction::Disable => commands::app::AppAction::Disable,
+                AppAction::Launch => commands::app::AppAction::Launch,
+                AppAction::ListInstances => commands::app::AppAction::ListInstances,
+                AppAction::Terminate => commands::app::AppAction::Terminate,
+            };
+
+            commands::app::handle_app_command(
+                &mut cli, 
+                app_action, 
+                id.as_deref(), 
+                name.as_deref(), 
+                path.as_deref(), 
+                app_args.as_deref(), 
+                description.as_deref(),
+                user_id.as_deref(),
+                instance_id.as_deref()
+            ).await
         }
         Commands::Config { action: _ } => {
             Ok(()) // Placeholder

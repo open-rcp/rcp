@@ -28,16 +28,19 @@ pub enum Error {
 
     #[error("Operation not permitted: {0}")]
     PermissionDenied(String),
-    
+
     #[error("Resource not found: {0}")]
     NotFound(String),
-    
+
     #[error("Resource already exists: {0}")]
     AlreadyExists(String),
-    
+
     #[error("Invalid argument: {0}")]
     InvalidArgument(String),
     
+    #[error("Internal error: {0}")]
+    Internal(String),
+
     #[error("Invalid operation: {0}")]
     InvalidOperation(String),
 
