@@ -103,7 +103,7 @@ async fn test_send_command_error() {
     assert!(response.is_err());
 }
 
-/// Test health check with healthy service
+/// Test ping with healthy service
 #[test]
 async fn test_health_check_healthy() {
     // Start mock server

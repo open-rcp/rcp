@@ -96,13 +96,15 @@ fn test_from_std_error() {
 
     // Convert to ApiError - manual conversion instead of using From trait
     let api_error = ApiError::ServerError(format!("Server error: {}", std_error));
+    
+    // Format error before converting it into a response
+    let err_string = format!("{:?}", api_error);
 
     // Should be a server error
-    let response = api_error.clone().into_response();
+    let response = api_error.into_response();
     assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
 
     // Should contain the original error message
-    let err_string = format!("{:?}", api_error);
     assert!(err_string.contains("Server error"));
 }
 
