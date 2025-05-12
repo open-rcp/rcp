@@ -212,6 +212,26 @@ impl Cli {
             .await
     }
 
+    /// Delete a user
+    #[allow(dead_code)]
+    pub async fn delete_user(&mut self, username: &str) -> Result<()> {
+        self.get_service_client_mut()?.delete_user(username).await
+    }
+
+    /// Update a user's role
+    #[allow(dead_code)]
+    pub async fn update_user_role(&mut self, username: &str, role: &str) -> Result<()> {
+        self.get_service_client_mut()?.update_user_role(username, role).await
+    }
+
+    /// Reset a user's password
+    #[allow(dead_code)]
+    pub async fn reset_user_password(&mut self, username: &str, new_password: &str) -> Result<()> {
+        self.get_service_client_mut()?
+            .reset_user_password(username, new_password)
+            .await
+    }
+
     /// Get a reference to the configuration
     #[allow(dead_code)]
     pub fn get_config(&self) -> &CliConfig {
