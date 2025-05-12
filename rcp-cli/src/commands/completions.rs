@@ -1,6 +1,9 @@
 use clap::Command;
-use clap_complete::{generate, generate_to, Shell};
+#[cfg(test)]
+use clap_complete::generate_to;
+use clap_complete::{generate, Shell};
 use std::io;
+#[cfg(test)]
 use std::path::Path;
 
 /// Helper function for tests to check if this module is properly loaded

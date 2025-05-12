@@ -1,5 +1,6 @@
 use crate::error::CliError;
 
+#[allow(dead_code)]
 pub async fn handle_logs_command(
     level: String,
     limit: usize,

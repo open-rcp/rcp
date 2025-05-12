@@ -10,6 +10,7 @@ pub mod windows;
 #[cfg(target_family = "windows")]
 pub use windows::WindowsPlatform;
 
+#[allow(dead_code)]
 pub trait Platform {
     fn get_socket_path() -> Result<String, ServiceError>;
     fn create_socket_dir() -> Result<(), ServiceError>;

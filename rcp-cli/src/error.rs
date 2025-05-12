@@ -3,6 +3,7 @@ use thiserror::Error;
 
 /// Error types specific to the CLI
 #[derive(Error, Debug)]
+#[allow(dead_code)]
 pub enum CliError {
     #[error("Not connected to RCP service")]
     NotConnected,
@@ -55,4 +56,5 @@ impl From<toml::ser::Error> for CliError {
 }
 
 /// Type alias for anyhow::Result with our error type
+#[allow(dead_code)]
 pub type Result<T> = std::result::Result<T, CliError>;

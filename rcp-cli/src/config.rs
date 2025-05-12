@@ -29,6 +29,7 @@ pub fn default_config_path() -> Result<PathBuf> {
 }
 
 /// Get system-wide configuration path
+#[allow(dead_code)]
 pub fn system_config_path() -> PathBuf {
     if cfg!(windows) {
         // Windows: C:\ProgramData\RCP\cli.toml
@@ -43,6 +44,7 @@ pub fn system_config_path() -> PathBuf {
 }
 
 /// Search for configuration file in standard locations
+#[allow(dead_code)]
 pub fn find_config_file() -> Option<PathBuf> {
     // First check in current directory
     let current_dir = std::env::current_dir().ok()?;
@@ -67,6 +69,7 @@ pub fn find_config_file() -> Option<PathBuf> {
 }
 
 /// Create a new configuration file with default settings
+#[allow(dead_code)]
 pub fn create_default_config(path: &Path) -> Result<()> {
     let config = crate::cli::CliConfig::default();
     config.to_file(path)?;
@@ -74,6 +77,7 @@ pub fn create_default_config(path: &Path) -> Result<()> {
 }
 
 /// Load configuration from a file
+#[allow(dead_code)]
 pub fn load_config(path: &Path) -> Result<CliConfig> {
     let content = fs::read_to_string(path)?;
     let config: CliConfig = toml::from_str(&content)?;
@@ -81,6 +85,7 @@ pub fn load_config(path: &Path) -> Result<CliConfig> {
 }
 
 /// Save configuration to a file
+#[allow(dead_code)]
 pub fn save_config(config: &CliConfig, path: &Path) -> Result<()> {
     let content = toml::to_string_pretty(config)?;
     fs::write(path, content)?;

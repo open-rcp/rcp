@@ -3,15 +3,18 @@ use crate::error::ServiceError;
 use anyhow::Result;
 use tokio::sync::mpsc;
 
+#[allow(dead_code)]
 pub struct ServiceDaemon {
     shutdown_rx: mpsc::Receiver<()>,
 }
 
 impl ServiceDaemon {
+    #[allow(dead_code)]
     pub fn new(shutdown_rx: mpsc::Receiver<()>) -> Self {
         Self { shutdown_rx }
     }
 
+    #[allow(dead_code)]
     pub async fn run(&mut self) -> Result<(), ServiceError> {
         tokio::select! {
             _ = self.shutdown_rx.recv() => {

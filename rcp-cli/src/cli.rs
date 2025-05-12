@@ -181,26 +181,31 @@ impl Cli {
     }
 
     /// Start a server
+    #[allow(dead_code)]
     pub async fn start_server(&mut self, name: &str) -> Result<()> {
         self.get_service_client_mut()?.start_server(name).await
     }
 
     /// Stop a server
+    #[allow(dead_code)]
     pub async fn stop_server(&mut self, name: &str) -> Result<()> {
         self.get_service_client_mut()?.stop_server(name).await
     }
 
     /// Restart a server
+    #[allow(dead_code)]
     pub async fn restart_server(&mut self, name: &str) -> Result<()> {
         self.get_service_client_mut()?.restart_server(name).await
     }
 
     /// List users
+    #[allow(dead_code)]
     pub async fn list_users(&mut self) -> Result<Vec<UserInfo>> {
         self.get_service_client_mut()?.list_users().await
     }
 
     /// Add a user
+    #[allow(dead_code)]
     pub async fn add_user(&mut self, username: &str, password: &str, role: &str) -> Result<()> {
         self.get_service_client_mut()?
             .add_user(username, password, role)
@@ -208,6 +213,7 @@ impl Cli {
     }
 
     /// Get a reference to the configuration
+    #[allow(dead_code)]
     pub fn get_config(&self) -> &CliConfig {
         &self.config
     }
@@ -222,6 +228,7 @@ impl CliConfig {
     }
 
     /// Save configuration to a file
+    #[allow(dead_code)]
     pub fn to_file(&self, path: &Path) -> Result<()> {
         let content = toml::to_string_pretty(self)?;
         std::fs::write(path, content)?;
