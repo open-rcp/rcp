@@ -14,11 +14,11 @@ pub enum UserAction {
 
 /// Handle user commands with flat parameters
 pub async fn handle_user_command(
-    cli: &mut Cli, 
-    action: UserAction, 
+    cli: &mut Cli,
+    action: UserAction,
     username: Option<&str>,
     password: Option<&str>,
-    role: Option<&str>
+    role: Option<&str>,
 ) -> Result<()> {
     match action {
         UserAction::List => {
@@ -37,8 +37,9 @@ pub async fn handle_user_command(
         }
         UserAction::Add => {
             // Check if username is provided
-            let username = username.ok_or(anyhow::anyhow!("Username is required for add action"))?;
-            
+            let username =
+                username.ok_or(anyhow::anyhow!("Username is required for add action"))?;
+
             // Get password, prompting if not provided
             let password_value = match password {
                 Some(p) => p.to_string(),
@@ -63,7 +64,7 @@ pub async fn handle_user_command(
 
             // Default role to "user" if not provided
             let role_value = role.unwrap_or("user");
-            
+
             cli.add_user(username, &password_value, role_value).await?;
             println!(
                 "User '{}' added successfully with role '{}'",
@@ -72,8 +73,9 @@ pub async fn handle_user_command(
         }
         UserAction::Remove => {
             // Check if username is provided
-            let username = username.ok_or(anyhow::anyhow!("Username is required for remove action"))?;
-            
+            let username =
+                username.ok_or(anyhow::anyhow!("Username is required for remove action"))?;
+
             // Ask for confirmation
             let confirm = utils::prompt(
                 &format!("Are you sure you want to delete user '{}'? (y/N)", username),
@@ -90,16 +92,21 @@ pub async fn handle_user_command(
         }
         UserAction::UpdateRole => {
             // Check if username and role are provided
-            let username = username.ok_or(anyhow::anyhow!("Username is required for update_role action"))?;
-            let role_value = role.ok_or(anyhow::anyhow!("Role is required for update_role action"))?;
+            let username = username.ok_or(anyhow::anyhow!(
+                "Username is required for update_role action"
+            ))?;
+            let role_value =
+                role.ok_or(anyhow::anyhow!("Role is required for update_role action"))?;
 
             cli.update_user_role(username, role_value).await?;
             println!("Updated role for user '{}' to '{}'", username, role_value);
         }
         UserAction::ResetPassword => {
             // Check if username is provided
-            let username = username.ok_or(anyhow::anyhow!("Username is required for reset_password action"))?;
-            
+            let username = username.ok_or(anyhow::anyhow!(
+                "Username is required for reset_password action"
+            ))?;
+
             // Get password, prompting if not provided
             let password_value = match password {
                 Some(p) => p.to_string(),

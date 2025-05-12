@@ -37,7 +37,7 @@ pub enum Error {
 
     #[error("Invalid argument: {0}")]
     InvalidArgument(String),
-    
+
     #[error("Internal error: {0}")]
     Internal(String),
 

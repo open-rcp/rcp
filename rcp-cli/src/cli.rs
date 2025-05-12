@@ -1,7 +1,5 @@
 use crate::error::CliError;
-use crate::service::{
-    AppInfo, AppInstanceInfo, ServiceClient, ServiceStatus
-};
+use crate::service::{AppInfo, AppInstanceInfo, ServiceClient, ServiceStatus};
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::path::Path;

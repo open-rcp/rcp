@@ -69,18 +69,18 @@ enum Commands {
         /// User action to perform
         #[arg(value_enum)]
         action: UserAction,
-        
+
         /// Username
         #[arg(long, required_if_eq("action", "add"))]
         #[arg(long, required_if_eq("action", "remove"))]
         #[arg(long, required_if_eq("action", "update_role"))]
         #[arg(long, required_if_eq("action", "reset_password"))]
         username: Option<String>,
-        
+
         /// Password for user
         #[arg(long)]
         password: Option<String>,
-        
+
         /// Role for user
         #[arg(long, required_if_eq("action", "update_role"))]
         role: Option<String>,
@@ -90,7 +90,7 @@ enum Commands {
         /// Application action to perform
         #[arg(value_enum)]
         action: AppAction,
-        
+
         /// Application ID (for get, update, delete, enable, disable, launch)
         #[arg(long, required_if_eq("action", "get"))]
         #[arg(long, required_if_eq("action", "update"))]
@@ -99,27 +99,27 @@ enum Commands {
         #[arg(long, required_if_eq("action", "disable"))]
         #[arg(long, required_if_eq("action", "launch"))]
         id: Option<String>,
-        
+
         /// Application name (for create, update)
         #[arg(long, required_if_eq("action", "create"))]
         name: Option<String>,
-        
+
         /// Application path (for create, update)
         #[arg(long, required_if_eq("action", "create"))]
         path: Option<String>,
-        
+
         /// Command-line arguments (for create, update)
         #[arg(long)]
         args: Option<String>,
-        
+
         /// Application description (for create, update)
         #[arg(long)]
         description: Option<String>,
-        
+
         /// User ID to run the application as (for launch)
         #[arg(long)]
         user_id: Option<String>,
-        
+
         /// Instance ID (for terminate)
         #[arg(long, required_if_eq("action", "terminate"))]
         instance_id: Option<String>,
@@ -208,7 +208,7 @@ pub enum AppAction {
     Create,
     Update,
     Delete,
-    Enable, 
+    Enable,
     Disable,
     Launch,
     ListInstances,
@@ -310,7 +310,12 @@ async fn main() -> Result<()> {
         Commands::Session { action: _ } => {
             Ok(()) // Placeholder
         }
-        Commands::User { action, username, password, role } => {
+        Commands::User {
+            action,
+            username,
+            password,
+            role,
+        } => {
             // Convert the UserAction enum from main to the one defined in the user module
             let user_action = match action {
                 UserAction::List => commands::user::UserAction::List,
@@ -319,16 +324,26 @@ async fn main() -> Result<()> {
                 UserAction::UpdateRole => commands::user::UserAction::UpdateRole,
                 UserAction::ResetPassword => commands::user::UserAction::ResetPassword,
             };
-            
+
             commands::user::handle_user_command(
-                &mut cli, 
-                user_action, 
-                username.as_deref(), 
-                password.as_deref(), 
-                role.as_deref()
-            ).await
+                &mut cli,
+                user_action,
+                username.as_deref(),
+                password.as_deref(),
+                role.as_deref(),
+            )
+            .await
         }
-        Commands::App { action, id, name, path, args: app_args, description, user_id, instance_id } => {
+        Commands::App {
+            action,
+            id,
+            name,
+            path,
+            args: app_args,
+            description,
+            user_id,
+            instance_id,
+        } => {
             // Convert the AppAction enum from main to the one defined in the app module
             let app_action = match action {
                 AppAction::List => commands::app::AppAction::List,
@@ -344,16 +359,17 @@ async fn main() -> Result<()> {
             };
 
             commands::app::handle_app_command(
-                &mut cli, 
-                app_action, 
-                id.as_deref(), 
-                name.as_deref(), 
-                path.as_deref(), 
-                app_args.as_deref(), 
+                &mut cli,
+                app_action,
+                id.as_deref(),
+                name.as_deref(),
+                path.as_deref(),
+                app_args.as_deref(),
                 description.as_deref(),
                 user_id.as_deref(),
-                instance_id.as_deref()
-            ).await
+                instance_id.as_deref(),
+            )
+            .await
         }
         Commands::Config { action: _ } => {
             Ok(()) // Placeholder
