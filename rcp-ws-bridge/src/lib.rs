@@ -53,17 +53,20 @@ pub struct BridgeConfig {
 }
 
 /// WebSocket bridge to proxy RCP connections over WebSockets
+#[allow(dead_code)]
 pub struct WsBridge {
     config: BridgeConfig,
 }
 
 impl WsBridge {
     /// Create a new WebSocket bridge
+    #[allow(dead_code)]
     pub fn new(config: BridgeConfig) -> Self {
         Self { config }
     }
 
     /// Start the WebSocket server
+    #[allow(dead_code)]
     pub async fn start(&self) -> Result<()> {
         // Create WebSocket address
         let addr = format!("{}:{}", self.config.ws_host, self.config.ws_port);
@@ -92,6 +95,7 @@ impl WsBridge {
 }
 
 /// Handle a single WebSocket connection
+#[allow(dead_code)]
 async fn handle_connection(stream: TcpStream, rcp_host: String, rcp_port: u16) -> Result<()> {
     // Accept the WebSocket connection
     let ws_stream = accept_async(stream).await?;
@@ -370,6 +374,7 @@ async fn handle_connection(stream: TcpStream, rcp_host: String, rcp_port: u16) -
 }
 
 /// Start a WebSocket bridge with the given configuration
+#[allow(dead_code)]
 pub async fn start_bridge(config: BridgeConfig) -> Result<()> {
     let bridge = WsBridge::new(config);
     bridge.start().await
