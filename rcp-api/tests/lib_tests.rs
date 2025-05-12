@@ -93,12 +93,12 @@ async fn test_health_check_unhealthy_service() {
         config: Arc::new(config),
     };
 
-    // Add a failing mock for subsequent health checks with higher priority (0)
+    // Add a failing mock for subsequent health checks with higher priority
     // This ensures it will be matched before any existing mocks
     Mock::given(method("GET"))
         .and(path("/health"))
         .respond_with(ResponseTemplate::new(500).set_body_string("Service unavailable"))
-        .with_priority(0) // Higher priority (lower number) means it matches first
+        .with_priority(1) // Higher priority (lower number) means it matches first
         .mount(&mock_server)
         .await;
 

@@ -47,17 +47,26 @@ async fn test_connect_timeout() {
 async fn test_send_command() {
     // Start mock server
     let mock_server = MockServer::start().await;
+    
+    // Mock health check endpoint first (needed for client connection)
+    Mock::given(method("GET"))
+        .and(path("/health"))
+        .respond_with(ResponseTemplate::new(200).set_body_json(json!({
+            "status": "ok",
+            "version": "1.0.0"
+        })))
+        .mount(&mock_server)
+        .await;
 
     // Test command data
     let command = "test-command";
     let args = serde_json::to_vec(&json!({ "key": "value" })).unwrap();
     let expected_response_value = json!({ "result": "success" });
 
-    // Mock command endpoint
+    // Mock command endpoint - using the correct path format: /command/{command_name}
     Mock::given(method("POST"))
-        .and(path("/command"))
+        .and(path(format!("/command/{}", command).as_str()))
         .and(header("Content-Type", "application/octet-stream"))
-        .and(header("X-RCP-Command", command))
         .respond_with(ResponseTemplate::new(200).set_body_json(expected_response_value.clone()))
         .expect(1)
         .mount(&mock_server)
@@ -80,15 +89,24 @@ async fn test_send_command() {
 async fn test_send_command_error() {
     // Start mock server
     let mock_server = MockServer::start().await;
+    
+    // Mock health check endpoint first (needed for client connection)
+    Mock::given(method("GET"))
+        .and(path("/health"))
+        .respond_with(ResponseTemplate::new(200).set_body_json(json!({
+            "status": "ok",
+            "version": "1.0.0"
+        })))
+        .mount(&mock_server)
+        .await;
 
     // Test command data
     let command = "error-command";
     let args = serde_json::to_vec(&json!({ "key": "value" })).unwrap();
 
-    // Mock command endpoint with error response
+    // Mock command endpoint with error response - using the correct path format: /command/{command_name}
     Mock::given(method("POST"))
-        .and(path("/command"))
-        .and(header("X-RCP-Command", command))
+        .and(path(format!("/command/{}", command).as_str()))
         .respond_with(ResponseTemplate::new(500))
         .expect(1)
         .mount(&mock_server)
@@ -131,24 +149,48 @@ async fn test_health_check_healthy() {
 /// Test health check with unhealthy service
 #[test]
 async fn test_health_check_unhealthy() {
-    // Start mock server
+    // Start a new test server for this specific test
     let mock_server = MockServer::start().await;
 
-    // Mock health endpoint with error
-    Mock::given(method("GET"))
+    // First set up a success response that will be used for initial connection and first ping
+    // This needs to have a low priority so it's matched after more specific matchers
+    let _success_mock = Mock::given(method("GET"))
         .and(path("/health"))
-        .respond_with(ResponseTemplate::new(500).set_body_json(json!({
-            "status": "error",
-            "message": "Service unavailable"
+        .respond_with(ResponseTemplate::new(200).set_body_json(json!({
+            "status": "ok",
+            "version": "1.0.0"
         })))
+        .with_priority(10) // Lower priority (higher number)
         .mount(&mock_server)
         .await;
 
-    // Connect to mock server
+    // Connect to mock server - this will use the success mock
     let service_url = format!("http://{}", mock_server.address());
     let client = ServiceClient::connect(&service_url, None).await.unwrap();
+    
+    // Now explicitly delete all existing mocks to ensure a clean state
+    mock_server.reset().await;
+    
+    // Add an error response that will be used for the next ping call
+    Mock::given(method("GET"))
+        .and(path("/health"))
+        .respond_with(ResponseTemplate::new(500).set_body_string("Service unavailable"))
+        .expect(1) // Expect it to be called exactly once
+        .mount(&mock_server)
+        .await;
 
-    // Check health - should fail
+    // Try to ping - this should now fail
     let result = client.ping().await;
+    
+    // The ping should fail due to the 500 status response
     assert!(result.is_err());
+    
+    // The error message should contain "Service unavailable"
+    match result {
+        Err(e) => {
+            let error_message = e.to_string();
+            assert!(error_message.contains("Service unavailable"), "Error message should mention 'Service unavailable'");
+        }
+        _ => panic!("Expected an error, but got Ok"),
+    }
 }
