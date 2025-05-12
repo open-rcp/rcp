@@ -4,6 +4,12 @@ use crate::ServiceAction;
 use anyhow::Result;
 use colored::Colorize;
 
+/// Helper function for tests to check if this module is properly loaded
+#[cfg(test)]
+pub fn is_module_loaded() -> bool {
+    true
+}
+
 /// Handle service-related commands
 pub async fn handle_service_command(
     action: ServiceAction,

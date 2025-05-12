@@ -47,7 +47,7 @@ async fn test_connect_timeout() {
 async fn test_send_command() {
     // Start mock server
     let mock_server = MockServer::start().await;
-    
+
     // Mock health check endpoint first (needed for client connection)
     Mock::given(method("GET"))
         .and(path("/health"))
@@ -89,7 +89,7 @@ async fn test_send_command() {
 async fn test_send_command_error() {
     // Start mock server
     let mock_server = MockServer::start().await;
-    
+
     // Mock health check endpoint first (needed for client connection)
     Mock::given(method("GET"))
         .and(path("/health"))
@@ -167,10 +167,10 @@ async fn test_health_check_unhealthy() {
     // Connect to mock server - this will use the success mock
     let service_url = format!("http://{}", mock_server.address());
     let client = ServiceClient::connect(&service_url, None).await.unwrap();
-    
+
     // Now explicitly delete all existing mocks to ensure a clean state
     mock_server.reset().await;
-    
+
     // Add an error response that will be used for the next ping call
     Mock::given(method("GET"))
         .and(path("/health"))
@@ -181,15 +181,18 @@ async fn test_health_check_unhealthy() {
 
     // Try to ping - this should now fail
     let result = client.ping().await;
-    
+
     // The ping should fail due to the 500 status response
     assert!(result.is_err());
-    
+
     // The error message should contain "Service unavailable"
     match result {
         Err(e) => {
             let error_message = e.to_string();
-            assert!(error_message.contains("Service unavailable"), "Error message should mention 'Service unavailable'");
+            assert!(
+                error_message.contains("Service unavailable"),
+                "Error message should mention 'Service unavailable'"
+            );
         }
         _ => panic!("Expected an error, but got Ok"),
     }

@@ -2,6 +2,12 @@ use crate::cli::Cli;
 use crate::AuthAction;
 use anyhow::Result;
 
+/// Helper function for tests to check if this module is properly loaded
+#[cfg(test)]
+pub fn is_module_loaded() -> bool {
+    true
+}
+
 pub async fn handle_auth_command(cli: &mut Cli, action: AuthAction) -> Result<()> {
     match action {
         AuthAction::Login => handle_login(cli).await,

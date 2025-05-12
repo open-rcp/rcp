@@ -4,6 +4,7 @@ use clap_complete::Shell;
 use colored::Colorize;
 use std::path::PathBuf;
 
+// Re-import modules locally for main.rs
 mod cli;
 mod commands;
 mod config;
@@ -11,6 +12,7 @@ mod error;
 mod service;
 mod utils;
 
+// We're using these directly now
 use cli::{Cli, CliConfig};
 
 #[derive(Parser)]
