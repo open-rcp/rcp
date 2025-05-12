@@ -796,6 +796,12 @@ pub mod services {
         user_manager: UserManager,
     }
 
+    impl Default for UserService {
+        fn default() -> Self {
+            Self::new()
+        }
+    }
+
     impl UserService {
         /// Create a new user service
         pub fn new() -> Self {

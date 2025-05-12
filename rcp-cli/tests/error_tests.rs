@@ -1,4 +1,3 @@
-use anyhow;
 use rcp_cli::CliError;
 use std::io;
 use tokio::test;

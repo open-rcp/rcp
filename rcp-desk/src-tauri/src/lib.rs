@@ -4,8 +4,6 @@ use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 use std::sync::Arc;
 use tauri::{command, generate_handler, State};
-use tauri_plugin_dialog;
-use tauri_plugin_shell;
 use thiserror::Error;
 use tokio::sync::Mutex;
 use uuid::Uuid;

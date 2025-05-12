@@ -12,9 +12,9 @@ fn test_config_defaults() {
     assert_eq!(config.database_url, "sqlite://data/rcp-api.db");
     assert_eq!(config.service_connection_string, "tcp://127.0.0.1:9000");
     assert_eq!(config.jwt_expiration_minutes, 60);
-    assert_eq!(config.enable_cors, true);
+    assert!(config.enable_cors);
     assert!(config.cors_origins.contains(&"*".to_string()));
-    assert_eq!(config.enable_compression, true);
+    assert!(config.enable_compression);
 }
 
 /// Test save and load config
@@ -63,7 +63,7 @@ fn test_config_env_overrides() {
     assert_eq!(config.port, 9090);
     assert_eq!(config.database_url, "sqlite://test/env.db");
     assert_eq!(config.service_connection_string, "tcp://localhost:5000");
-    assert_eq!(config.enable_cors, false);
+    assert!(!config.enable_cors);
     assert_eq!(
         config.cors_origins,
         vec!["localhost".to_string(), "example.com".to_string()]

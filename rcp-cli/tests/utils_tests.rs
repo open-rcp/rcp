@@ -40,10 +40,8 @@ async fn test_print_table() {
 
     // Create a table with headers and rows
     let headers = ["Name", "Status", "Port", "Connections"];
-    let rows = vec![
-        ["Server1", "running", "8080", "5"],
-        ["Server2", "stopped", "8081", "0"],
-    ];
+    let rows = [["Server1", "running", "8080", "5"],
+        ["Server2", "stopped", "8081", "0"]];
 
     // Calculate column widths manually (since utils doesn't have this function)
     let widths = headers

@@ -11,7 +11,7 @@ fn test_default_service_config() {
     // Verify default configuration values
     assert_eq!(config.address, "127.0.0.1");
     assert_eq!(config.port, 8716); // Default port for RCP service
-    assert_eq!(config.tls.enabled, false);
+    assert!(!config.tls.enabled);
     assert_eq!(config.tls.cert_path, "cert.pem");
     assert_eq!(config.tls.key_path, "key.pem");
 }
@@ -35,7 +35,7 @@ fn test_custom_service_config() {
     // Verify custom configuration values
     assert_eq!(config.address, "0.0.0.0");
     assert_eq!(config.port, 9999);
-    assert_eq!(config.tls.enabled, true);
+    assert!(config.tls.enabled);
     assert_eq!(config.tls.cert_path, "/path/to/cert.pem");
     assert_eq!(config.tls.key_path, "/path/to/key.pem");
 }
@@ -77,7 +77,7 @@ fn test_tls_config() {
     };
 
     // Verify TLS configuration values
-    assert_eq!(tls_config.enabled, true);
+    assert!(tls_config.enabled);
     assert_eq!(tls_config.cert_path, "custom-cert.pem");
     assert_eq!(tls_config.key_path, "custom-key.pem");
 

@@ -35,7 +35,7 @@ async fn test_cli_custom_config() {
 
     // Verify custom config was applied
     let cli_config = cli.get_config();
-    assert_eq!(cli_config.color, false);
+    assert!(!cli_config.color);
     assert_eq!(cli_config.log_level, "debug");
     assert_eq!(cli_config.format, "json");
     assert_eq!(cli_config.connection.socket, "/tmp/custom-socket");
