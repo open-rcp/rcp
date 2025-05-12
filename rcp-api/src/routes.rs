@@ -16,7 +16,6 @@ use crate::AppState;
 /// Create API router with all routes and middleware
 pub fn create_router(app_state: AppState) -> Router {
     // Base router with middleware
-    
 
     Router::new()
         .nest("/api/v1", api_routes())
@@ -110,8 +109,6 @@ fn api_routes() -> Router<AppState> {
 /// Configure CORS middleware based on application config
 fn cors_layer(app_state: &AppState) -> CorsLayer {
     if app_state.config.enable_cors {
-        
-
         if app_state.config.cors_origins.contains(&"*".to_string()) {
             // Allow any origin
             CorsLayer::new()
