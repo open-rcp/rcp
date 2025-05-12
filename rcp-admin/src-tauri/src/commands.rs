@@ -3,7 +3,6 @@
 
 // Allow dead code to suppress warnings since this is a stub implementation
 #[allow(dead_code, unused_variables)]
-
 // Basic greeting command that the frontend tries to invoke
 pub fn greet(name: &str) -> String {
     format!("Hello, {}! You've been greeted from Rust!", name)
