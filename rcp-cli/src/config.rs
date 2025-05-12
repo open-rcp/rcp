@@ -1,5 +1,7 @@
 use anyhow::Result;
 use std::path::{Path, PathBuf};
+use std::fs;
+use crate::CliConfig;
 // We need the following imports for the config module
 // Even though they're reported as unused, they're needed for config file loading
 
@@ -68,5 +70,19 @@ pub fn find_config_file() -> Option<PathBuf> {
 pub fn create_default_config(path: &Path) -> Result<()> {
     let config = crate::cli::CliConfig::default();
     config.to_file(path)?;
+    Ok(())
+}
+
+/// Load configuration from a file
+pub fn load_config(path: &Path) -> Result<CliConfig> {
+    let content = fs::read_to_string(path)?;
+    let config: CliConfig = toml::from_str(&content)?;
+    Ok(config)
+}
+
+/// Save configuration to a file
+pub fn save_config(config: &CliConfig, path: &Path) -> Result<()> {
+    let content = toml::to_string_pretty(config)?;
+    fs::write(path, content)?;
     Ok(())
 }

@@ -8,6 +8,10 @@ repository.workspace = true
 homepage.workspace = true
 description = "Command line interface for RCP (Rust/Remote Control Protocol) server administration"
 
+[lib]
+name = "rcp_cli"
+path = "src/lib.rs"
+
 [dependencies]
 rcp-core = { workspace = true }
 tokio = { workspace = true }
