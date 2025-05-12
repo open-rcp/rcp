@@ -358,18 +358,18 @@ async fn main() -> Result<()> {
                 AppAction::Terminate => commands::app::AppAction::Terminate,
             };
 
-            commands::app::handle_app_command(
-                &mut cli,
-                app_action,
-                id.as_deref(),
-                name.as_deref(),
-                path.as_deref(),
-                app_args.as_deref(),
-                description.as_deref(),
-                user_id.as_deref(),
-                instance_id.as_deref(),
-            )
-            .await
+            // Create options struct
+            let options = commands::app::AppCommandOptions {
+                id: id.as_deref(),
+                name: name.as_deref(),
+                path: path.as_deref(),
+                args: app_args.as_deref(),
+                description: description.as_deref(),
+                user_id: user_id.as_deref(),
+                instance_id: instance_id.as_deref(),
+            };
+
+            commands::app::handle_app_command(&mut cli, app_action, options).await
         }
         Commands::Config { action: _ } => {
             Ok(()) // Placeholder
