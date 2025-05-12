@@ -63,7 +63,9 @@ pub async fn handle_app_command(
         }
         AppAction::Get => {
             // Check if ID is provided
-            let id = options.id.ok_or(anyhow::anyhow!("Application ID is required for get action"))?;
+            let id = options
+                .id
+                .ok_or(anyhow::anyhow!("Application ID is required for get action"))?;
             let app = cli.get_app(id).await?;
 
             utils::print_section("Application Details");
@@ -108,7 +110,9 @@ pub async fn handle_app_command(
                 }
             }
 
-            let app = cli.create_app(name, path, options.args, options.description).await?;
+            let app = cli
+                .create_app(name, path, options.args, options.description)
+                .await?;
 
             println!(
                 "Application '{}' created successfully with ID: {}",
@@ -132,7 +136,14 @@ pub async fn handle_app_command(
             }
 
             let app = cli
-                .update_app(id, options.name, options.path, options.args, options.description, None)
+                .update_app(
+                    id,
+                    options.name,
+                    options.path,
+                    options.args,
+                    options.description,
+                    None,
+                )
                 .await?;
 
             println!("Application '{}' updated successfully", app.name);
