@@ -140,9 +140,42 @@ pub enum SessionAction {
 #[derive(clap::ValueEnum, Clone, Debug)]
 pub enum UserAction {
     List,
-    Add,
-    Remove,
-    Update,
+    Add {
+        /// Username to add
+        #[clap(long)]
+        username: String,
+        
+        /// Password for the new user (will prompt if not provided)
+        #[clap(long)]
+        password: Option<String>,
+        
+        /// Role for the new user (admin, user, guest)
+        #[clap(long, default_value = "user")]
+        role: String,
+    },
+    Remove {
+        /// Username to remove
+        #[clap(long)]
+        username: String,
+    },
+    UpdateRole {
+        /// Username to update
+        #[clap(long)]
+        username: String,
+        
+        /// New role (admin, user, guest)
+        #[clap(long)]
+        role: String,
+    },
+    ResetPassword {
+        /// Username to reset password for
+        #[clap(long)]
+        username: String,
+        
+        /// New password (will prompt if not provided)
+        #[clap(long)]
+        password: Option<String>,
+    },
 }
 
 #[derive(clap::ValueEnum, Clone, Debug)]
@@ -240,8 +273,102 @@ async fn main() -> Result<()> {
         Commands::Session { action: _ } => {
             Ok(()) // Placeholder
         }
-        Commands::User { action: _ } => {
-            Ok(()) // Placeholder
+        Commands::User { action } => {
+            match action {
+                UserAction::List => {
+                    let users = cli.list_users().await?;
+                    
+                    if users.is_empty() {
+                        println!("No users found");
+                    } else {
+                        println!("{:<36} {:<20} {:<10}", "ID", "Username", "Role");
+                        println!("{}", "-".repeat(70));
+                        
+                        for user in users {
+                            println!("{:<36} {:<20} {:<10}", user.id, user.username, user.role);
+                        }
+                    }
+                    
+                    Ok(())
+                }
+                UserAction::Add { username, password, role } => {
+                    let password = match password {
+                        Some(p) => p.clone(),
+                        None => {
+                            // Prompt for password
+                            utils::prompt("Password", None)?
+                        }
+                    };
+                    
+                    // Validate the password
+                    if password.len() < 8 {
+                        return Err(anyhow::anyhow!("Password must be at least 8 characters"));
+                    }
+                    
+                    // Confirm the password
+                    if password.is_none() {
+                        let confirm = utils::prompt("Confirm password", None)?;
+                        if confirm != password {
+                            return Err(anyhow::anyhow!("Passwords do not match"));
+                        }
+                    }
+                    
+                    cli.add_user(username, &password, role).await?;
+                    println!("User '{}' added successfully with role '{}'", username, role);
+                    
+                    Ok(())
+                }
+                UserAction::Remove { username } => {
+                    // Ask for confirmation
+                    let confirm = utils::prompt(
+                        &format!("Are you sure you want to delete user '{}'? (y/N)", username),
+                        Some("N"),
+                    )?;
+                    
+                    if !confirm.eq_ignore_ascii_case("y") && !confirm.eq_ignore_ascii_case("yes") {
+                        println!("Operation cancelled");
+                        return Ok(());
+                    }
+                    
+                    cli.delete_user(username).await?;
+                    println!("User '{}' deleted successfully", username);
+                    
+                    Ok(())
+                }
+                UserAction::UpdateRole { username, role } => {
+                    cli.update_user_role(username, role).await?;
+                    println!("Updated role for user '{}' to '{}'", username, role);
+                    
+                    Ok(())
+                }
+                UserAction::ResetPassword { username, password } => {
+                    let password = match password {
+                        Some(p) => p.clone(),
+                        None => {
+                            // Prompt for password
+                            utils::prompt("New password", None)?
+                        }
+                    };
+                    
+                    // Validate the password
+                    if password.len() < 8 {
+                        return Err(anyhow::anyhow!("Password must be at least 8 characters"));
+                    }
+                    
+                    // Confirm the password
+                    if password.is_none() {
+                        let confirm = utils::prompt("Confirm new password", None)?;
+                        if confirm != password {
+                            return Err(anyhow::anyhow!("Passwords do not match"));
+                        }
+                    }
+                    
+                    cli.reset_user_password(username, &password).await?;
+                    println!("Password for user '{}' reset successfully", username);
+                    
+                    Ok(())
+                }
+            }
         }
         Commands::Config { action: _ } => {
             Ok(()) // Placeholder
