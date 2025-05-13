@@ -1,0 +1,62 @@
+# Service configuration
+address = "127.0.0.1"
+port = 8716
+
+# TLS configuration for the service
+[tls]
+enabled = false
+cert_path = "cert.pem"
+key_path = "key.pem"
+
+# Server configuration
+[server]
+address = "0.0.0.0"
+port = 8717
+
+# Server TLS configuration
+[server.tls]
+enabled = false
+cert_path = "server-cert.pem"
+key_path = "server-key.pem"
+
+# Server authentication
+[server.auth]
+required = true
+psk = "customkey"
+
+# Optional API configuration
+[api]
+address = "0.0.0.0"
+port = 8718
+# Use any origin instead of a specific wildcard pattern
+cors_allowed_origins = []
+
+# Application configuration
+[server.applications]
+enabled = true
+app_dir = "/tmp/rcp-apps"
+
+# Define specific applications
+[server.applications.apps.brave]
+id = "brave"
+name = "Brave Browser"
+executable_path = "/Applications/Brave.app/Contents/MacOS/brave"
+args = ["--private-window"]
+required_permissions = ["app:brave"]
+file_associations = ["html", "htm"]
+start_maximized = false
+
+# If you're on Linux, use this instead:
+# executable_path = "/usr/bin/brave"
+
+# If you're on Windows, use this instead:
+# executable_path = "C:\\Program Files\\Mozilla Brave\\brave.exe"
+
+[server.applications.apps.safari]
+id = "safari"
+name = "Safari Browser"
+executable_path = "/Applications/Safari.app/Contents/MacOS/Safari"
+args = []
+required_permissions = ["app:safari"]
+file_associations = ["html", "htm", "webarchive"]
+start_maximized = false

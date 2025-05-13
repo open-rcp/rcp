@@ -35,4 +35,3 @@ tracing-subscriber = { workspace = true }
 config = "0.15.11"  # For config file management
 uuid = { workspace = true }
 directories = "5.0.1"  # For finding config directories
-
