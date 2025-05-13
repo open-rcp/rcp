@@ -4225,6 +4225,9 @@ name = "rcp-examples"
 version = "0.1.0"
 dependencies = [
  "rcp-cli",
+ "rcp-client",
+ "rcp-core",
+ "tokio",
 ]
 
 [[package]]

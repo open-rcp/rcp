@@ -7,5 +7,12 @@ edition = "2021"
 name = "format_duration_example"
 path = "src/format_duration_example.rs"
 
+[[bin]]
+name = "simple_client"
+path = "src/simple_client.rs"
+
 [dependencies]
 rcp-cli = { path = "../rcp-cli" }
+rcp-client = { path = "../rcp-client" }
+rcp-core = { path = "../rcp-core" }
+tokio = { version = "1", features = ["full"] }
