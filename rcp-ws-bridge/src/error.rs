@@ -2,6 +2,7 @@ use thiserror::Error;
 
 /// Error types for the WebSocket Bridge
 #[derive(Error, Debug)]
+#[allow(dead_code)]
 pub enum Error {
     /// IO error
     #[error("IO error: {0}")]

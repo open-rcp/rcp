@@ -34,7 +34,7 @@ enum WsMessage {
 #[ignore] // This test requires external setup, so we'll ignore it by default
 async fn test_ws_client_connection() {
     // Start a WebSocket bridge in a separate task
-    let bridge_addr = "127.0.0.1:9278";
+    let _bridge_addr = "127.0.0.1:9278";
     let bridge_handle = tokio::spawn(async move {
         // In a real test, you would configure and start the bridge here
         // For this example, we'll simulate it with a delay

@@ -215,6 +215,7 @@ fn default_working_dir() -> String {
 
 impl Default for ApplicationConfig {
     fn default() -> Self {
+        #[allow(unused_mut)]
         let mut applications = std::collections::HashMap::new();
 
         // Add default text editor based on platform
@@ -247,6 +248,23 @@ impl Default for ApplicationConfig {
                 args: vec![],
                 env: std::collections::HashMap::new(),
                 required_permissions: vec!["app:notepad".to_string()],
+                file_associations: vec!["txt".to_string()],
+                start_maximized: false,
+                settings: serde_json::json!({}),
+            },
+        );
+
+        #[cfg(target_os = "linux")]
+        applications.insert(
+            "gedit".to_string(),
+            VirtualAppConfig {
+                id: "gedit".to_string(),
+                name: "Gedit".to_string(),
+                executable_path: "/usr/bin/gedit".to_string(),
+                working_dir: None,
+                args: vec![],
+                env: std::collections::HashMap::new(),
+                required_permissions: vec!["app:gedit".to_string()],
                 file_associations: vec!["txt".to_string()],
                 start_maximized: false,
                 settings: serde_json::json!({}),
