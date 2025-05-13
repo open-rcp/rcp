@@ -182,6 +182,11 @@ impl ServiceManager {
         &self.config
     }
     
+    /// Get the working directory path
+    pub fn get_work_dir(&self) -> &PathBuf {
+        &self.work_dir
+    }
+    
     /// Get API status information
     #[cfg(feature = "api")]
     pub async fn api_status(&self) -> Option<ApiStatus> {

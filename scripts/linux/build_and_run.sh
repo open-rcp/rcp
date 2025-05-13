@@ -9,14 +9,14 @@ SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 PROJECT_ROOT=$(dirname "$(dirname "$SCRIPT_DIR")")
 cd "$PROJECT_ROOT"
 
-# Build the server components
-echo -e "\033[0;33mBuilding RCP server components...\033[0m"
+# Build the service components
+echo -e "\033[0;33mBuilding RCP service components...\033[0m"
 cd "$PROJECT_ROOT"
 cargo build
 
-# Run the RCP server
-echo -e "\033[0;32mStarting RCP server...\033[0m"
-cargo run --bin rcp-server -- -v
+# Run the RCP service with integrated server
+echo -e "\033[0;32mStarting RCP service with integrated server...\033[0m"
+cargo run --bin rcp-service -- -v
 
 echo -e "\033[0;36mServer has stopped.\033[0m"
 

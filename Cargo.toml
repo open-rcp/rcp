@@ -1,15 +1,13 @@
 [workspace]
 members = [
     "rcp-core",
-    "rcp-server",
     "rcp-client",
     "rcp-ws-bridge",
+    "rcp-service",
     "examples",
     "rcp-admin/src-tauri", 
     "rcp-desk/src-tauri",
-    "rcp-service",
     "rcp-cli",
-    "rcp-api"
 ]
 resolver = "2"
 

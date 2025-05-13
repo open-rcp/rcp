@@ -58,11 +58,9 @@ This document outlines the Rust/Remote Control Protocol (RCP) project structure,
 RCP follows a modular architecture with these core components:
 
 1. **rcp-core**: Protocol definitions, frame handling, authentication, and common utilities
-2. **rcp-server**: The server application that accepts connections and manages sessions
-3. **rcp-client**: Client library for connecting to RCP servers and controlling applications
-4. **rcp-service**: Runtime service managing the application lifecycle and configuration
-5. **rcp-cli**: Command-line tool for server administration only
-6. **rcp-api**: RESTful API for remote management and integration
+2. **rcp-client**: Client library for connecting to RCP servers and controlling applications
+3. **rcp-service**: Runtime service that integrates server capabilities (connections, sessions) and API functionality, with application lifecycle management and configuration
+4. **rcp-cli**: Command-line tool for server administration only
 7. **rcp-admin**: Server administration interface for web and desktop
 8. **rcp-desk**: End-user client application for accessing virtual applications
 9. **rcp-ws-bridge**: Optional WebSocket bridge for browser clients
@@ -81,22 +79,25 @@ rcp/
 │       ├── lib.rs      # Main library entry
 │       ├── protocol.rs # Protocol handling
 │       └── utils.rs    # Utilities
-├── rcp-server/         # Server implementation
-│   ├── src/
-│       ├── config.rs   # Server configuration
-│       ├── error.rs    # Error types
-│       ├── main.rs     # Entry point
-│       ├── server.rs   # Server implementation
-│       ├── service.rs  # Service interface
-│       └── session.rs  # Client session handling
 ├── rcp-client/         # Client library
 │   └── src/            # Client implementation
-├── rcp-service/        # Runtime service
-│   └── src/            # Service implementation
+├── rcp-service/        # Runtime service with integrated server and API
+│   ├── src/
+│       ├── config.rs   # Service configuration
+│       ├── error.rs    # Error types
+│       ├── main.rs     # Entry point
+│       ├── manager.rs  # Service manager implementation
+│       ├── server/     # Integrated server functionality
+│       │   ├── config.rs  # Server configuration
+│       │   ├── server.rs  # Server implementation
+│       │   └── session.rs # Client session handling
+│       ├── api/        # Integrated API functionality (feature-gated)
+│       │   ├── config.rs  # API configuration
+│       │   ├── server.rs  # API server implementation
+│       │   └── handlers.rs # API request handlers
+│       └── service.rs  # Service interface
 ├── rcp-cli/            # Command line interface
 │   └── src/            # CLI implementation
-├── rcp-api/            # RESTful management API
-│   └── src/            # API implementation
 ├── rcp-desk/           # Unified management interface
 │   ├── src/            # Shared components
 │   ├── web/            # Web interface (SvelteKit)

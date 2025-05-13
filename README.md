@@ -27,11 +27,9 @@
 ```
 rcp/
 ├── rcp-core/               # Protocol definitions, frame parsers, commands
-├── rcp-server/             # RCP listener, app session manager
 ├── rcp-client/             # RCP client, app control interface
-├── rcp-service/            # Runtime service with app lifecycle management
+├── rcp-service/            # Runtime service with integrated server and API capabilities
 ├── rcp-cli/                # Command-line tool for server administration only
-├── rcp-api/                # RESTful API for remote management
 ├── rcp-admin/              # Administrative interface for server management
 ├── rcp-desk/               # End-user client for virtual applications
 ├── rcp-ws-bridge/          # (optional) WebSocket proxy for browser clients

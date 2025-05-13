@@ -5,22 +5,24 @@
 The Rust/Remote Control Protocol (RCP) is organized as a modular service-oriented system with several components that work together:
 
 ```
-┌─────────────────┐    ┌─────────────┐       ┌─────────────┐
-│ RCP Client Lib  │◄───┤ RCP Server  │◄──────┤ RCP Service │
-└────────┬────────┘    └─────┬───────┘       └──────┬──────┘
-         │                   │                      │
-    ┌────▼────┐        ┌─────▼───────┐       ┌──────▼──────┐
-    │ RCP Desk│        │ Session Mgr │◄──────┤  RCP CLI    │
-    │(End-user│        └─────────────┘       └──────┬──────┘
-    │  App)   │                │                    │
-    └─────────┘         ┌──────▼─────────┐    ┌─────▼─────┐
-                        │  Application   │    │  RCP API  │
-                        │   Processes    │    └─────┬─────┘
-                        └────────────────┘          │
-                                               ┌────▼────┐
-                                               │RCP Admin│
-                                               │(Web/API)│
-                                               └─────────┘
+┌─────────────────┐      ┌────────────────────────────┐
+│ RCP Client Lib  │◄─────┤        RCP Service         │
+└────────┬────────┘      │  (with integrated Server   │
+         │               │        and API)            │
+    ┌────▼────┐          └─────────────┬──────────────┘
+    │ RCP Desk│                        │
+    │(End-user│             ┌──────────▼─────────┐
+    │  App)   │             │     Session Mgr    │◄──────┐
+    └─────────┘             └──────────┬─────────┘       │
+                                       │                 │
+                            ┌──────────▼─────────┐  ┌────▼────┐
+                            │     Application    │  │ RCP CLI │
+                            │      Processes     │  └────┬────┘
+                            └────────────────────┘       │
+                                                    ┌────▼────┐
+                                                    │RCP Admin│
+                                                    │(Web/API)│
+                                                    └─────────┘
 ```
 
 ## Core Components
@@ -34,18 +36,7 @@ The foundation of the RCP system providing:
 - Authentication mechanisms
 - Common utilities
 
-### 2. RCP Server (`rcp-server`)
-
-- Listens for incoming TCP connections
-- Manages authentication and sessions
-- Spawns and controls applications
-- Provides specialized services:
-  - **Connection Service**: Handles core connection lifecycle
-  - **Display Service**: Manages screen capture and display information 
-  - **Input Service**: Processes remote keyboard and mouse events
-  - **Audio Service**: Handles audio streaming
-  - **Clipboard Service**: Manages clipboard synchronization
-  - **File Transfer Service**: Handles file operations between peers
+### 2. [Merged with RCP Service]
 
 ### 3. RCP Client (`rcp-client`)
 
@@ -57,12 +48,25 @@ The foundation of the RCP system providing:
 
 ### 4. RCP Service (`rcp-service`)
 
-- Long-running daemon/service that manages RCP server instances
+- Long-running daemon/service with integrated server and API functionality
+- Listens for incoming TCP connections (server functionality)
+- Manages authentication and sessions
+- Spawns and controls applications
+- Provides specialized services:
+  - **Connection Service**: Handles core connection lifecycle
+  - **Display Service**: Manages screen capture and display information 
+  - **Input Service**: Processes remote keyboard and mouse events
+  - **Audio Service**: Handles audio streaming
+  - **Clipboard Service**: Manages clipboard synchronization
+  - **File Transfer Service**: Handles file operations between peers
 - Application lifecycle management
 - Configuration handling and persistence
+- RESTful API endpoint for remote management (optional via "api" feature)
+- Authentication and authorization for admin access
+- Server monitoring and management endpoints
 - System integration (startup service, user permissions)
 - Logs and monitoring
-- Communication channel with CLI and API
+- Communication channel with CLI and Admin interface
 
 ### 5. RCP CLI (`rcp-cli`)
 
@@ -73,15 +77,7 @@ The foundation of the RCP system providing:
 - Status reporting and diagnostics
 - Service installation/uninstallation
 
-### 6. RCP API (`rcp-api`)
-
-- RESTful API for remote management
-- Authentication and authorization for admin access
-- Server monitoring and management endpoints
-- User and permission management
-- Configuration management
-- Session information and metrics
-- Integration point for third-party systems
+### 6. [Merged with RCP Service]
 
 ### 7. RCP Admin (`rcp-admin`)
 

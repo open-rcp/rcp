@@ -1,7 +1,6 @@
-// Import the config module
-#[path = "../src/config.rs"]
-mod config;
-use config::*;
+// Import from the library
+use rcp_service::config::*;
+use rcp_service::server;
 
 #[test]
 fn test_default_service_config() {
@@ -30,6 +29,9 @@ fn test_custom_service_config() {
         address: "0.0.0.0".to_string(),
         port: 9999,
         tls: tls_config,
+        server: server::config::ServerConfig::default(),
+        #[cfg(feature = "api")]
+        api: None,
     };
 
     // Verify custom configuration values

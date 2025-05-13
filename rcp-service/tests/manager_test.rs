@@ -15,7 +15,7 @@ async fn test_manager_creation() {
     let config = ServiceConfig::default();
     let _manager = ServiceManager::new(work_dir, config, tx);
 
-    // Basic assertion that manager can be created
+    // Basic assertion that manager was created
     assert!(true);
 }
 
@@ -52,7 +52,7 @@ async fn test_manager_double_start() {
     let start_result1 = manager.start().await;
     assert!(start_result1.is_ok());
 
-    // Start the manager again
+    // Start the manager again (this tests state tracking)
     let start_result2 = manager.start().await;
     assert!(start_result2.is_ok());
 

@@ -74,12 +74,12 @@ jobs:
             Each package includes the binary and necessary configuration files.
             
             #### Windows
-            - \`rcp-server-windows.zip\`
+            - \`rcp-service-windows.zip\`
             - \`rcp-client-windows.zip\`
             - \`rcp-bridge-windows.zip\`
             
             #### Linux
-            - \`rcp-server-linux.tar.gz\`
+            - \`rcp-service-linux.tar.gz\`
             - \`rcp-client-linux.tar.gz\`
             - \`rcp-bridge-linux.tar.gz\`
             
@@ -139,8 +139,8 @@ jobs:
     - name: Run Clippy
       run: cargo clippy --all-targets --all-features -- -D warnings
     
-    - name: Build Server
-      run: cargo build --release --package rcp-server --target ${{ matrix.target }}
+    - name: Build Service
+      run: cargo build --release --package rcp-service --target ${{ matrix.target }}
     
     - name: Build Client
       run: cargo build --release --package rcp-client --target ${{ matrix.target }}
@@ -148,33 +148,33 @@ jobs:
     - name: Build WebSocket Bridge
       run: cargo build --release --package rcp-ws-bridge --target ${{ matrix.target }}
     
-    # Server package preparation
-    - name: Create Server Package Directory
-      run: mkdir -p rcp-server-pkg
+    # Service package preparation
+    - name: Create Service Package Directory
+      run: mkdir -p rcp-service-pkg
       shell: bash
     
-    - name: Copy Server Binary (Windows)
+    - name: Copy Service Binary (Windows)
       if: matrix.platform == 'windows'
       run: |
-        cp target/${{ matrix.target }}/release/rcp-server.exe rcp-server-pkg/rcp-server.exe
-        cp config.toml rcp-server-pkg/config.toml
+        cp target/${{ matrix.target }}/release/rcp-service.exe rcp-service-pkg/rcp-service.exe
+        cp config.toml rcp-service-pkg/config.toml
       shell: bash
     
-    - name: Copy Server Binary (Linux/macOS)
+    - name: Copy Service Binary (Linux/macOS)
       if: matrix.platform != 'windows'
       run: |
-        cp target/${{ matrix.target }}/release/rcp-server rcp-server-pkg/rcp-server
-        cp config.toml rcp-server-pkg/config.toml
+        cp target/${{ matrix.target }}/release/rcp-service rcp-service-pkg/rcp-service
+        cp config.toml rcp-service-pkg/config.toml
       shell: bash
     
-    - name: Package Server (Windows)
+    - name: Package Service (Windows)
       if: matrix.platform == 'windows'
-      run: Compress-Archive -Path rcp-server-pkg/* -DestinationPath rcp-server-windows.zip
+      run: Compress-Archive -Path rcp-service-pkg/* -DestinationPath rcp-service-windows.zip
       shell: pwsh
     
-    - name: Package Server (Linux/macOS)
+    - name: Package Service (Linux/macOS)
       if: matrix.platform != 'windows'
-      run: tar -czf rcp-server-${{ matrix.platform }}.${{ matrix.archive_ext }} -C rcp-server-pkg .
+      run: tar -czf rcp-service-${{ matrix.platform }}.${{ matrix.archive_ext }} -C rcp-service-pkg .
       shell: bash
     
     # Client package preparation
@@ -249,7 +249,7 @@ jobs:
           
           // Assets to upload
           const assets = [
-            { name: `rcp-server-${platform}.${ext}`, path: `./rcp-server-${platform}.${ext}` },
+            { name: `rcp-service-${platform}.${ext}`, path: `./rcp-service-${platform}.${ext}` },
             { name: `rcp-client-${platform}.${ext}`, path: `./rcp-client-${platform}.${ext}` },
             { name: `rcp-bridge-${platform}.${ext}`, path: `./rcp-bridge-${platform}.${ext}` }
           ];

@@ -4,11 +4,12 @@ echo ================================
 
 :: Parse command line arguments
 set BUILD_TYPE=debug
-set BUILD_TARGET=server
+set BUILD_TARGET=service
 
 if "%1"=="--release" set BUILD_TYPE=release
 if "%1"=="-r" set BUILD_TYPE=release
-if "%2"=="server" set BUILD_TARGET=server
+if "%2"=="server" set BUILD_TARGET=service
+if "%2"=="service" set BUILD_TARGET=service
 if "%2"=="client" set BUILD_TARGET=client
 if "%2"=="ws-bridge" set BUILD_TARGET=ws-bridge
 if "%2"=="all" set BUILD_TARGET=all
@@ -29,9 +30,9 @@ if "%BUILD_TARGET%"=="all" (
     echo Building all components in %BUILD_TYPE% mode...
     cargo build %BUILD_OPTS%
 ) else (
-    if "%BUILD_TARGET%"=="server" (
-        echo Building server component in %BUILD_TYPE% mode...
-        cargo build %BUILD_OPTS% -p rcp-server
+    if "%BUILD_TARGET%"=="service" (
+        echo Building service component with integrated server in %BUILD_TYPE% mode...
+        cargo build %BUILD_OPTS% -p rcp-service
     ) else if "%BUILD_TARGET%"=="client" (
         echo Building client component in %BUILD_TYPE% mode...
         cargo build %BUILD_OPTS% -p rcp-client

@@ -9,7 +9,7 @@ echo
 BUILD_TYPE="debug"
 BUILD_TARGET="all"
 RUN_AFTER_BUILD=false
-RUN_COMPONENT="server"
+RUN_COMPONENT="service"
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -24,7 +24,11 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         --server)
-            BUILD_TARGET="server"
+            BUILD_TARGET="service"
+            shift
+            ;;
+        --service)
+            BUILD_TARGET="service"
             shift
             ;;
         --client)
@@ -45,7 +49,12 @@ while [[ $# -gt 0 ]]; do
             ;;
         --run-server)
             RUN_AFTER_BUILD=true
-            RUN_COMPONENT="server"
+            RUN_COMPONENT="service"
+            shift
+            ;;
+        --run-service)
+            RUN_AFTER_BUILD=true
+            RUN_COMPONENT="service"
             shift
             ;;
         --run-client)
@@ -111,9 +120,9 @@ if [ "$BUILD_TARGET" == "all" ]; then
         exit 1
     fi
 else
-    if [ "$BUILD_TARGET" == "server" ]; then
-        echo "Building server component in $BUILD_TYPE mode..."
-        cargo build $BUILD_OPTS -p rcp-server
+    if [ "$BUILD_TARGET" == "service" ]; then
+        echo "Building service component with integrated server in $BUILD_TYPE mode..."
+        cargo build $BUILD_OPTS -p rcp-service
     elif [ "$BUILD_TARGET" == "client" ]; then
         echo "Building client component in $BUILD_TYPE mode..."
         cargo build $BUILD_OPTS -p rcp-client

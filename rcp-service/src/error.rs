@@ -1,5 +1,8 @@
 use thiserror::Error;
 
+/// Result type for service operations
+pub type Result<T> = std::result::Result<T, ServiceError>;
+
 #[derive(Debug, Error)]
 #[allow(dead_code)]
 pub enum ServiceError {

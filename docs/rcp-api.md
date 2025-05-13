@@ -2,6 +2,8 @@
 
 This document specifies the API for the Rust/Remote Control Protocol (RCP), providing a RESTful interface for managing RCP servers, client connections, and monitoring system usage.
 
+> **Note:** The API functionality is now integrated directly into the `rcp-service` component and is available when built with the `api` feature enabled. There is no longer a separate `rcp-api` component.
+
 ## API Overview
 
 The RCP API enables remote administration of RCP deployments with capabilities including:

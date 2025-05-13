@@ -5,6 +5,14 @@ edition = "2021"
 authors = ["Akash Shah"]
 description = "Runtime service for managing RCP server instances and applications with integrated server and optional API"
 
+[lib]
+name = "rcp_service"
+path = "src/lib.rs"
+
+[[bin]]
+name = "rcp-service"
+path = "src/main.rs"
+
 [features]
 default = []
 api = [

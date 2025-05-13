@@ -1,9 +1,7 @@
 #[cfg(feature = "api")]
-//! API configuration module
+/// API configuration module
 
 use serde::{Deserialize, Serialize};
-use std::path::Path;
-use anyhow::Result;
 
 /// Configuration for the API server component
 #[derive(Debug, Clone, Serialize, Deserialize)]
