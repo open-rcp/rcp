@@ -4690,19 +4690,26 @@ name = "rcp-service"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "async-trait",
  "clap 3.2.25",
+ "config 0.15.11",
  "daemonize",
  "dirs 4.0.0",
  "env_logger 0.9.3",
+ "futures-util",
+ "libc",
  "log",
  "rcp-core",
- "rcp-server",
+ "rustls 0.21.12",
  "serde",
  "serde_json",
  "thiserror 1.0.69",
  "tokio",
  "toml 0.5.11",
+ "tracing",
+ "tracing-subscriber",
  "uuid",
+ "webpki-roots 0.25.4",
 ]
 
 [[package]]

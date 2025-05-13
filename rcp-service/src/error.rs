@@ -11,4 +11,13 @@ pub enum ServiceError {
 
     #[error("Service error: {0}")]
     Service(String),
+    
+    #[error("API error: {0}")]
+    Api(String),
+    
+    #[error("Server error: {0}")]
+    Server(String),
+    
+    #[error("Database error: {0}")]
+    Database(String),
 }

@@ -5,8 +5,13 @@ mod instance;
 mod lifecycle;
 mod manager;
 mod platform;
+mod server;
 mod service;
 mod user;
+
+// API module is conditionally compiled when the "api" feature is enabled
+#[cfg(feature = "api")]
+mod api;
 
 use crate::manager::ServiceManager;
 use anyhow::Result;
@@ -73,20 +78,55 @@ async fn main() -> Result<()> {
 
     info!("RCP Service v{} initializing...", env!("CARGO_PKG_VERSION"));
 
+    // Load configuration
+    let config_file = &cli.config;
+    let config = match config::ServiceConfig::from_file(config_file) {
+        Ok(cfg) => {
+            info!("Configuration loaded from {}", config_file);
+            cfg
+        },
+        Err(e) => {
+            info!("Failed to load config from {}: {}. Using defaults.", config_file, e);
+            config::ServiceConfig::default()
+        }
+    };
+
     // Process commands if provided
     if let Some(cmd) = cli.command {
         match cmd {
             ServiceCommand::Start => {
-                info!("Starting RCP Service...");
+                #[cfg(feature = "api")]
+                info!("Starting RCP Service (with integrated server and API)...");
+                
+                #[cfg(not(feature = "api"))]
+                info!("Starting RCP Service (with integrated server)...");
+                
                 if cli.foreground {
                     // Run in foreground
-                    let (shutdown_tx, _shutdown_rx) = tokio::sync::mpsc::channel(1);
+                    let (shutdown_tx, mut shutdown_rx) = tokio::sync::mpsc::channel(1);
                     let work_dir = std::path::PathBuf::from(&cli.config)
                         .parent()
                         .unwrap_or_else(|| std::path::Path::new("."))
                         .to_path_buf();
-                    let manager = ServiceManager::new(work_dir, shutdown_tx);
+                    
+                    // Initialize service manager with config
+                    let mut manager = ServiceManager::new(work_dir, config.clone(), shutdown_tx);
+                    
+                    // Start the service (including integrated server)
                     manager.start().await?;
+                    
+                    // Wait for shutdown signal
+                    tokio::select! {
+                        _ = shutdown_rx.recv() => {
+                            info!("Shutdown signal received");
+                        },
+                        _ = tokio::signal::ctrl_c() => {
+                            info!("Ctrl+C received, shutting down");
+                        }
+                    }
+                    
+                    // Stop the service
+                    manager.stop().await?;
                 } else {
                     // Run as daemon
                     daemon::start(&cli.config)?;
@@ -123,7 +163,8 @@ async fn main() -> Result<()> {
             .parent()
             .unwrap_or_else(|| std::path::Path::new("."))
             .to_path_buf();
-        let manager = ServiceManager::new(work_dir, shutdown_tx);
+        let config = config::ServiceConfig::default();
+        let mut manager = ServiceManager::new(work_dir, config, shutdown_tx);
         manager.start().await?;
     } else {
         // No command, run as daemon
