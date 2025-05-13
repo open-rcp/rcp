@@ -27,19 +27,7 @@
   const activeAppId = writable<string | null>(null);
   const appStreaming = writable(false);
   
-  // Create helper variables to use the stores
-  let $host, $port, $username, $password, $rememberCredentials, $connected, $authenticated, $error, $apps, $activeAppId, $appStreaming;
-  $: $host = $host;
-  $: $port = $port;
-  $: $username = $username;
-  $: $password = $password;
-  $: $rememberCredentials = $rememberCredentials;
-  $: $connected = $connected;
-  $: $authenticated = $authenticated;
-  $: $error = $error;
-  $: $apps = $apps;
-  $: $activeAppId = $activeAppId;
-  $: $appStreaming = $appStreaming;
+  // Svelte will automatically subscribe to stores when you use the $ prefix
   
   // Initialize connection events
   onMount(async () => {
@@ -64,7 +52,6 @@
       username.set(savedCredentials.username);
       rememberCredentials.set(true);
     }
-  });
   });
   
   async function connect() {
