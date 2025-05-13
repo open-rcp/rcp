@@ -36,7 +36,7 @@ RCPD follows a modular design with integrated server and API components:
 │                                                        │
 │  ┌─────────────────────────┐  ┌────────────────────┐   │
 │  │ Connection & Protocol   │  │ Logging &          │   │
-│  │ Handling               │  │ Monitoring         │   │
+│  │ Handling                │  │ Monitoring         │   │
 │  └─────────────────────────┘  └────────────────────┘   │
 └────────────────────────────────────────────────────────┘
 ```
