@@ -2,27 +2,28 @@
 
 ## System Architecture
 
-The Rust/Remote Control Protocol (RCP) is organized as a modular service-oriented system with several components that work together:
+The Rust/Remote Control Protocol (RCP) is a modular service-oriented system with several components that work together. The architecture has been optimized by integrating the server and API capabilities into the service component, while maintaining the CLI as a separate component for flexibility and separation of concerns.
 
 ```
-┌─────────────────┐      ┌────────────────────────────┐
-│ RCP Client Lib  │◄─────┤        RCP Service         │
-└────────┬────────┘      │  (with integrated Server   │
-         │               │        and API)            │
-    ┌────▼────┐          └─────────────┬──────────────┘
-    │ RCP Desk│                        │
-    │(End-user│             ┌──────────▼─────────┐
-    │  App)   │             │     Session Mgr    │◄──────┐
-    └─────────┘             └──────────┬─────────┘       │
-                                       │                 │
-                            ┌──────────▼─────────┐  ┌────▼────┐
-                            │     Application    │  │ RCP CLI │
-                            │      Processes     │  └────┬────┘
-                            └────────────────────┘       │
-                                                    ┌────▼────┐
-                                                    │RCP Admin│
-                                                    │(Web/API)│
-                                                    └─────────┘
+┌─────────────────┐      ┌────────────────────────────────────┐
+│ RCP Client Lib  │◄─────┤            RCP Service             │
+└────────┬────────┘      │   ┌────────────┐  ┌────────────┐   │
+         │               │   │   Server   │  │    API     │   │
+    ┌────▼────┐          │   │ Component  │  │ Component  │   │
+    │ RCP Desk│          │   └────────────┘  └────────────┘   │
+    │(End-user│          └───────────────────┬────────────────┘
+    │  App)   │                              │
+    └─────────┘                   ┌──────────▼─────────┐
+                                  │     Session Mgr    │◄──────┐
+                                  └──────────┬─────────┘       │
+                                             │                 │
+                                  ┌──────────▼─────────┐  ┌────▼────┐
+                                  │     Application    │  │ RCP CLI │
+                                  │      Processes     │  └────┬────┘
+                                  └────────────────────┘       │
+                                                          ┌────▼────┐
+                                                          │RCP Admin│
+                                                          └─────────┘
 ```
 
 ## Core Components
@@ -36,20 +37,23 @@ The foundation of the RCP system providing:
 - Authentication mechanisms
 - Common utilities
 
-### 2. [Merged with RCP Service]
+### 2. RCP Client (`rcp-client`)
 
-### 3. RCP Client (`rcp-client`)
-
-- Connects to RCP servers
+- Connects to RCP servers within the integrated service
 - Subscribes to required services
 - Sends application control commands
 - Handles user input
 - Processes and displays streamed frames
 
-### 4. RCP Service (`rcp-service`)
+### 3. RCP Service (`rcp-service`)
 
-- Long-running daemon/service with integrated server and API functionality
-- Listens for incoming TCP connections (server functionality)
+- Core component with integrated Server and API functionality
+- Long-running daemon/system service architecture
+- Component-based internal design with clear separation of concerns:
+  - **Server Component**: Handles connections, sessions, and protocol handling (fully integrated)
+  - **API Component**: Provides RESTful endpoints for management (optional via "api" feature flag)
+  - **Service Core**: Handles lifecycle management, configuration, and orchestration
+- Listens for incoming TCP connections (server capability)
 - Manages authentication and sessions
 - Spawns and controls applications
 - Provides specialized services:
@@ -61,14 +65,11 @@ The foundation of the RCP system providing:
   - **File Transfer Service**: Handles file operations between peers
 - Application lifecycle management
 - Configuration handling and persistence
-- RESTful API endpoint for remote management (optional via "api" feature)
-- Authentication and authorization for admin access
-- Server monitoring and management endpoints
 - System integration (startup service, user permissions)
 - Logs and monitoring
 - Communication channel with CLI and Admin interface
 
-### 5. RCP CLI (`rcp-cli`)
+### 4. RCP CLI (`rcp-cli`)
 
 - Command-line interface for server administration only
 - Administrative tasks (user management, configuration, server control)
@@ -76,10 +77,13 @@ The foundation of the RCP system providing:
 - Session monitoring and management
 - Status reporting and diagnostics
 - Service installation/uninstallation
+- Deliberately maintained as a separate component from the service for:
+  - Separation of concerns (UI vs. backend)
+  - Deployment flexibility (can be installed separately)
+  - Reduced binary size and dependencies
+  - Independent development lifecycle
 
-### 6. [Merged with RCP Service]
-
-### 7. RCP Admin (`rcp-admin`)
+### 5. RCP Admin (`rcp-admin`)
 
 - Administrative interface for server management
 - Built with SvelteKit for the web component
@@ -87,8 +91,9 @@ The foundation of the RCP system providing:
 - Server configuration and monitoring
 - User and access management
 - Application publishing and configuration
+- Communicates with the service via its integrated API
 
-### 8. RCP Desk (`rcp-desk`)
+### 6. RCP Desk (`rcp-desk`)
 
 - End-user client application for accessing virtual applications
 - Built with SvelteKit and Tauri
@@ -227,12 +232,12 @@ The RCP architecture is designed for high performance:
 ## Communication Flow
 
 1. **Administration Flow**:
-   - rcp-admin -> rcp-server (Direct management interface)
-   - rcp-cli -> rcp-service -> rcp-server (Command-line administration)
+   - rcp-admin -> rcp-service/api-component (Management interface)
+   - rcp-cli -> rcp-service/server-component (Command-line administration)
 
 2. **End-User Flow**:
-   - rcp-desk -> rcp-client -> rcp-server (Native desktop client, direct connection)
-   - Web Client -> rcp-ws-bridge -> rcp-server (Browser client)
+   - rcp-desk -> rcp-client -> rcp-service/server-component (Native desktop client)
+   - Web Client -> rcp-ws-bridge -> rcp-service/server-component (Browser client)
 
 ## Configuration Management
 

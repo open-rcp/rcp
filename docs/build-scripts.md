@@ -83,9 +83,10 @@ Available options:
 - `--ws-bridge` - Build only the WebSocket bridge component
 - `--all` - Build all components (default)
 - `--run` - Run the server component after building
-- `--run-server` - Run the server component after building
+- `--run-service` - Run the unified service (with integrated server) after building
 - `--run-client` - Run the client component after building
 - `--run-ws-bridge` - Run the WebSocket bridge component after building
+- `--api` - Enable the integrated API component when building the service
 
 ### Linux
 

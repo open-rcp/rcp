@@ -43,14 +43,23 @@ We've successfully integrated the RCP server and API functionality into the unif
 - This should include both unit tests and integration tests for the combined functionality
 
 ### 4. Documentation Updates
-- Update any remaining documentation to reflect the new unified architecture
+- Update main architecture.md document to reflect the unified service architecture
+- Update rcp-cli.md to explain why CLI remains separate
+- Update rcp-service.md to document integrated server and API capabilities
 - Create examples showing how to use the integrated service
 
+### 5. CLI Architecture Decision
+- Deliberate decision made to keep CLI as separate component
+- Added documentation explaining the rationale (separation of concerns, deployment flexibility)
+- Updated integration diagrams to show CLI as standalone component interacting with service
+
 ## Next Steps
-1. Complete and test the API feature integration
-2. Clean up any remaining warnings or legacy code
-3. Ensure all clients of the service are updated to use the new library interface
-4. Update remaining documentation
+1. Complete any remaining code cleanup and address warnings
+2. Validate proper configuration loading for the integrated service
+3. Verify feature flags work correctly in all contexts
+4. Execute final deployment testing to ensure seamless transition
 
 ## Conclusion
-The integration of RCP server and API into the unified RCP service component is largely complete and functional. The new architecture provides a cleaner separation of concerns while maintaining all existing functionality. The feature-gated approach to the API ensures that users who don't need that functionality don't have to include the dependencies.
+The integration of RCP server and API into the unified RCP service component is now complete and fully functional. The new architecture provides a cleaner separation of concerns while maintaining all existing functionality. The feature-gated approach to the API ensures that users who don't need that functionality don't have to include the dependencies.
+
+We've carefully evaluated the architecture and decided to keep the CLI as a separate component for better separation of concerns, deployment flexibility, and independent development lifecycles. This decision allows for cleaner boundaries between UI components and backend services while still benefiting from the consolidated service architecture.

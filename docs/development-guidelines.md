@@ -7,15 +7,15 @@ This guide provides detailed instructions for implementing and using the Rust/Re
 1. [Introduction](#introduction)
 2. [Architecture Overview](#architecture-overview)
 3. [Client Implementation](#client-implementation)
-4. [Server Implementation](#server-implementation)
-5. [Service Implementation](#service-implementation)
-6. [CLI Implementation](#cli-implementation)
-7. [API Implementation](#api-implementation)
-8. [Desk Implementation](#desk-implementation)
-9. [Authentication](#authentication)
-10. [Error Handling](#error-handling)
-11. [Best Practices](#best-practices)
-12. [Examples](#examples)
+4. [RCP Service Implementation](#service-implementation)
+   - [Server Component](#server-component)
+   - [API Component](#api-component)
+5. [CLI Implementation](#cli-implementation)
+6. [Desk Implementation](#desk-implementation)
+7. [Authentication](#authentication)
+8. [Error Handling](#error-handling)
+9. [Best Practices](#best-practices)
+10. [Examples](#examples)
 
 ## Introduction
 
@@ -226,33 +226,41 @@ async fn handle_events(client: &mut Client) {
 }
 ```
 
-## Server Implementation
+## Service Implementation
 
-### Basic Server Setup
+The RCP Service is a unified system daemon/service that includes server and API capabilities in a single component.
+
+### Server Component Implementation
+
+The server component is fully integrated into the RCP Service.
 
 ```rust
-use rcp_server::{Server, ServerConfig, AuthMethod, AuthConfig};
+use rcp_service::{ServiceConfig, Service, ServerConfig, AuthMethod, AuthConfig};
 
-async fn run_server() -> Result<(), Box<dyn std::error::Error>> {
+async fn run_service_with_server() -> Result<(), Box<dyn std::error::Error>> {
     // Configure authentication
     let auth_config = AuthConfig::new()
         .with_psk("your_secret_key")
         .with_allowed_methods(&[AuthMethod::PreSharedKey]);
     
-    // Create server configuration
-    let config = ServerConfig {
+    // Create service configuration with server settings
+    let mut config = ServiceConfig::default();
+    config.server = Some(ServerConfig {
         bind_address: "0.0.0.0".to_string(),
         port: 8716,
         auth_config,
         ..Default::default()
-    };
+    });
     
-    // Create and start server
-    let server = Server::new(config);
-    server.start().await?;
+    // Create and start service with integrated server
+    let mut service = Service::new(config);
+    service.start().await?;
     
-    // Wait for server to stop
-    server.wait().await;
+    // Wait for shutdown signal
+    tokio::signal::ctrl_c().await?;
+    
+    // Graceful shutdown
+    service.stop().await?;
     
     Ok(())
 }
@@ -303,7 +311,10 @@ impl Service for MyCustomService {
 ### Registering Services with the Server
 
 ```rust
-async fn register_services(server: &mut Server) -> Result<(), Box<dyn std::error::Error>> {
+async fn register_services(service: &mut Service) -> Result<(), Box<dyn std::error::Error>> {
+    // Get server component from the integrated service
+    let server = service.get_server_component()?;
+    
     // Register built-in services
     server.register_service("display", Box::new(DisplayService::new())).await?;
     server.register_service("input", Box::new(InputService::new())).await?;
@@ -316,11 +327,9 @@ async fn register_services(server: &mut Server) -> Result<(), Box<dyn std::error
 }
 ```
 
-## Service Implementation
-
-The RCP Service is a system daemon/service that manages RCP server instances and application lifecycles.
-
 ### Basic Service Implementation
+
+This example shows how to configure and run the unified RCP service:
 
 ```rust
 use rcp_service::{Service, ServiceConfig, ServiceError};
@@ -335,13 +344,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     
     let config = ServiceConfig::from_file(config_path)?;
     
-    // Create and start the service
+    // Create and start the unified service
+    // (includes server capabilities by default)
     let mut service = Service::new(config);
     
     // Initialize the service
     service.init().await?;
     
-    // Start the service
+    // Start the service (which will start the integrated server)
     service.start().await?;
     
     // Wait for shutdown signal
@@ -553,41 +563,43 @@ async fn main() -> CliResult<()> {
 }
 ```
 
-## API Implementation
+### API Component Implementation
 
-The RCP API component provides a RESTful interface for remote management:
-
-### Basic API Server Implementation
+The API component is integrated into the RCP Service and enabled via the "api" feature flag:
 
 ```rust
-use rcp_api::{ApiServer, ApiConfig};
+// Cargo.toml
+// [dependencies]
+// rcp-service = { version = "0.2.0", features = ["api"] }
+
+use rcp_service::{ServiceConfig, Service, ApiConfig};
 use tokio::signal;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Create API configuration
-    let config = ApiConfig {
+    // Create service configuration with API settings
+    let mut config = ServiceConfig::default();
+    
+    // Configure the integrated API component
+    config.api = Some(ApiConfig {
         bind_address: "0.0.0.0".to_string(),
         port: 8080,
         auth_token_expiry: 3600,
         ..Default::default()
-    };
+    });
     
-    // Create API server
-    let mut api_server = ApiServer::new(config);
+    // Create service with API component enabled via feature flag
+    let mut service = Service::new(config);
     
-    // Connect to RCP service
-    api_server.connect_to_service().await?;
-    
-    // Start the API server
-    api_server.start().await?;
-    println!("API server started on http://0.0.0.0:8080");
+    // Start the service (which will start both server and API components)
+    service.start().await?;
+    println!("Service started with integrated API on http://0.0.0.0:8080");
     
     // Wait for shutdown signal
     signal::ctrl_c().await?;
     
     // Gracefully shutdown
-    api_server.shutdown().await?;
+    service.stop().await?;
     
     Ok(())
 }
@@ -915,11 +927,11 @@ async fn handle_errors() -> Result<(), Error> {
 See the `examples/` directory for complete working examples:
 
 - `client_example.rs`: Basic RCP client usage
-- `server_example.rs`: Basic RCP server setup
+- `integrated_service_example.rs`: Using the integrated service with server component
+- `integrated_api_example.rs`: Using the integrated service with API component enabled
 - `custom_service.rs`: Implementing a custom service
-- `service_example.rs`: RCP Service implementation
+- `service_example.rs`: RCP Service configuration
 - `cli_example.rs`: CLI implementation examples
-- `api_example.rs`: API server examples
 - `desk_example/`: Desk UI examples for both web and desktop
 
 ---

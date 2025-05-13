@@ -1,3 +1,36 @@
+## v0.2.0-beta (2025-05-13)
+
+### Features
+* feat: Integrate RCP server and API functionality into unified RCP service component
+* feat: Add feature-gated API capabilities with "api" feature flag
+* feat: Add library target to rcp-service for reusable component architecture
+* feat: Create re-exports of common types and functionality in service library
+* feat: Implement unified configuration system for integrated components
+* feat: Update all build scripts to support integrated service architecture
+
+### Bug Fixes
+* fix: Update import paths in tests to use library interface
+* fix: Correct feature-gating for API components
+* fix: Fix doc comment format in API configuration files
+* fix: Resolve compatibility issues with service client connections
+* fix: Address build errors in dependency references
+
+### Improvements
+* refactor: Move server code into service component
+* refactor: Create clean internal interfaces between components
+* refactor: Implement proper module exports in service lib.rs
+* refactor: Redesign service manager for better integration
+* refactor: Keep CLI as separate component for separation of concerns
+
+### Documentation
+* docs: Update architecture.md to reflect unified service architecture
+* docs: Update rcp-service.md with integrated server and API capabilities
+* docs: Update rcp-cli.md to explain separation from service component
+* docs: Create integration-progress.md and integration-changes.md to track changes
+* docs: Update server-service-integration.md with implementation status
+* docs: Add rational for keeping CLI separate from the service
+* docs: Update diagrams to show current component architecture
+
 ## v0.1.0-beta (2025-05-11)
 
 ### Features

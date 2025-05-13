@@ -7,11 +7,11 @@ This document outlines the Rust/Remote Control Protocol (RCP) project structure,
 ### Core Components
 
 - **RCP Core**: Protocol definitions, framing, authentication mechanisms
-- **RCP Server**: Server implementation for handling client connections
-- **RCP Client**: Client libraries for connecting to RCP servers
-- **RCP Service**: Runtime service for managing application lifecycle
-- **RCP CLI**: Command-line interface for server administration
-- **RCP API**: RESTful API for remote management of RCP servers
+- **RCP Service**: Unified runtime service with integrated server and API functionality
+  - **Server Component**: Integrated component for handling client connections
+  - **API Component**: Integrated feature-gated REST API for remote management
+- **RCP Client**: Client libraries for connecting to RCP service's server component
+- **RCP CLI**: Command-line interface for server administration (deliberately kept separate)
 - **RCP Admin**: Server administration interface (SvelteKit+Tauri, Web+Desktop)
 - **RCP Desk**: End-user client application for virtual applications
 - **RCP WebSocket Bridge**: WebSocket proxy for browser-based clients
@@ -23,21 +23,19 @@ This document outlines the Rust/Remote Control Protocol (RCP) project structure,
 3. ✅ Service Architecture
 4. ✅ Authentication System
 5. ✅ WebSocket Bridge
-6. 🔄 RCP Service
+6. ✅ RCP Service with Integrated Components
+   - Integrated server functionality
+   - Feature-gated API functionality
    - Runtime management of applications
    - Configuration persistence
-   - System integration
+   - System integration 
    - Monitoring and metrics collection
 7. 🔄 RCP CLI
    - Service management commands
    - User administration
    - Configuration utility
    - Diagnostics tools
-8. 🔄 RCP API
-   - REST endpoints for system control
-   - Authentication and authorization
-   - Configuration management
-   - Statistics and monitoring
+   - Integration with unified service architecture
 9. 🔄 RCP Admin
    - SvelteKit-based web interface
    - Tauri integration for desktop app
@@ -114,17 +112,18 @@ rcp/
 ### Completed
 - Core protocol definition (frames, headers)
 - Authentication mechanism 
-- Server configuration
+- Server component integration into service
+- API integration into service (feature-gated)
 - Basic session management
 - Service interface definition
+- Configuration management
+- CLI component separation with improved integration
 
 ### In Progress
 - Service implementations (display, input, clipboard)
 - Application launch and control
-- Client library
-- Runtime service architecture
-- CLI management tool
-- RESTful management API
+- Client library optimization
+- CLI management tool enhancement
 - Desk admin interface
 
 ### Planned

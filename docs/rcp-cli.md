@@ -4,7 +4,9 @@ This document outlines the RCP CLI (Command Line Interface), which provides admi
 
 ## Overview
 
-RCP CLI is a command-line utility designed exclusively for administrators to interact with RCP Service and RCP Servers. It provides functionality for installation, configuration, monitoring, and management operations of the server side components only.
+RCP CLI is a command-line utility designed exclusively for administrators to interact with the RCP Service, which now includes integrated server and API functionality. It provides functionality for installation, configuration, monitoring, and management operations of the server-side components only. 
+
+The CLI is deliberately maintained as a separate component from the service to ensure clear separation of concerns and deployment flexibility.
 
 Key features of the RCP CLI include:
 
@@ -17,17 +19,29 @@ Key features of the RCP CLI include:
 
 ## Architecture
 
-The RCP CLI interfaces with the RCP Service via either a local socket connection or the RCP API, depending on the command and availability:
+The RCP CLI interfaces with the integrated RCP Service via either a local socket connection or the API component (when enabled via the "api" feature), depending on the command and availability:
 
 ```
-┌─────────────┐     ┌─────────────────┐     ┌─────────────┐
-│  RCP CLI    │────►│  Local Socket   │────►│ RCP Service │
-└─────────────┘     └─────────────────┘     └─────────────┘
-       │                                          │
-       │            ┌─────────────────┐           │
-       └───────────►│     RCP API     │◄──────────┘
-                    └─────────────────┘
+┌─────────────┐     ┌─────────────────┐     ┌────────────────────────────────┐
+│  RCP CLI    │────►│  Local Socket   │────►│         RCP Service            │
+└─────────────┘     └─────────────────┘     │  ┌────────────┐  ┌───────────┐ │
+       │                                    │  │   Server   │  │    API    │ │
+       │            ┌─────────────────┐     │  │ Component  │  │ Component │ │
+       └───────────►│  HTTP/REST API  │─────►  └────────────┘  └───────────┘ │
+                    └─────────────────┘     └────────────────────────────────┘
 ```
+
+### Rationale for Keeping CLI Separate
+
+The CLI is maintained as a separate component from the service for several important reasons:
+
+1. **Separation of Concerns**: The CLI is a user interface component, while the service is a backend processing component with different development cycles.
+
+2. **Deployment Flexibility**: Users can install only the CLI on machines that need to remotely control the service, while the service can be deployed on servers without UI components.
+
+3. **Reduced Binary Size**: Service binaries remain focused and optimized for their specific role, while the CLI contains only what's needed for command-line interaction.
+
+4. **Independent Development**: CLI features can evolve independently from service implementation details, and updates to the CLI don't require rebuilding or redeploying the service.
 
 ## Command Structure
 

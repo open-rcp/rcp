@@ -13,9 +13,46 @@ This document outlines the plan for integrating both `rcp-server` and `rcp-api` 
 5. **Enable Cleaner Code Structure**: Eliminate duplicate code and streamline interfaces
 6. **Simplified Configuration**: Single configuration system for all components
 
+> **Note:** For comprehensive details about the completed integration, see the [Server Service Integration Details](/Volumes/EXT/repos/open-rcp/rcp/docs/server-service-integration-details.md) document.
+
+## Implementation Status
+
+The integration work is now complete:
+
+- ✅ Changed build scripts to use `rcp-service` instead of `rcp-server` 
+- ✅ Updated GitHub Actions release workflow
+- ✅ Added lib target to rcp-service component
+- ✅ Fixed import errors in tests
+- ✅ Updated rcp-admin dependency to use integrated API feature
+- ✅ Updated documentation to reflect integrated architecture
+- ✅ Maintained CLI as separate component with improved integration
+
+## Final Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                   RCP Project Architecture                      │
+├────────────────────┬────────────────────┬─────────────────────┬─┘
+│                    │                    │                     │
+▼                    ▼                    ▼                     ▼
+┌────────────┐  ┌────────────────────────────────┐    ┌─────────────┐
+│ RCP Core   │  │         RCP Service            │    │  RCP CLI    │
+│ Library    │◄─┤  ┌────────────┐  ┌───────────┐ │    │ (Separate   │
+└─────┬──────┘  │  │  Server    │  │    API    │ │◄───┤  Component) │
+      │         │  │ Component  │  │ Component │ │    └─────────────┘
+      │         │  └────────────┘  └───────────┘ │
+      │         └───────────┬──────────┬─────────┘
+      │                     │          │
+      │                     │          │
+      ▼                     ▼          ▼
+┌───────────┐     ┌─────────────┐    ┌─────────────┐
+│ RCP Client│     │  RCP Desk   │    │  RCP Admin  │
+└───────────┘     └─────────────┘    └─────────────┘
+```
+
 ## Architecture Changes
 
-### Current Architecture
+### Previous Architecture
 
 ```
 ┌─────────────┐       ┌─────────────┐       ┌─────────────┐
@@ -111,7 +148,7 @@ Total: ~4 weeks
 1. `rcp-service`: Major changes to incorporate both server and API functionality
 2. `rcp-server`: Already integrated into service
 3. `rcp-api`: Will be integrated into service
-4. `rcp-cli`: Updated to work with unified service
+4. `rcp-cli`: Updated to work with unified service while remaining a separate component
 5. `rcp-client`: Possibly updated to directly communicate with service
 6. Documentation: Updated to reflect new unified architecture
 
@@ -155,7 +192,11 @@ The API integration will follow these key implementation details:
    - Ensured that tests pass for both basic and feature-gated functionality
 
 4. ✅ **Documentation Updates**
-   - Updated documentation to reflect the new architecture
+   - Updated architecture.md to reflect unified service architecture
+   - Revised component numbering and relationships in diagrams
+   - Updated rcp-service.md with integrated server and API functionality
+   - Enhanced rcp-cli.md with explanation for keeping CLI separate
+   - Updated CHANGELOG.md with comprehensive v0.2.0-beta entries
    - Created integration-changes.md to track progress
    - Added notes about the feature gates and configuration
 
@@ -331,3 +372,65 @@ This design gives you the best of both worlds:
 - Path Forward: Can be implemented incrementally while maintaining backward compatibility
 
 By keeping the server as a well-defined component within the service, you maintain the conceptual separation of concerns while eliminating the operational complexity of managing separate processes.
+
+## CLI Component Architecture
+
+After analyzing the unified service architecture, we've made a deliberate decision to keep the `rcp-cli` as a separate component rather than integrating it into the service. This decision aligns with our goal of creating a clean architecture that properly separates concerns while still benefiting from the service integration.
+
+### Reasons for Keeping CLI Separate
+
+1. **Separation of Concerns**: 
+   - The CLI is fundamentally a user interface component, while the service is a backend processing component
+   - These have different lifecycles, dependencies, and deployment patterns
+
+2. **Deployment Flexibility**: 
+   - Users can install only the CLI on machines that need to control remote services
+   - The service can be deployed on servers without GUI/CLI components
+
+3. **Reduced Binary Size**: 
+   - Service binaries remain focused and optimized for their specific role
+   - CLI binaries contain only what's needed for command-line interaction
+
+4. **Independent Development**: 
+   - CLI features can evolve independently of service implementation details
+   - Updates to the CLI don't require rebuilding/redeploying the service
+
+### CLI Integration Improvements
+
+While keeping the CLI separate, we'll enhance its integration with the unified service:
+
+1. **Enhanced API Client**: 
+   - Create a robust client library in the CLI that leverages the unified service API
+   - Optimize communication between CLI and service components
+
+2. **Shared Core Types**: 
+   - Continue using `rcp-core` for common types and protocols
+   - Ensure consistency between CLI and service data models
+
+3. **Unified Authentication**: 
+   - Implement consistent authentication mechanisms across CLI and service
+   - Develop a seamless auth workflow for CLI users
+
+4. **Comprehensive CLI Commands**: 
+   - Add commands that expose the full functionality of the integrated service
+   - Create intuitive subcommand structure that maps to service capabilities
+
+### Updated Architecture Diagram
+
+```
+┌────────────────────────────────┐
+│         RCP Service            │
+│  ┌────────────┐  ┌───────────┐ │
+│  │   Server   │  │    API    │ │
+│  │ Component  │  │ Component │ │
+│  └────────────┘  └───────────┘ │
+└──────────────────────┬─────────┘
+                       │
+                       │ HTTP/REST API
+                       │
+                 ┌─────▼──────┐
+                 │  RCP CLI   │ (Separate Component)
+                 └────────────┘
+```
+
+This approach maintains architectural clarity and separation of concerns while still benefiting from the unified service architecture we've implemented.

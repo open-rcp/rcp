@@ -48,7 +48,10 @@ api = [
     "sqlx", 
     "tower", 
     "serde_urlencoded", 
-    "serde_with", 
+    "serde_with",
+    "jsonwebtoken",
+    "uuid/serde"
+] 
     "mime"
 ]
 ```
@@ -95,10 +98,16 @@ The RCP service component now exposes a library interface through `lib.rs`, allo
 Tests have been updated to use the library interface rather than directly importing modules via path attributes. This improves:
 
 - Test maintainability
-- Code organization
+- Code organization 
 - Ease of refactoring
 
 The following test files have been updated or created:
+
+- `tests/config_tests.rs`: Updated to use library imports
+- `tests/manager_test.rs`: Created as a replacement for direct path imports
+- `tests/manager_tests.rs`: Updated to use library imports
+
+All tests now pass successfully with the integrated architecture.
 - `config_tests.rs` - Tests for service configuration
 - `manager_test.rs` - Tests for service manager functionality
 
