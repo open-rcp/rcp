@@ -226,25 +226,25 @@ async fn handle_events(client: &mut Client) {
 }
 ```
 
-## Service Implementation
+## Daemon Implementation
 
-The RCP Service is a unified system daemon/service that includes server and API capabilities in a single component.
+The RCP Daemon (RCPD) is a unified system daemon that includes server and API capabilities in a single component.
 
 ### Server Component Implementation
 
-The server component is fully integrated into the RCP Service.
+The server component is fully integrated into the RCP Daemon.
 
 ```rust
-use rcpd::{ServiceConfig, Service, ServerConfig, AuthMethod, AuthConfig};
+use rcpd::{DaemonConfig, Daemon, ServerConfig, AuthMethod, AuthConfig};
 
-async fn run_service_with_server() -> Result<(), Box<dyn std::error::Error>> {
+async fn run_daemon_with_server() -> Result<(), Box<dyn std::error::Error>> {
     // Configure authentication
     let auth_config = AuthConfig::new()
         .with_psk("your_secret_key")
         .with_allowed_methods(&[AuthMethod::PreSharedKey]);
     
-    // Create service configuration with server settings
-    let mut config = ServiceConfig::default();
+    // Create daemon configuration with server settings
+    let mut config = DaemonConfig::default();
     config.server = Some(ServerConfig {
         bind_address: "0.0.0.0".to_string(),
         port: 8716,
@@ -252,15 +252,15 @@ async fn run_service_with_server() -> Result<(), Box<dyn std::error::Error>> {
         ..Default::default()
     });
     
-    // Create and start service with integrated server
-    let mut service = Service::new(config);
-    service.start().await?;
+    // Create and start daemon with integrated server
+    let mut daemon = Daemon::new(config);
+    daemon.start().await?;
     
     // Wait for shutdown signal
     tokio::signal::ctrl_c().await?;
     
     // Graceful shutdown
-    service.stop().await?;
+    daemon.stop().await?;
     
     Ok(())
 }
@@ -327,12 +327,12 @@ async fn register_services(service: &mut Service) -> Result<(), Box<dyn std::err
 }
 ```
 
-### Basic Service Implementation
+### Basic Daemon Implementation
 
-This example shows how to configure and run the unified RCP service:
+This example shows how to configure and run the unified RCP daemon:
 
 ```rust
-use rcpd::{Service, ServiceConfig, ServiceError};
+use rcpd::{Daemon, DaemonConfig, DaemonError};
 use std::path::PathBuf;
 
 #[tokio::main]
@@ -342,23 +342,23 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .map(PathBuf::from)
         .unwrap_or_else(|_| PathBuf::from("/etc/rcp/config.toml"));
     
-    let config = ServiceConfig::from_file(config_path)?;
+    let config = DaemonConfig::from_file(config_path)?;
     
-    // Create and start the unified service
+    // Create and start the unified daemon
     // (includes server capabilities by default)
-    let mut service = Service::new(config);
+    let mut daemon = Daemon::new(config);
     
-    // Initialize the service
-    service.init().await?;
+    // Initialize the daemon
+    daemon.init().await?;
     
-    // Start the service (which will start the integrated server)
-    service.start().await?;
+    // Start the daemon (which will start the integrated server)
+    daemon.start().await?;
     
     // Wait for shutdown signal
     tokio::signal::ctrl_c().await?;
     
     // Graceful shutdown
-    service.stop().await?;
+    daemon.stop().await?;
     
     Ok(())
 }
@@ -406,9 +406,9 @@ async fn manage_config() -> Result<(), ConfigError> {
 ```rust
 use rcpd::{ServerManager, ServerConfig, ServerError};
 
-async fn manage_servers(service: &mut Service) -> Result<(), ServerError> {
+async fn manage_servers(daemon: &mut Daemon) -> Result<(), ServerError> {
     // Get the server manager
-    let server_mgr = service.server_manager();
+    let server_mgr = daemon.server_manager();
     
     // Create a new server configuration
     let config = ServerConfig {

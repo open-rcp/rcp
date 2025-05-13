@@ -1,7 +1,7 @@
 # RCP Documentation Updates Summary
 
 ## Overview
-This document summarizes the changes made to unify and optimize the RCP project documentation to reflect the architectural changes where the server and API functionality have been integrated into the RCP service component.
+This document summarizes the changes made to unify and optimize the RCP project documentation to reflect the architectural changes and ensure terminology consistency. This includes integration of server and API functionality into the RCP daemon component (formerly called service) and ensuring consistent naming across all documentation.
 
 ## Files Updated
 
@@ -54,6 +54,41 @@ Ensured consistent terminology across all documentation:
 - CLI is consistently described as "deliberately separate" with clear rationale
 - Diagrams consistently show the integrated architecture
 
+## Terminology Consistency Update (May 2025)
+
+### Renamed Components
+- `rcp-service` → `rcpd` (RCP Daemon)
+- "RCP Service" → "RCPD" or "RCP Daemon"
+- "Service" → "Daemon" where referring to the system component
+
+### Updated References
+- `ServiceConfig` → `DaemonConfig`
+- `Service` class → `Daemon` class
+- `/etc/rcp-service/` → `/etc/rcpd/`
+- `\\.\pipe\rcp-service` → `\\.\pipe\rcpd`
+- `/var/run/rcp-service.sock` → `/var/run/rcpd.sock`
+
+### Updated Commands and Options
+- `--server` and `--service` → `--daemon`
+- `--run-server` and `--run-service` → `--run-daemon`
+- `rcp-cli service` commands → `rcp-cli daemon` commands
+
+### Updated API Endpoints
+- `/api/v1/service/*` → `/api/v1/daemon/*`
+
+### Major Files Updated
+- `README.md` - Updated component descriptions and references
+- `BUILD.md` - Updated build command options
+- `architecture.md` - Updated diagrams and component descriptions
+- `project-outline.md` - Restructured for clearer component organization
+- `rcp-cli.md` - Updated service management to daemon management
+- `rcp-api.md` - Updated API endpoint references
+- `development-guidelines.md` - Updated code examples and descriptions
+
+### New Documentation Created
+- `DIRECTORY_STRUCTURE.md` - Clear overview of project organization
+- `QUICKSTART.md` - Fast onboarding for new developers
+
 ## Conclusion
 
-The documentation now accurately reflects the current architectural state where the server and API functionality are integrated into the RCP service component, with the CLI deliberately kept separate. All references to the old separated architecture have been updated or removed to ensure consistency across the documentation.
+The documentation now accurately reflects the current architectural state where the server and API functionality are integrated into the RCP daemon component, with the CLI deliberately kept separate. All references to the old separated architecture have been updated or removed to ensure consistency across the documentation. Additionally, terminology has been standardized across all components to use "daemon" instead of "service" for the main system component.

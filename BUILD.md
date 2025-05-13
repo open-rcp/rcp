@@ -69,26 +69,24 @@ scripts\windows\build.bat [options]
 Options:
 - `--release` - Build in release mode (default: debug)
 - `--debug` - Build in debug mode
-- `--server` - Build only the server component
+- `--daemon` - Build only the daemon component (includes server functionality)
 - `--client` - Build only the client component
-- `--service` - Build only the service component
 - `--cli` - Build only the CLI component
-- `--api` - Build only the API component
-- `--desk` - Build only the Desk interface component
+- `--admin` - Build only the admin interface component
+- `--desk` - Build only the end-user client component
 - `--ws-bridge` - Build only the WebSocket bridge component
 - `--all` - Build all components (default)
-- `--run` - Run the server after building
-- `--run-server` - Run the server after building
+- `--run` - Run the daemon after building
+- `--run-daemon` - Run the daemon after building
 - `--run-client` - Run the client after building
-- `--run-service` - Run the service after building
 - `--run-cli` - Run the CLI after building
-- `--run-api` - Run the API after building
-- `--run-desk` - Run the Desk interface after building
+- `--run-admin` - Run the admin interface after building
+- `--run-desk` - Run the end-user client after building
 - `--run-ws-bridge` - Run the WebSocket bridge after building
 
 Example:
 ```
-scripts\windows\build.bat --release --server --run
+scripts\windows\build.bat --release --daemon --run
 ```
 
 ### Linux
@@ -120,26 +118,24 @@ Then build:
 Options:
 - `--release` - Build in release mode (default: debug)
 - `--debug` - Build in debug mode
-- `--server` - Build only the server component
+- `--daemon` - Build only the daemon component (includes server functionality)
 - `--client` - Build only the client component
-- `--service` - Build only the service component
 - `--cli` - Build only the CLI component
-- `--api` - Build only the API component
-- `--desk` - Build only the Desk interface component
+- `--admin` - Build only the admin interface component
+- `--desk` - Build only the end-user client component
 - `--ws-bridge` - Build only the WebSocket bridge component
 - `--all` - Build all components (default)
-- `--run` - Run the server after building
-- `--run-server` - Run the server after building
+- `--run` - Run the daemon after building
+- `--run-daemon` - Run the daemon after building
 - `--run-client` - Run the client after building
-- `--run-service` - Run the service after building
 - `--run-cli` - Run the CLI after building
-- `--run-api` - Run the API after building
-- `--run-desk` - Run the Desk interface after building
+- `--run-admin` - Run the admin interface after building
+- `--run-desk` - Run the end-user client after building
 - `--run-ws-bridge` - Run the WebSocket bridge after building
 
 Example:
 ```bash
-./scripts/linux/build.sh --release --client
+./scripts/linux/build.sh --release --daemon --client
 ```
 
 ### macOS
@@ -176,26 +172,24 @@ Then build:
 Options:
 - `--release` - Build in release mode (default: debug)
 - `--debug` - Build in debug mode
-- `--server` - Build only the server component
+- `--daemon` - Build only the daemon component (includes server functionality)
 - `--client` - Build only the client component
-- `--service` - Build only the service component
 - `--cli` - Build only the CLI component
-- `--api` - Build only the API component
-- `--desk` - Build only the Desk interface component
+- `--admin` - Build only the admin interface component
+- `--desk` - Build only the end-user client component
 - `--ws-bridge` - Build only the WebSocket bridge component
 - `--all` - Build all components (default)
-- `--run` - Run the server after building
-- `--run-server` - Run the server after building
+- `--run` - Run the daemon after building
+- `--run-daemon` - Run the daemon after building
 - `--run-client` - Run the client after building
-- `--run-service` - Run the service after building
 - `--run-cli` - Run the CLI after building
-- `--run-api` - Run the API after building
-- `--run-desk` - Run the Desk interface after building
+- `--run-admin` - Run the admin interface after building
+- `--run-desk` - Run the end-user client after building
 - `--run-ws-bridge` - Run the WebSocket bridge after building
 
 Example:
 ```bash
-./scripts/macos/build.sh --release --ws-bridge --run-ws-bridge
+./scripts/macos/build.sh --release --daemon --run-daemon
 ```
 
 ## Quick Reference - Common Tasks
@@ -210,14 +204,14 @@ scripts\windows\build.bat --all
 ./scripts/macos/build.sh --all
 ```
 
-### Build and Run Service
+### Build and Run Daemon
 ```bash
 # Windows
-scripts\windows\build.bat --service --run
+scripts\windows\build.bat --daemon --run
 
 # Linux/macOS
-./scripts/linux/build.sh --service --run
-./scripts/macos/build.sh --service --run
+./scripts/linux/build.sh --daemon --run
+./scripts/macos/build.sh --daemon --run
 ```
 
 ### Build Release Version of Desk UI

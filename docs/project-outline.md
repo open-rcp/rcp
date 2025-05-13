@@ -1,84 +1,88 @@
 # RCP Project Outline and Development Guidelines
 
-This document outlines the Rust/Remote Control Protocol (RC### Implementation Status
+This document outlines the Rust/Remote Control Protocol (RCP) project structure, components, and planned development roadmap.
 
-### Completed
-- Core protocol definition (frames, headers)
-- Authentication mechanism 
-- Server component integration into daemon
-- API integration as feature-gated component
-- Basic session management
-- Daemon interface definition
-- Configuration management
-- CLI component separation with improved integrationstructure, components, and planned development roadmap.
+## Project Architecture
 
-## Project Components
+RCP follows a modular architecture with several core components that work together in a cohesive system:
 
 ### Core Components
 
-- **RCP Core**: Protocol definitions, framing, authentication mechanisms
-- **RCPD (RCP Daemon)**: Unified background daemon with integrated server and API functionality
-  - **Server Component**: Integrated component for handling client connections
-  - **API Component**: Integrated feature-gated REST API for remote management
-- **RCP Client**: Client libraries for connecting to the daemon's server component
-- **RCP CLI**: Command-line interface for daemon administration (deliberately kept separate)
-- **RCP Admin**: Server administration interface (SvelteKit+Tauri, Web+Desktop)
-- **RCP Desk**: End-user client application for virtual applications
-- **RCP WebSocket Bridge**: WebSocket proxy for browser-based clients
+1. **rcp-core**: Core protocol library
+   - Protocol definitions and frame handling
+   - Authentication mechanisms
+   - Common utilities
 
-## Development Roadmap
+2. **rcpd (RCP Daemon)**: Runtime daemon with integrated components
+   - **Server Component**: Integrated component for handling client connections
+   - **API Component**: Feature-gated REST API for remote management (optional)
+   - Application lifecycle management and configuration
+   - Service orchestration
 
+3. **rcp-client**: Client library
+   - Connects to RCP servers within the daemon
+   - Handles application control and user input
+   - Processes and displays streamed frames
+
+4. **rcp-cli**: Command line interface
+   - Server administration tool
+   - Deliberately maintained as a separate component for separation of concerns
+   - Service and user management
+
+5. **rcp-admin**: Administration interface
+   - Web interface (SvelteKit-based)
+   - Desktop application (Tauri)
+   - Server configuration and monitoring
+
+6. **rcp-desk**: End-user client application
+   - Virtual application launcher
+   - File transfer capabilities
+   - User settings and preferences
+
+7. **rcp-ws-bridge**: WebSocket bridge
+   - Protocol translation for browser-based clients
+   - Frame transcoding for web compatibility
+   - Enables web applications to connect without native clients
+
+## Implementation Progress
+
+### Completed Components
 1. ✅ Core Protocol Implementation
 2. ✅ Basic Server and Client
 3. ✅ Service Architecture
 4. ✅ Authentication System
 5. ✅ WebSocket Bridge
-6. ✅ RCPD (RCP Daemon) with Integrated Components
+6. ✅ RCPD with Integrated Components
    - Integrated server functionality
    - Feature-gated API functionality
    - Runtime management of applications
    - Configuration persistence
-   - System integration 
-   - Monitoring and metrics collection
+   - System integration
+
+### In-Progress Components
 7. 🔄 RCP CLI
    - Service management commands
    - User administration
    - Configuration utility
    - Diagnostics tools
-   - Integration with unified service architecture
-9. 🔄 RCP Admin
+
+8. 🔄 RCP Admin
    - SvelteKit-based web interface
    - Tauri integration for desktop app
-   - Real-time connection monitoring
-   - User management interface
+   - Real-time monitoring
    - Service configuration
-   - Analytics visualization
-   
-10. 🔄 RCP Desk
+
+9. 🔄 RCP Desk
    - End-user client application
-   - Virtual application launcher
    - Connection management
    - File transfer capabilities
-   - User settings and preferences
-
-## Architecture
-
-RCP follows a modular architecture with these core components:
-
-1. **rcp-core**: Protocol definitions, frame handling, authentication, and common utilities
-2. **rcp-client**: Client library for connecting to RCP servers and controlling applications
-3. **rcpd**: Runtime daemon that integrates server capabilities (connections, sessions) and API functionality, with application lifecycle management and configuration
-4. **rcp-cli**: Command-line tool for server administration only
-7. **rcp-admin**: Server administration interface for web and desktop
-8. **rcp-desk**: End-user client application for accessing virtual applications
-9. **rcp-ws-bridge**: Optional WebSocket bridge for browser clients
 
 ## Codebase Structure
 
 ```
 rcp/
 ├── rcp-core/           # Core protocol definitions
-│   ├── src/
+│   └── src/
 │       ├── auth.rs     # Authentication modules
 │       ├── command.rs  # Protocol commands
 │       ├── error.rs    # Error types
@@ -89,8 +93,8 @@ rcp/
 │       └── utils.rs    # Utilities
 ├── rcp-client/         # Client library
 │   └── src/            # Client implementation
-├── rcpd/              # Runtime daemon with integrated server and API
-│   ├── src/
+├── rcpd/               # Runtime daemon with integrated server and API
+│   └── src/
 │       ├── config.rs   # Daemon configuration
 │       ├── error.rs    # Error types
 │       ├── main.rs     # Entry point
@@ -106,10 +110,9 @@ rcp/
 │       └── service.rs  # Service interface
 ├── rcp-cli/            # Command line interface
 │   └── src/            # CLI implementation
-├── rcp-desk/           # Unified management interface
+├── rcp-desk/           # End-user client application
 │   ├── src/            # Shared components
-│   ├── web/            # Web interface (SvelteKit)
-│   └── app/            # Desktop app (Tauri)
+│   └── src-tauri/      # Desktop app implementation (Tauri)
 ├── rcp-ws-bridge/      # WebSocket bridge
 │   └── src/            # Bridge implementation
 ├── examples/           # Example code
@@ -117,33 +120,22 @@ rcp/
 └── docs/               # Documentation
 ```
 
-## Implementation Status
+## Technical Implementation Status
 
-### Completed
-- Core protocol definition (frames, headers)
-- Authentication mechanism 
-- Server component integration into service
-- API integration into service (feature-gated)
-- Basic session management
-- Service interface definition
-- Configuration management
-- CLI component separation with improved integration
-
-### In Progress
+### Current Focus Areas
 - Service implementations (display, input, clipboard)
 - Application launch and control
 - Client library optimization
-- CLI management tool enhancement
-- Desk admin interface
+- Admin interface development
+- CLI tool enhancements
 
-### Planned
+### Upcoming Work
 - Advanced authentication (public key)
-- WebSocket bridge
-- File transfer service
+- File transfer service optimization
 - Audio streaming service
-- Client examples
-- Performance optimizations
+- Performance tuning
 - Multi-platform packaging
+- Client examples and documentation
 
 ## Development Guidelines
 
@@ -206,38 +198,39 @@ To add a new service:
 - **Memory safety**: Avoid unsafe code unless absolutely necessary
 - **Resource management**: Properly handle cleanup for all resources
 
-## Project Roadmap
+## Development Phases
 
-### Phase 1: Core Protocol (Complete)
-- Complete core protocol implementation
-- Implement server with basic services
-- Basic client library
+The project is currently in Phase 2 with some elements of Phase 3 in progress.
+
+### Phase 1: Core Protocol (Completed)
+- Core protocol implementation
+- Basic server and client libraries
+- Authentication system
 
 ### Phase 2: Feature Expansion (Current)
-- Complete all core services (display, input, clipboard, file transfer)
-- Application launching and control
+- Service implementations (display, input, clipboard, file transfer)
+- Application launch and control
 - WebSocket bridge for browser clients
 - Runtime service architecture
 - CLI management tools
 
-### Phase 3: Management Layer
-- RESTful management API
-- Admin interface (web & desktop)
+### Phase 3: Management Layer (Starting)
+- RESTful management API (integrated)
+- Admin interface (in progress)
 - End-user client application
-- Authentication and permission system
-- Configuration management
-- Logs and monitoring
+- Authentication enhancements
+- Advanced configuration management
+- Logging and monitoring improvements
 
-### Phase 4: Advanced Features
+### Phase 4: Advanced Features (Planned)
 - Audio/video streaming optimization
-- Compression and performance tuning
+- Performance tuning and compression
 - Multiple session management
 - Load balancing capabilities
 - Security hardening
 
-### Phase 5: Integration & Deployment
+### Phase 5: Integration & Deployment (Planned)
 - Platform-specific packaging
-- Integration with popular remote access protocols
 - Enterprise deployment models
 - Cloud-native deployment options
 - Advanced monitoring and analytics
