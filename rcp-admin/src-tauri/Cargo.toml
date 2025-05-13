@@ -26,7 +26,7 @@ tauri-plugin-opener = "2.0.0-beta"
 tauri-plugin-shell = "2.0.0-beta"
 serde = { workspace = true }
 serde_json = { workspace = true }
-rcp-service = { path = "../../rcp-service", features = ["api"] }  # Use service with integrated server and API components
+rcpd = { path = "../../rcpd", features = ["api"] }  # Use daemon with integrated server and API components
 rcp-core = { workspace = true }
 tokio = { workspace = true }
 thiserror = { workspace = true }

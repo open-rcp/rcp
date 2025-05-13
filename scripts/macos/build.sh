@@ -23,12 +23,18 @@ while [[ $# -gt 0 ]]; do
             BUILD_TYPE="debug"
             shift
             ;;
+        --daemon)
+            BUILD_TARGET="daemon"
+            shift
+            ;;
         --server)
-            BUILD_TARGET="service"
+            BUILD_TARGET="daemon"
+            echo "Warning: --server option is deprecated, use --daemon instead"
             shift
             ;;
         --service)
-            BUILD_TARGET="service"
+            BUILD_TARGET="daemon"
+            echo "Warning: --service option is deprecated, use --daemon instead"
             shift
             ;;
         --client)
@@ -47,14 +53,21 @@ while [[ $# -gt 0 ]]; do
             RUN_AFTER_BUILD=true
             shift
             ;;
+        --run-daemon)
+            RUN_AFTER_BUILD=true
+            RUN_COMPONENT="daemon"
+            shift
+            ;;
         --run-server)
             RUN_AFTER_BUILD=true
-            RUN_COMPONENT="service"
+            RUN_COMPONENT="daemon"
+            echo "Warning: --run-server option is deprecated, use --run-daemon instead"
             shift
             ;;
         --run-service)
             RUN_AFTER_BUILD=true
-            RUN_COMPONENT="service"
+            RUN_COMPONENT="daemon"
+            echo "Warning: --run-service option is deprecated, use --run-daemon instead"
             shift
             ;;
         --run-client)
@@ -69,7 +82,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         *)
             echo "Unknown option: $key"
-            echo "Usage: $0 [--release|--debug] [--server|--client|--ws-bridge|--all] [--run|--run-server|--run-client|--run-ws-bridge]"
+            echo "Usage: $0 [--release|--debug] [--daemon|--client|--ws-bridge|--all] [--run|--run-daemon|--run-client|--run-ws-bridge]"
             exit 1
             ;;
     esac
@@ -120,7 +133,7 @@ if [ "$BUILD_TARGET" == "all" ]; then
         exit 1
     fi
 else
-    if [ "$BUILD_TARGET" == "service" ]; then
+    if [ "$BUILD_TARGET" == "daemon" ]; then
         echo "Building RCP daemon in $BUILD_TYPE mode..."
         cargo build $BUILD_OPTS -p rcpd
     elif [ "$BUILD_TARGET" == "client" ]; then
@@ -144,13 +157,13 @@ echo "Build completed successfully!"
 if $RUN_AFTER_BUILD; then
     echo "Running $RUN_COMPONENT..."
     if [ "$BUILD_TYPE" == "release" ]; then
-        if [ "$RUN_COMPONENT" == "service" ]; then
+        if [ "$RUN_COMPONENT" == "daemon" ]; then
             "./target/release/rcpd"
         else
             "./target/release/rcp-$RUN_COMPONENT"
         fi
     else
-        if [ "$RUN_COMPONENT" == "service" ]; then
+        if [ "$RUN_COMPONENT" == "daemon" ]; then
             "./target/debug/rcpd"
         else
             "./target/debug/rcp-$RUN_COMPONENT"

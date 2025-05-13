@@ -4113,7 +4113,7 @@ dependencies = [
  "config",
  "directories",
  "rcp-core",
- "rcp-service",
+ "rcpd",
  "serde",
  "serde_json",
  "tauri",
@@ -4225,40 +4225,6 @@ name = "rcp-examples"
 version = "0.1.0"
 dependencies = [
  "rcp-cli",
-]
-
-[[package]]
-name = "rcp-service"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-trait",
- "axum",
- "clap 3.2.25",
- "config",
- "daemonize",
- "dirs 4.0.0",
- "env_logger 0.9.3",
- "futures-util",
- "libc",
- "log",
- "mime",
- "rcp-core",
- "rustls",
- "serde",
- "serde_json",
- "serde_urlencoded",
- "serde_with",
- "sqlx",
- "thiserror 1.0.69",
- "tokio",
- "toml 0.5.11",
- "tower 0.4.13",
- "tower-http",
- "tracing",
- "tracing-subscriber",
- "uuid",
- "webpki-roots",
 ]
 
 [[package]]
