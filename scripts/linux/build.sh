@@ -106,8 +106,8 @@ if [ "$BUILD_TARGET" == "all" ]; then
     fi
 else
     if [ "$BUILD_TARGET" == "service" ]; then
-        echo "Building service component with integrated server in $BUILD_TYPE mode..."
-        cargo build $BUILD_OPTS -p rcp-service
+        echo "Building RCP daemon in $BUILD_TYPE mode..."
+        cargo build $BUILD_OPTS -p rcpd
     elif [ "$BUILD_TARGET" == "client" ]; then
         echo "Building client component in $BUILD_TYPE mode..."
         cargo build $BUILD_OPTS -p rcp-client
@@ -125,12 +125,19 @@ fi
 echo
 echo "Build completed successfully!"
 
-# Run component if requested
-if $RUN_AFTER_BUILD; then
+# Run component if requested    if $RUN_AFTER_BUILD; then
     echo "Running $RUN_COMPONENT..."
     if [ "$BUILD_TYPE" == "release" ]; then
-        "./target/release/rcp-$RUN_COMPONENT"
+        if [ "$RUN_COMPONENT" == "service" ]; then
+            "./target/release/rcpd"
+        else
+            "./target/release/rcp-$RUN_COMPONENT"
+        fi
     else
-        "./target/debug/rcp-$RUN_COMPONENT"
+        if [ "$RUN_COMPONENT" == "service" ]; then
+            "./target/debug/rcpd"
+        else
+            "./target/debug/rcp-$RUN_COMPONENT"
+        fi
     fi
 fi

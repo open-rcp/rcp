@@ -4281,6 +4281,40 @@ dependencies = [
 ]
 
 [[package]]
+name = "rcpd"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "axum",
+ "clap 3.2.25",
+ "config",
+ "daemonize",
+ "dirs 4.0.0",
+ "env_logger 0.9.3",
+ "futures-util",
+ "libc",
+ "log",
+ "mime",
+ "rcp-core",
+ "rustls",
+ "serde",
+ "serde_json",
+ "serde_urlencoded",
+ "serde_with",
+ "sqlx",
+ "thiserror 1.0.69",
+ "tokio",
+ "toml 0.5.11",
+ "tower 0.4.13",
+ "tower-http",
+ "tracing",
+ "tracing-subscriber",
+ "uuid",
+ "webpki-roots",
+]
+
+[[package]]
 name = "redox_syscall"
 version = "0.5.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"

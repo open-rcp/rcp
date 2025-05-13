@@ -52,7 +52,7 @@ fn default_api_port() -> u16 {
 }
 
 fn default_database_url() -> String {
-    "sqlite:rcp-service.db".to_string()
+    "sqlite:rcpd.db".to_string()
 }
 
 fn default_auth_required() -> bool {

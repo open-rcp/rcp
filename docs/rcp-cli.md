@@ -206,8 +206,8 @@ color = true
 
 [connection]
 # Connection settings
-socket = "/var/run/rcp-service.sock"  # Unix
-# socket = "\\\\.\\pipe\\rcp-service"  # Windows
+socket = "/var/run/rcpd.sock"  # Unix
+# socket = "\\\\.\\pipe\\rcpd"  # Windows
 api_url = "http://localhost:8080/api/v1"
 timeout = 5  # seconds
 
@@ -325,7 +325,7 @@ Unix environments have specific commands:
 
 ```bash
 # Generate systemd unit file
-rcp-cli service systemd-unit > /etc/systemd/system/rcp-service.service
+rcp-cli service systemd-unit > /etc/systemd/system/rcpd.service
 
 # Generate completion for current shell
 rcp-cli completions auto > ~/.rcp-completion

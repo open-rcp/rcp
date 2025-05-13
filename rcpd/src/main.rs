@@ -18,7 +18,7 @@ use anyhow::Result;
 use clap::Parser;
 use log::{info, LevelFilter};
 
-/// RCP Service - Rust/Remote Control Protocol Runtime Service
+/// RCPD - Rust/Remote Control Protocol Daemon
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 struct Cli {

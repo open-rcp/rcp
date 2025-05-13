@@ -235,7 +235,7 @@ The RCP Service is a unified system daemon/service that includes server and API 
 The server component is fully integrated into the RCP Service.
 
 ```rust
-use rcp_service::{ServiceConfig, Service, ServerConfig, AuthMethod, AuthConfig};
+use rcpd::{ServiceConfig, Service, ServerConfig, AuthMethod, AuthConfig};
 
 async fn run_service_with_server() -> Result<(), Box<dyn std::error::Error>> {
     // Configure authentication
@@ -332,7 +332,7 @@ async fn register_services(service: &mut Service) -> Result<(), Box<dyn std::err
 This example shows how to configure and run the unified RCP service:
 
 ```rust
-use rcp_service::{Service, ServiceConfig, ServiceError};
+use rcpd::{Service, ServiceConfig, ServiceError};
 use std::path::PathBuf;
 
 #[tokio::main]
@@ -367,7 +367,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ### Configuration Management
 
 ```rust
-use rcp_service::{ConfigManager, ConfigError};
+use rcpd::{ConfigManager, ConfigError};
 use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -404,7 +404,7 @@ async fn manage_config() -> Result<(), ConfigError> {
 ### Server Management
 
 ```rust
-use rcp_service::{ServerManager, ServerConfig, ServerError};
+use rcpd::{ServerManager, ServerConfig, ServerError};
 
 async fn manage_servers(service: &mut Service) -> Result<(), ServerError> {
     // Get the server manager
@@ -570,9 +570,9 @@ The API component is integrated into the RCP Service and enabled via the "api" f
 ```rust
 // Cargo.toml
 // [dependencies]
-// rcp-service = { version = "0.2.0", features = ["api"] }
+// rcpd = { version = "0.2.0", features = ["api"] }
 
-use rcp_service::{ServiceConfig, Service, ApiConfig};
+use rcpd::{ServiceConfig, Service, ApiConfig};
 use tokio::signal;
 
 #[tokio::main]
@@ -612,7 +612,7 @@ use rcp_api::{Router, handler, Json, Response, State};
 
 // Define state
 struct AppState {
-    service_client: rcp_service::client::ServiceClient,
+    service_client: rcpd::client::ServiceClient,
 }
 
 // Create router
@@ -936,4 +936,4 @@ See the `examples/` directory for complete working examples:
 
 ---
 
-For more information, refer to the [Architecture Overview](architecture.md), [Protocol Specification](protocol-specification.md), [RCP Service](rcp-service.md), [RCP CLI](rcp-cli.md), [RCP API](rcp-api.md), [RCP Admin](rcp-admin.md), and [RCP Desk](rcp-desk.md) documents.
+For more information, refer to the [Architecture Overview](architecture.md), [Protocol Specification](protocol-specification.md), [RCPD](rcpd.md), [RCP CLI](rcp-cli.md), [RCP API](rcp-api.md), [RCP Admin](rcp-admin.md), and [RCP Desk](rcp-desk.md) documents.

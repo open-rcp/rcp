@@ -31,8 +31,8 @@ if "%BUILD_TARGET%"=="all" (
     cargo build %BUILD_OPTS%
 ) else (
     if "%BUILD_TARGET%"=="service" (
-        echo Building service component with integrated server in %BUILD_TYPE% mode...
-        cargo build %BUILD_OPTS% -p rcp-service
+        echo Building RCP daemon in %BUILD_TYPE% mode...
+        cargo build %BUILD_OPTS% -p rcpd
     ) else if "%BUILD_TARGET%"=="client" (
         echo Building client component in %BUILD_TYPE% mode...
         cargo build %BUILD_OPTS% -p rcp-client

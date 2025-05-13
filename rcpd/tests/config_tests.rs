@@ -1,6 +1,6 @@
 // Import from the library
-use rcp_service::config::*;
-use rcp_service::server;
+use rcpd::config::*;
+use rcpd::server;
 
 #[test]
 fn test_default_service_config() {

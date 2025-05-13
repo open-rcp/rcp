@@ -82,12 +82,12 @@ pub fn start(config_path: &str) -> Result<()> {
     // Create PID file for daemon
     let pid_file = dirs::runtime_dir()
         .unwrap_or_else(|| PathBuf::from("/tmp"))
-        .join("rcp-service.pid");
+        .join("rcpd.pid");
     
     // Create log file for daemon
     let log_file = dirs::runtime_dir()
         .unwrap_or_else(|| PathBuf::from("/tmp"))
-        .join("rcp-service.log");
+        .join("rcpd.log");
     
     // Create daemonize struct
     let daemon = Daemonize::new()
@@ -136,7 +136,7 @@ pub fn stop() -> Result<()> {
     // Find PID file
     let pid_file = dirs::runtime_dir()
         .unwrap_or_else(|| PathBuf::from("/tmp"))
-        .join("rcp-service.pid");
+        .join("rcpd.pid");
     
     // Read PID from file
     if !pid_file.exists() {

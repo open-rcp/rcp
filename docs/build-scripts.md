@@ -78,11 +78,10 @@ scripts\windows\build.bat [options]
 Available options:
 - `--release` - Build in release mode (optimized binaries)
 - `--debug` - Build in debug mode (default)
-- `--server` - Build only the server component
+- `--service` - Build the unified service component (with integrated server)  
 - `--client` - Build only the client component
 - `--ws-bridge` - Build only the WebSocket bridge component
 - `--all` - Build all components (default)
-- `--run` - Run the server component after building
 - `--run-service` - Run the unified service (with integrated server) after building
 - `--run-client` - Run the client component after building
 - `--run-ws-bridge` - Run the WebSocket bridge component after building

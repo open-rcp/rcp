@@ -1,16 +1,16 @@
 [package]
-name = "rcp-service"
+name = "rcpd"
 version = "0.1.0"
 edition = "2021"
 authors = ["Akash Shah"]
-description = "Runtime service for managing RCP server instances and applications with integrated server and optional API"
+description = "RCP Daemon - Runtime service for managing RCP server instances and applications with integrated server and optional API"
 
 [lib]
-name = "rcp_service"
+name = "rcpd"
 path = "src/lib.rs"
 
 [[bin]]
-name = "rcp-service"
+name = "rcpd"
 path = "src/main.rs"
 
 [features]

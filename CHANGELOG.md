@@ -1,12 +1,14 @@
 ## v0.2.0-beta (2025-05-13)
 
 ### Features
-* feat: Integrate RCP server and API functionality into unified RCP service component
+* feat!: Rename rcp-service to rcpd for better semantic clarity as a daemon process
+* feat: Add proper systemd and launchd service files for daemon deployment
+* feat: Integrate RCP server and API functionality into unified RCP daemon component
 * feat: Add feature-gated API capabilities with "api" feature flag
-* feat: Add library target to rcp-service for reusable component architecture
-* feat: Create re-exports of common types and functionality in service library
+* feat: Add library target to rcpd for reusable component architecture
+* feat: Create re-exports of common types and functionality in daemon library
 * feat: Implement unified configuration system for integrated components
-* feat: Update all build scripts to support integrated service architecture
+* feat: Update all build scripts to support integrated daemon architecture
 
 ### Bug Fixes
 * fix: Update import paths in tests to use library interface
@@ -16,15 +18,18 @@
 * fix: Address build errors in dependency references
 
 ### Improvements
-* refactor: Move server code into service component
+* refactor: Rename all rcp-service references to rcpd throughout the codebase
+* refactor: Update daemon file paths, socket names, and service files
+* refactor: Move server code into daemon component
 * refactor: Create clean internal interfaces between components
-* refactor: Implement proper module exports in service lib.rs
+* refactor: Implement proper module exports in daemon lib.rs
 * refactor: Redesign service manager for better integration
 * refactor: Keep CLI as separate component for separation of concerns
 
 ### Documentation
 * docs: Update architecture.md to reflect unified service architecture
-* docs: Update rcp-service.md with integrated server and API capabilities
+* docs: Create new rcpd.md documentation with integrated daemon design
+* docs: Update rcp-service.md with deprecation notice pointing to rcpd.md
 * docs: Update rcp-cli.md to explain separation from service component
 * docs: Create integration-progress.md and integration-changes.md to track changes
 * docs: Update server-service-integration.md with implementation status

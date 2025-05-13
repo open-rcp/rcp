@@ -7,7 +7,7 @@ pub struct UnixPlatform;
 impl Platform for UnixPlatform {
     fn get_socket_path() -> Result<String, ServiceError> {
         // TODO: Implement Unix-specific socket path
-        Ok("/tmp/rcp-service.sock".to_string())
+        Ok("/tmp/rcpd.sock".to_string())
     }
 
     fn create_socket_dir() -> Result<(), ServiceError> {

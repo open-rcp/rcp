@@ -1,17 +1,27 @@
 # RCP Project Outline and Development Guidelines
 
-This document outlines the Rust/Remote Control Protocol (RCP) project structure, components, and planned development roadmap.
+This document outlines the Rust/Remote Control Protocol (RC### Implementation Status
+
+### Completed
+- Core protocol definition (frames, headers)
+- Authentication mechanism 
+- Server component integration into daemon
+- API integration as feature-gated component
+- Basic session management
+- Daemon interface definition
+- Configuration management
+- CLI component separation with improved integrationstructure, components, and planned development roadmap.
 
 ## Project Components
 
 ### Core Components
 
 - **RCP Core**: Protocol definitions, framing, authentication mechanisms
-- **RCP Service**: Unified runtime service with integrated server and API functionality
+- **RCPD (RCP Daemon)**: Unified background daemon with integrated server and API functionality
   - **Server Component**: Integrated component for handling client connections
   - **API Component**: Integrated feature-gated REST API for remote management
-- **RCP Client**: Client libraries for connecting to RCP service's server component
-- **RCP CLI**: Command-line interface for server administration (deliberately kept separate)
+- **RCP Client**: Client libraries for connecting to the daemon's server component
+- **RCP CLI**: Command-line interface for daemon administration (deliberately kept separate)
 - **RCP Admin**: Server administration interface (SvelteKit+Tauri, Web+Desktop)
 - **RCP Desk**: End-user client application for virtual applications
 - **RCP WebSocket Bridge**: WebSocket proxy for browser-based clients
@@ -23,7 +33,7 @@ This document outlines the Rust/Remote Control Protocol (RCP) project structure,
 3. ✅ Service Architecture
 4. ✅ Authentication System
 5. ✅ WebSocket Bridge
-6. ✅ RCP Service with Integrated Components
+6. ✅ RCPD (RCP Daemon) with Integrated Components
    - Integrated server functionality
    - Feature-gated API functionality
    - Runtime management of applications
@@ -57,7 +67,7 @@ RCP follows a modular architecture with these core components:
 
 1. **rcp-core**: Protocol definitions, frame handling, authentication, and common utilities
 2. **rcp-client**: Client library for connecting to RCP servers and controlling applications
-3. **rcp-service**: Runtime service that integrates server capabilities (connections, sessions) and API functionality, with application lifecycle management and configuration
+3. **rcpd**: Runtime daemon that integrates server capabilities (connections, sessions) and API functionality, with application lifecycle management and configuration
 4. **rcp-cli**: Command-line tool for server administration only
 7. **rcp-admin**: Server administration interface for web and desktop
 8. **rcp-desk**: End-user client application for accessing virtual applications
@@ -79,12 +89,12 @@ rcp/
 │       └── utils.rs    # Utilities
 ├── rcp-client/         # Client library
 │   └── src/            # Client implementation
-├── rcp-service/        # Runtime service with integrated server and API
+├── rcpd/              # Runtime daemon with integrated server and API
 │   ├── src/
-│       ├── config.rs   # Service configuration
+│       ├── config.rs   # Daemon configuration
 │       ├── error.rs    # Error types
 │       ├── main.rs     # Entry point
-│       ├── manager.rs  # Service manager implementation
+│       ├── manager.rs  # Daemon manager implementation
 │       ├── server/     # Integrated server functionality
 │       │   ├── config.rs  # Server configuration
 │       │   ├── server.rs  # Server implementation

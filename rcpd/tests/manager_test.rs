@@ -2,8 +2,8 @@ use std::path::PathBuf;
 use tokio::sync::mpsc;
 
 // Import from the library
-use rcp_service::config::ServiceConfig;
-use rcp_service::manager::ServiceManager;
+use rcpd::config::ServiceConfig;
+use rcpd::manager::ServiceManager;
 
 #[tokio::test]
 async fn test_manager_creation() {

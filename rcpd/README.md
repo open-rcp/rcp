@@ -1,12 +1,13 @@
-# RCP Service (Integrated)
+# RCPD - RCP Daemon
 
-This is the integrated RCP service that combines the functionality of the previously separate RCP server and service components.
+This is the RCP daemon (rcpd) that combines the functionality of the previously separate RCP server and service components into a single daemon process.
 
 ## Architecture
 
-The service now includes:
-- Core service functionality for lifecycle management
+The daemon includes:
+- Core process management functionality for lifecycle management
 - Embedded server functionality for handling connections
+- Optional API component (feature-gated)
 - Unified configuration system
 - Simplified deployment and operation
 
@@ -47,16 +48,16 @@ Start the service:
 
 ```bash
 # Run in foreground
-rcp-service -c config.toml -f
+rcpd -c config.toml -f
 
 # Run as a daemon
-rcp-service -c config.toml start
+rcpd -c config.toml start
 ```
 
 Stop the service:
 
 ```bash
-rcp-service stop
+rcpd stop
 ```
 
 ## Benefits of Integration
@@ -66,3 +67,11 @@ rcp-service stop
 3. **Reduced Resource Usage**: Lower memory footprint, shared resources
 4. **Better Error Handling**: No need to coordinate errors across process boundaries
 5. **Unified Configuration**: Single configuration system for all components
+
+## System Service Installation
+
+For installing RCPD as a system service (systemd, launchd, or Windows service), please refer to the [installation guide](INSTALL.md).
+
+This repository includes ready-to-use service files:
+- `systemd/rcpd.service` - For Linux systems 
+- `launchd/com.devstroop.rcpd.plist` - For macOS systems

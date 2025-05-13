@@ -45,14 +45,14 @@ The foundation of the RCP system providing:
 - Handles user input
 - Processes and displays streamed frames
 
-### 3. RCP Service (`rcp-service`)
+### 3. RCPD (RCP Daemon) (`rcpd`)
 
 - Core component with integrated Server and API functionality
 - Long-running daemon/system service architecture
 - Component-based internal design with clear separation of concerns:
   - **Server Component**: Handles connections, sessions, and protocol handling (fully integrated)
   - **API Component**: Provides RESTful endpoints for management (optional via "api" feature flag)
-  - **Service Core**: Handles lifecycle management, configuration, and orchestration
+  - **Daemon Core**: Handles lifecycle management, configuration, and orchestration
 - Listens for incoming TCP connections (server capability)
 - Manages authentication and sessions
 - Spawns and controls applications
@@ -232,12 +232,12 @@ The RCP architecture is designed for high performance:
 ## Communication Flow
 
 1. **Administration Flow**:
-   - rcp-admin -> rcp-service/api-component (Management interface)
-   - rcp-cli -> rcp-service/server-component (Command-line administration)
+   - rcp-admin -> rcpd/api-component (Management interface)
+   - rcp-cli -> rcpd/server-component (Command-line administration)
 
 2. **End-User Flow**:
-   - rcp-desk -> rcp-client -> rcp-service/server-component (Native desktop client)
-   - Web Client -> rcp-ws-bridge -> rcp-service/server-component (Browser client)
+   - rcp-desk -> rcp-client -> rcpd/server-component (Native desktop client)
+   - Web Client -> rcp-ws-bridge -> rcpd/server-component (Browser client)
 
 ## Configuration Management
 

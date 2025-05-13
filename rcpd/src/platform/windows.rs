@@ -8,7 +8,7 @@ pub struct WindowsPlatform;
 impl Platform for WindowsPlatform {
     fn get_socket_path() -> Result<String, ServiceError> {
         // TODO: Implement Windows-specific named pipe path
-        Ok("\\\\.\\pipe\\rcp-service".to_string())
+        Ok("\\\\.\\pipe\\rcpd".to_string())
     }
 
     fn create_socket_dir() -> Result<(), ServiceError> {

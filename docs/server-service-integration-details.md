@@ -1,28 +1,28 @@
-# Server and Service Integration Details
+# Server and Daemon Integration Details
 
-This document provides a comprehensive overview of the integration of RCP server and API functionality into the unified RCP service component.
+This document provides a comprehensive overview of the integration of RCP server and API functionality into the unified RCP daemon (RCPD) component.
 
 ## Overview
 
 The integration combines three previously separate components:
 - `rcp-server`: Server implementation
 - `rcp-api`: API implementation
-- `rcp-service`: Service manager
+- `rcp-service`: Service manager (now renamed to `rcpd`)
 
 Into a single component:
-- `rcp-service`: Unified component with integrated server and optional API capabilities
+- `rcpd`: Unified daemon with integrated server and optional API capabilities
 
 ## Directory Structure Changes
 
-The integrated service now has the following directory structure:
+The integrated daemon now has the following directory structure:
 ```
-rcp-service/
+rcpd/
 ├── src/
-│   ├── config.rs          # Service configuration
+│   ├── config.rs          # Daemon configuration
 │   ├── error.rs           # Error handling
 │   ├── main.rs            # Entry point
-│   ├── manager.rs         # Service manager implementation
-│   ├── service.rs         # Service interface
+│   ├── manager.rs         # Daemon manager implementation
+│   ├── service.rs         # Daemon interface
 │   ├── server/            # Integrated server functionality
 │   │   ├── config.rs      # Server configuration
 │   │   ├── mod.rs         # Server module definition
@@ -57,7 +57,7 @@ api = [
 
 ## Build Script Updates
 
-All build scripts have been updated to build `rcp-service` instead of the individual `rcp-server` component:
+All build scripts have been updated to build `rcpd` instead of the individual `rcp-server` component:
 
 - Updated Windows build script (`scripts/windows/build.bat`)
 - Updated Linux build script (`scripts/linux/build.sh`)
@@ -68,13 +68,13 @@ All build scripts have been updated to build `rcp-service` instead of the indivi
 
 The GitHub release workflow has been updated:
 
-- Changed to build `rcp-service` instead of `rcp-server`
-- Updated all package naming and archives to `rcp-service-*` instead of `rcp-server-*`
+- Changed to build `rcpd` instead of `rcp-server`
+- Updated all package naming and archives to `rcpd-*` instead of `rcp-server-*`
 
 ## Completed Integration Tasks
 
 ### 1. Project Structure Updates
-- Added library target to `rcp-service/Cargo.toml` with `lib.rs` defining the public API
+- Added library target to `rcpd/Cargo.toml` with `lib.rs` defining the public API
 - Created proper public exports for all necessary modules and types
 - Established appropriate feature-gating for the API functionality
 
@@ -89,7 +89,7 @@ The GitHub release workflow has been updated:
 - Added `get_work_dir` method to ServiceManager to support testing and client access
 
 ### 4. Client Dependency Updates
-- Updated the `rcp-admin` dependency to use `rcp-service` with the `api` feature enabled
+- Updated the `rcp-admin` dependency to use `rcpd` with the `api` feature enabled
 
 ### 5. CLI Architecture Decision
 - Deliberate decision made to keep CLI as separate component
@@ -104,9 +104,9 @@ The GitHub release workflow has been updated:
 - Updated the main `README.md` to reflect the new component structure
 - Updated architecture diagrams and component descriptions in `docs/architecture.md`
 - Added notes to `docs/rcp-api.md` about the integration
-- Updated `docs/rcp-service.md` to document integrated server and API capabilities
+- Created `docs/rcpd.md` to document integrated server and API capabilities
 - Enhanced `docs/rcp-cli.md` with explanation for keeping CLI separate
-- Updated examples showing how to use the integrated service
+- Updated examples showing how to use the integrated daemon
 
 ## Pending Tasks
 
@@ -129,6 +129,6 @@ The GitHub release workflow has been updated:
 4. Execute final deployment testing to ensure seamless transition
 
 ## Conclusion
-The integration of RCP server and API into the unified RCP service component is now complete and fully functional. The new architecture provides a cleaner separation of concerns while maintaining all existing functionality. The feature-gated approach to the API ensures that users who don't need that functionality don't have to include the dependencies.
+The integration of RCP server and API into the unified RCP daemon (RCPD) component is now complete and fully functional. The new architecture provides a cleaner separation of concerns while maintaining all existing functionality. The feature-gated approach to the API ensures that users who don't need that functionality don't have to include the dependencies.
 
-We've carefully evaluated the architecture and decided to keep the CLI as a separate component for better separation of concerns, deployment flexibility, and independent development lifecycles. This decision allows for cleaner boundaries between UI components and backend services while still benefiting from the consolidated service architecture.
+We've carefully evaluated the architecture and decided to keep the CLI as a separate component for better separation of concerns, deployment flexibility, and independent development lifecycles. This decision allows for cleaner boundaries between UI components and backend daemons while still benefiting from the consolidated daemon architecture.

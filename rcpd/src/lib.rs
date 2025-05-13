@@ -1,5 +1,5 @@
-// RCP Service Library
-// Exposes the core functionality of the RCP service
+// RCP Daemon Library (rcpd)
+// Exposes the core functionality of the RCP daemon
 
 // Public modules
 pub mod config;

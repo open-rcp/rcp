@@ -14,10 +14,10 @@ echo -e "\033[0;33mBuilding RCP service components...\033[0m"
 cd "$PROJECT_ROOT"
 cargo build
 
-# Run the RCP service with integrated server
-echo -e "\033[0;32mStarting RCP service with integrated server...\033[0m"
-cargo run --bin rcp-service -- -v
+# Run the RCP daemon
+echo -e "\033[0;32mStarting RCP daemon...\033[0m"
+cargo run --bin rcpd -- -v
 
-echo -e "\033[0;36mServer has stopped.\033[0m"
+echo -e "\033[0;36mDaemon has stopped.\033[0m"
 
 # NOTE: Future management UI and API components will be added here once they're created

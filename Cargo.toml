@@ -3,7 +3,7 @@ members = [
     "rcp-core",
     "rcp-client",
     "rcp-ws-bridge",
-    "rcp-service",
+    "rcpd",
     "examples",
     "rcp-admin/src-tauri", 
     "rcp-desk/src-tauri",

@@ -1,6 +1,8 @@
-# RCP Service
+# RCP Service (DEPRECATED)
 
-This document outlines the RCP Service, which provides runtime management for RCP applications with integrated server and API functionality.
+> **DEPRECATED**: This document is deprecated. Please refer to [RCPD (RCP Daemon)](rcpd.md) for current documentation.
+
+This document previously outlined the RCP Service, which has been renamed to RCPD (RCP Daemon).
 
 ## Overview
 
