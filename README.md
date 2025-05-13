@@ -166,6 +166,7 @@ RCP provides comprehensive documentation to help you understand, implement, and 
 
 ### Component Documentation
 - [RCPD (RCP Daemon)](docs/rcpd.md) - Documentation for the runtime daemon with integrated server
+- [RCPD Installation Guide](docs/rcpd-installation.md) - Comprehensive guide for building and installing RCPD
 - [RCP CLI](docs/rcp-cli.md) - Documentation for the command-line interface (server administration)
 - [RCP API](docs/rcp-api.md) - Documentation for the integrated REST API component
 - [RCP Admin](docs/rcp-admin.md) - Documentation for the administrative interface

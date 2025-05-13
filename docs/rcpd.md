@@ -107,11 +107,15 @@ Comprehensive system monitoring:
 
 ## Installation
 
-### Windows
+For comprehensive build and installation instructions for all platforms, please refer to the [RCPD Installation Guide](rcpd-installation.md).
+
+### Quick Installation Summary
+
+#### Windows
 
 1. Build the daemon:
    ```bash
-   cargo build --release -p rcpd
+   scripts\windows\build.bat --release --daemon
    ```
 
 2. Install as a Windows service:
@@ -124,17 +128,17 @@ Comprehensive system monitoring:
    sc start rcpd
    ```
 
-### Linux
+#### Linux
 
 1. Build the daemon:
    ```bash
-   cargo build --release -p rcpd
+   ./scripts/linux/build.sh --release --daemon
    ```
 
 2. Install the systemd service:
    ```bash
    sudo cp target/release/rcpd /usr/local/bin/
-   sudo cp deployment/rcpd.service /etc/systemd/system/
+   sudo cp rcpd/systemd/rcpd.service /etc/systemd/system/
    sudo systemctl daemon-reload
    ```
 
@@ -143,17 +147,17 @@ Comprehensive system monitoring:
    sudo systemctl start rcpd
    ```
 
-### macOS
+#### macOS
 
 1. Build the daemon:
    ```bash
-   cargo build --release -p rcpd
+   ./scripts/macos/build.sh --release --daemon
    ```
 
 2. Install the launchd service:
    ```bash
-   cp target/release/rcpd /usr/local/bin/
-   cp deployment/com.devstroop.rcpd.plist ~/Library/LaunchAgents/
+   sudo cp target/release/rcpd /usr/local/bin/
+   sudo cp rcpd/launchd/com.devstroop.rcpd.plist /Library/LaunchDaemons/
    ```
 
 3. Start the daemon:

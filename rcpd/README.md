@@ -44,20 +44,59 @@ required = true
 
 ## Usage
 
-Start the service:
+### Running in Development Mode
 
 ```bash
-# Run in foreground
+# Run in foreground with a specific config
 rcpd -c config.toml -f
 
-# Run as a daemon
-rcpd -c config.toml start
+# Run with verbose output
+rcpd -c config.toml -f -v
+
+# Run using cargo directly
+cargo run -p rcpd -- -c config.toml -f
 ```
 
-Stop the service:
+### Running as a System Service
 
 ```bash
-rcpd stop
+# Start the service (after installation)
+# Linux:
+sudo systemctl start rcpd
+
+# macOS:
+sudo launchctl start com.devstroop.rcpd
+
+# Windows:
+sc start rcpd
+```
+
+### Stopping the Service
+
+```bash
+# Linux:
+sudo systemctl stop rcpd
+
+# macOS:
+sudo launchctl stop com.devstroop.rcpd
+
+# Windows:
+sc stop rcpd
+```
+
+### Command-line Options
+
+```
+USAGE:
+    rcpd [OPTIONS]
+
+OPTIONS:
+    -c, --config <FILE>     Path to config file [default: config.toml]
+    -d, --daemon            Run as a background daemon
+    -f, --foreground        Run in the foreground
+    -h, --help              Print help information
+    -v, --verbose           Verbose output
+        --version           Print version information
 ```
 
 ## Benefits of Integration
@@ -68,10 +107,12 @@ rcpd stop
 4. **Better Error Handling**: No need to coordinate errors across process boundaries
 5. **Unified Configuration**: Single configuration system for all components
 
-## System Service Installation
+## Installation
 
-For installing RCPD as a system service (systemd, launchd, or Windows service), please refer to the [installation guide](INSTALL.md).
+For detailed instructions on building and installing RCPD as a system service (systemd, launchd, or Windows service), please refer to the [comprehensive installation guide](../docs/rcpd-installation.md).
 
-This repository includes ready-to-use service files:
-- `systemd/rcpd.service` - For Linux systems 
+This directory includes ready-to-use service files:
+- `systemd/rcpd.service` - For Linux systems with systemd
 - `launchd/com.devstroop.rcpd.plist` - For macOS systems
+
+For quick local installation instructions, see [INSTALL.md](INSTALL.md).
