@@ -2,13 +2,8 @@
 members = [
     "rcp-core",
     "rcp-client",
-    "rcp-ws-bridge",
     "rcpd",
-    "examples",
-    "rcp-admin/src-tauri", 
-    # "rcp-desk/src-tauri",
-    "rcp-cli",
-    "rcp-sdl-client", "flutter_rcp_client/rust",
+    "examples"
 ]
 resolver = "2"
 
