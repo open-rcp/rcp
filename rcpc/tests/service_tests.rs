@@ -1,6 +1,6 @@
 use async_trait::async_trait;
-use rcp_client::{Service, ServiceMessage, ServiceType};
-use rcp_core::Frame;
+use rcpc::{Service, ServiceMessage, ServiceType};
+use rcpp::Frame;
 use tokio::sync::oneshot;
 use tokio::test;
 use uuid::Uuid;
@@ -46,15 +46,15 @@ impl MockService {
 
 #[async_trait]
 impl Service for MockService {
-    async fn start(&mut self) -> rcp_client::Result<()> {
+    async fn start(&mut self) -> rcpc::Result<()> {
         Ok(())
     }
 
-    async fn stop(&mut self) -> rcp_client::Result<()> {
+    async fn stop(&mut self) -> rcpc::Result<()> {
         Ok(())
     }
 
-    async fn handle_message(&mut self, _message: ServiceMessage) -> rcp_client::Result<()> {
+    async fn handle_message(&mut self, _message: ServiceMessage) -> rcpc::Result<()> {
         // Simply acknowledge receipt of the message
         Ok(())
     }

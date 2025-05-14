@@ -1,5 +1,5 @@
 use bytes::{BufMut, BytesMut};
-use rcp_core::*;
+use rcpp::*;
 
 #[test]
 fn test_frame_creation() {

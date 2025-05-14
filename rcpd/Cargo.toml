@@ -36,7 +36,7 @@ all = ["api", "cli"]
 
 [dependencies]
 # Core dependencies
-rcp-core = { path = "../rcp-core" }
+rcpp = { path = "../rcpp" }
 # Removed rcp-server dependency as we're integrating it directly
 
 # Command line and async

@@ -1,7 +1,7 @@
 use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
-use rcp_client::Client;
-use rcp_core::AuthMethod;
+use rcpc::Client;
+use rcpp::AuthMethod;
 use tracing_subscriber::FmtSubscriber;
 use uuid::Uuid;
 
@@ -14,7 +14,7 @@ struct Cli {
     host: String,
 
     /// Server port
-    #[arg(short, long, default_value_t = rcp_client::DEFAULT_PORT)]
+    #[arg(short, long, default_value_t = rcpc::DEFAULT_PORT)]
     port: u16,
 
     /// Client name/description

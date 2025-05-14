@@ -15,7 +15,7 @@ pub use error::{Error, Result};
 pub use service::{builtin, Service, ServiceClient, ServiceFactory, ServiceMessage, ServiceType};
 
 /// Default port for RCP connections
-pub const DEFAULT_PORT: u16 = rcp_core::DEFAULT_PORT;
+pub const DEFAULT_PORT: u16 = rcpp::DEFAULT_PORT;
 
 /// Default connection timeout in seconds
 pub const DEFAULT_CONNECTION_TIMEOUT_SECS: u64 = 10;
@@ -29,7 +29,7 @@ pub const DEFAULT_RECONNECT_DELAY_MS: u64 = 2000;
 /// A simple example of using the RCP client:
 ///
 /// ```rust,no_run
-/// use rcp_client::{Client, ServiceType};
+/// use rcpc::{Client, ServiceType};
 /// use tokio::time::{sleep, Duration};
 ///
 /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {

@@ -5,7 +5,7 @@ use crate::{
     DEFAULT_CONNECTION_TIMEOUT_SECS, DEFAULT_KEEP_ALIVE_SECS, DEFAULT_RECONNECT_DELAY_MS,
 };
 use log::{debug, error, info, trace, warn};
-use rcp_core::{
+use rcpp::{
     Auth, AuthChallenge, AuthMethod, AuthPayload, AuthResponse, CommandId, ConnectionState, Frame,
     Protocol, SessionInfo, DEFAULT_PORT,
 };
@@ -338,7 +338,7 @@ impl Client {
         };
 
         // Serialize and send
-        let auth_data = rcp_core::utils::to_bytes(&auth_payload)?;
+        let auth_data = rcpp::utils::to_bytes(&auth_payload)?;
         let auth_frame = Frame::new(CommandId::Auth as u8, auth_data);
         protocol.write_frame(&auth_frame).await?;
 
@@ -358,7 +358,7 @@ impl Client {
         };
 
         // Parse challenge
-        let challenge: AuthChallenge = rcp_core::utils::from_bytes(challenge_frame.payload())?;
+        let challenge: AuthChallenge = rcpp::utils::from_bytes(challenge_frame.payload())?;
 
         // Handle challenge based on auth method
         match self.config.auth_method {
@@ -380,7 +380,7 @@ impl Client {
                 };
 
                 // Send response
-                let response_data = rcp_core::utils::to_bytes(&auth_response)?;
+                let response_data = rcpp::utils::to_bytes(&auth_response)?;
                 let response_frame = Frame::new(CommandId::Auth as u8, response_data);
                 protocol.write_frame(&response_frame).await?;
             }
@@ -409,7 +409,7 @@ impl Client {
         };
 
         // Parse session info
-        let session_info: SessionInfo = rcp_core::utils::from_bytes(session_frame.payload())?;
+        let session_info: SessionInfo = rcpp::utils::from_bytes(session_frame.payload())?;
 
         // Store session info
         *self.session_info.write().await = Some(session_info);

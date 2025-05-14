@@ -41,7 +41,7 @@ pub enum Error {
 
     /// Core library error
     #[error("Core error: {0}")]
-    Core(#[from] rcp_core::Error),
+    Core(#[from] rcpp::Error),
 
     /// Websocket protocol error
     #[error("WebSocket error: {0}")]

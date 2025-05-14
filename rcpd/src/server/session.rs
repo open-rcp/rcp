@@ -3,7 +3,7 @@ use crate::server::{
     error::{Error, Result},
 };
 use log::{debug, error, info};
-use rcp_core::{ConnectionState, Frame};
+use rcpp::{ConnectionState, Frame};
 use std::collections::HashMap;
 use tokio::net::TcpStream;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};

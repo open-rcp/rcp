@@ -1,4 +1,4 @@
-use rcp_core::*;
+use rcpp::*;
 
 #[test]
 fn test_auth_method_equality() {

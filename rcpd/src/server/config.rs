@@ -1,5 +1,5 @@
 use crate::server::error::Result;
-use rcp_core::DEFAULT_PORT;
+use rcpp::DEFAULT_PORT;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 
@@ -45,15 +45,12 @@ fn default_port() -> u16 {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TlsConfig {
     /// Whether TLS is enabled
-    #[serde(default)]
     pub enabled: bool,
 
     /// Path to the certificate file
-    #[serde(default)]
     pub cert_path: String,
 
     /// Path to the key file
-    #[serde(default)]
     pub key_path: String,
 }
 
@@ -75,7 +72,6 @@ pub struct AuthConfig {
     pub required: bool,
 
     /// Pre-shared key for authentication
-    #[serde(default)]
     pub psk: Option<String>,
 
     /// Allowed client IDs
@@ -126,15 +122,12 @@ impl Default for SessionConfig {
     }
 }
 
-/// Application configuration
-#[derive(Debug, Clone, Serialize, Deserialize)]
+/// Application configuration - simplified to avoid proc-macro issues
+#[derive(Debug, Clone)]
 pub struct ApplicationConfig {
     /// Whether to enable application management
-    #[serde(default)]
     pub enabled: bool,
-
     /// Application directory
-    #[serde(default)]
     pub app_dir: String,
 }
 
@@ -144,6 +137,66 @@ impl Default for ApplicationConfig {
             enabled: false,
             app_dir: "apps".to_string(),
         }
+    }
+}
+
+impl serde::Serialize for ApplicationConfig {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut state = serializer.serialize_struct("ApplicationConfig", 2)?;
+        state.serialize_field("enabled", &self.enabled)?;
+        state.serialize_field("app_dir", &self.app_dir)?;
+        state.end()
+    }
+}
+
+impl<'de> serde::Deserialize<'de> for ApplicationConfig {
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        struct ApplicationConfigVisitor;
+
+        impl<'de> serde::de::Visitor<'de> for ApplicationConfigVisitor {
+            type Value = ApplicationConfig;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                formatter.write_str("a struct ApplicationConfig")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<ApplicationConfig, V::Error>
+            where
+                V: serde::de::MapAccess<'de>,
+            {
+                let mut enabled = None;
+                let mut app_dir = None;
+
+                while let Some(key) = map.next_key::<String>()? {
+                    match key.as_str() {
+                        "enabled" => {
+                            enabled = Some(map.next_value()?);
+                        }
+                        "app_dir" => {
+                            app_dir = Some(map.next_value()?);
+                        }
+                        _ => {
+                            // Skip unknown fields
+                            let _ = map.next_value::<serde::de::IgnoredAny>()?;
+                        }
+                    }
+                }
+
+                Ok(ApplicationConfig {
+                    enabled: enabled.unwrap_or(false),
+                    app_dir: app_dir.unwrap_or_else(|| "apps".to_string()),
+                })
+            }
+        }
+
+        deserializer.deserialize_map(ApplicationConfigVisitor)
     }
 }
 

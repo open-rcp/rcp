@@ -1,4 +1,4 @@
-use rcp_client::ConnectionString;
+use rcpc::ConnectionString;
 use tokio::test;
 
 /// Test parsing a complete RCP URL

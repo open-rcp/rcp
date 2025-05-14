@@ -41,5 +41,5 @@ The RCP Core is designed with the following principles:
 This library is not meant to be used directly by applications but serves as a dependency for RCP server, client, and bridge implementations.
 
 ```rust
-use rcp_core::{Frame, Header, Command, Auth, Protocol};
+use rcpp::{Frame, Header, Command, Auth, Protocol};
 ```

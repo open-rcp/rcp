@@ -1,6 +1,6 @@
 use crate::error::{Error, Result};
 use log::{debug, trace};
-use rcp_core::{CommandId, Frame};
+use rcpp::{CommandId, Frame};
 use std::fmt;
 use std::str::FromStr;
 use tokio::sync::{mpsc, oneshot};

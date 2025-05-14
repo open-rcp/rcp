@@ -1,4 +1,4 @@
-use rcp_core::CommandId;
+use rcpp::CommandId;
 
 #[test]
 fn test_command_id_constants() {

@@ -1,4 +1,4 @@
-use rcp_client::{Error, Result};
+use rcpc::{Error, Result};
 use std::io;
 use tokio::test;
 
@@ -14,10 +14,10 @@ async fn test_from_io_error() {
     }
 }
 
-/// Test error conversion from rcp_core::Error
+/// Test error conversion from rcpp::Error
 #[test]
 async fn test_from_core_error() {
-    let core_error = rcp_core::Error::InvalidPayload;
+    let core_error = rcpp::Error::InvalidPayload;
     let rcp_error: Error = core_error.into();
 
     match rcp_error {

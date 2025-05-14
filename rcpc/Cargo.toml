@@ -1,5 +1,5 @@
 [package]
-name = "rcp-client"
+name = "rcpc"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
@@ -10,15 +10,15 @@ description = "Client library for the Rust/Remote Control Protocol (RCP)"
 
 # Explicitly define both lib and bin targets
 [[bin]]
-name = "rcp-client"
+name = "rcpc"
 path = "src/main.rs"
 
 [lib]
-name = "rcp_client"
+name = "rcpc"
 path = "src/lib.rs"
 
 [dependencies]
-rcp-core = { workspace = true }
+rcpp = { workspace = true }
 tokio = { workspace = true }
 thiserror = { workspace = true }
 anyhow = { workspace = true }

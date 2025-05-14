@@ -1,5 +1,5 @@
-use rcp_client::{Client, ClientState};
-use rcp_core::AuthMethod;
+use rcpc::{Client, ClientState};
+use rcpp::AuthMethod;
 use tokio::test;
 use uuid::Uuid;
 

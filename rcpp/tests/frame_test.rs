@@ -1,5 +1,5 @@
 // filepath: /Volumes/EXT/repos/open-rcp/rcp/rcp-core/tests/frame_test.rs
-use rcp_core::{CommandId, Frame};
+use rcpp::{CommandId, Frame};
 
 #[test]
 fn test_frame_creation() {

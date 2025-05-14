@@ -1,5 +1,5 @@
 // filepath: /Volumes/EXT/repos/open-rcp/rcp/rcp-core/tests/protocol_test.rs
-use rcp_core::*;
+use rcpp::*;
 
 #[test]
 fn test_connection_state_transitions() {

@@ -1,12 +1,12 @@
 [package]
-name = "rcp-core"
+name = "rcpp"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
 homepage.workspace = true
-description = "Core protocol definitions for the Rust/Remote Control Protocol (RCP)"
+description = "Protocol definitions for the Rust/Remote Control Protocol (RCP)"
 
 # No edition-specific features as this is a core module that remains standard across all editions
 [features]

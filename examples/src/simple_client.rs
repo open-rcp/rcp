@@ -1,4 +1,4 @@
-use rcp_client::ClientBuilder;
+use rcpc::ClientBuilder;
 use std::error::Error;
 use std::process::{Command, Stdio};
 use std::io::{self, Write};
