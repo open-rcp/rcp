@@ -13,7 +13,7 @@ use colored::Colorize;
 use std::fmt::Display;
 
 #[cfg(feature = "cli")]
-use crate::cli::{Cli, utils::OutputFormatter};
+use crate::{cli::utils::OutputFormatter, Cli};
 
 /// Application representation
 #[cfg(feature = "cli")]
@@ -35,7 +35,7 @@ impl Display for Application {
         } else {
             "disabled".red()
         };
-        
+
         write!(
             f,
             "{} - {} ({})\n  Path: {}\n  Args: {}\n  Working Dir: {}",
@@ -67,9 +67,7 @@ pub async fn handle_app_command(cli: &mut Cli, command: &AppCommand) -> Result<(
             arguments,
             working_dir,
             enabled,
-        } => {
-            create_application(cli, name, path, arguments, working_dir.as_deref(), *enabled).await
-        }
+        } => create_application(cli, name, path, arguments, working_dir.as_deref(), *enabled).await,
         AppCommand::Update {
             id,
             name,
@@ -182,8 +180,8 @@ pub enum AppCommand {
 /// List available applications
 #[cfg(feature = "cli")]
 async fn list_applications(cli: &mut Cli, filter: Option<&str>) -> Result<()> {
-    let mut formatter = OutputFormatter::new(cli.config.json_output);
-    
+    let formatter = OutputFormatter::new(cli.json, true, false);
+
     // TODO: Implement service client request to get applications
     let applications = vec![
         // This is just sample data - replace with actual service client call
@@ -204,7 +202,7 @@ async fn list_applications(cli: &mut Cli, filter: Option<&str>) -> Result<()> {
             enabled: false,
         },
     ];
-    
+
     let filtered = if let Some(filter_text) = filter {
         applications
             .into_iter()
@@ -213,7 +211,7 @@ async fn list_applications(cli: &mut Cli, filter: Option<&str>) -> Result<()> {
     } else {
         applications
     };
-    
+
     formatter.output_list(&filtered, "Applications", "No applications found");
     Ok(())
 }
@@ -221,8 +219,8 @@ async fn list_applications(cli: &mut Cli, filter: Option<&str>) -> Result<()> {
 /// Show application details
 #[cfg(feature = "cli")]
 async fn show_application(cli: &mut Cli, id: &str) -> Result<()> {
-    let mut formatter = OutputFormatter::new(cli.config.json_output);
-    
+    let formatter = OutputFormatter::new(cli.json, true, false);
+
     // TODO: Implement service client request to get application by ID
     // This is just sample data - replace with actual service client call
     let application = Application {
@@ -233,7 +231,7 @@ async fn show_application(cli: &mut Cli, id: &str) -> Result<()> {
         working_dir: None,
         enabled: true,
     };
-    
+
     formatter.output_item(&application, "Application Details");
     Ok(())
 }
@@ -248,8 +246,8 @@ async fn create_application(
     working_dir: Option<&str>,
     enabled: bool,
 ) -> Result<()> {
-    let mut formatter = OutputFormatter::new(cli.config.json_output);
-    
+    let formatter = OutputFormatter::new(cli.json, true, false);
+
     // TODO: Implement service client request to create application
     // This is just sample code - replace with actual service client call
     let application = Application {
@@ -260,7 +258,7 @@ async fn create_application(
         working_dir: working_dir.map(|s| s.to_string()),
         enabled,
     };
-    
+
     formatter.output_success(&format!("Application '{}' created successfully", name));
     formatter.output_item(&application, "Application Details");
     Ok(())
@@ -277,11 +275,11 @@ async fn update_application(
     working_dir: Option<&str>,
     enabled: Option<bool>,
 ) -> Result<()> {
-    let mut formatter = OutputFormatter::new(cli.config.json_output);
-    
+    let formatter = OutputFormatter::new(cli.json, true, false);
+
     // TODO: Implement service client request to update application
     // This is just sample code - replace with actual service client call
-    
+
     // Building a change description for output
     let mut changes = Vec::new();
     if let Some(name) = name {
@@ -297,9 +295,12 @@ async fn update_application(
         changes.push(format!("working directory: {}", dir));
     }
     if let Some(status) = enabled {
-        changes.push(format!("status: {}", if status { "enabled" } else { "disabled" }));
+        changes.push(format!(
+            "status: {}",
+            if status { "enabled" } else { "disabled" }
+        ));
     }
-    
+
     formatter.output_success(&format!(
         "Application '{}' updated successfully: {}",
         id,
@@ -311,11 +312,11 @@ async fn update_application(
 /// Delete an application
 #[cfg(feature = "cli")]
 async fn delete_application(cli: &mut Cli, id: &str) -> Result<()> {
-    let mut formatter = OutputFormatter::new(cli.config.json_output);
-    
+    let formatter = OutputFormatter::new(cli.json, true, false);
+
     // TODO: Implement service client request to delete application
     // This is just sample code - replace with actual service client call
-    
+
     formatter.output_success(&format!("Application '{}' deleted successfully", id));
     Ok(())
 }
@@ -323,11 +324,11 @@ async fn delete_application(cli: &mut Cli, id: &str) -> Result<()> {
 /// Enable or disable an application
 #[cfg(feature = "cli")]
 async fn set_application_status(cli: &mut Cli, id: &str, enabled: bool) -> Result<()> {
-    let mut formatter = OutputFormatter::new(cli.config.json_output);
-    
+    let formatter = OutputFormatter::new(cli.json, true, false);
+
     // TODO: Implement service client request to enable/disable application
     // This is just sample code - replace with actual service client call
-    
+
     let status = if enabled { "enabled" } else { "disabled" };
     formatter.output_success(&format!("Application '{}' {} successfully", id, status));
     Ok(())

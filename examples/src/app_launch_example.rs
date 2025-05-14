@@ -1,12 +1,12 @@
 use anyhow::Result;
-use rcp_client::{service::ServiceType, ClientBuilder};
-use rcp_core::{AuthMethod, CommandId, Frame};
+use rcpc::{service::ServiceType, ClientBuilder};
+use rcpp::{AuthMethod, CommandId, Frame};
 use serde::{Deserialize, Serialize};
 use std::io::{self, Write};
 use std::time::Duration;
 use uuid::Uuid;
 
-// Structure that matches rcp_core::LaunchAppCommand
+// Structure that matches rcpp::LaunchAppCommand
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LaunchAppCommand {
     /// Launch flags
@@ -126,7 +126,7 @@ fn get_user_input() -> String {
 
 /// Launch an application with optional arguments
 async fn launch_app(
-    service: &rcp_client::service::ServiceClient,
+    service: &rcpc::service::ServiceClient,
     app_path: &str,
     args: Option<String>,
 ) -> Result<()> {

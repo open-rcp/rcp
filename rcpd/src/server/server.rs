@@ -57,26 +57,21 @@ impl Server {
 
             // Create a new session
             let session_id = Uuid::new_v4();
-            let session = Session::new(
-                session_id,
-                socket,
-                self.config.clone(),
-                peer_addr_str,
-            );
-            
+            let session = Session::new(session_id, socket, self.config.clone(), peer_addr_str);
+
             // Store the session
             {
                 let mut sessions = self.sessions.lock().await;
                 sessions.insert(session_id, Arc::new(Mutex::new(session)));
             }
-            
+
             // Spawn a task to handle the session
             let server_clone = self.clone();
             tokio::spawn(async move {
                 if let Err(e) = server_clone.handle_session(session_id).await {
                     error!("Session error: {}", e);
                 }
-                
+
                 // Always clean up the session
                 let _ = server_clone.remove_session(session_id).await;
             });
@@ -107,13 +102,13 @@ impl Server {
     /// Remove a session
     async fn remove_session(&self, session_id: Uuid) -> Result<()> {
         let mut sessions = self.sessions.lock().await;
-        
+
         if let Some(session_arc) = sessions.get(&session_id) {
             // Try to disconnect the session properly
             let mut session = session_arc.lock().await;
             let _ = session.disconnect().await;
         }
-        
+
         sessions.remove(&session_id);
         debug!("Session removed: {}", session_id);
         Ok(())

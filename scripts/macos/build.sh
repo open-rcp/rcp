@@ -9,7 +9,8 @@ echo
 BUILD_TYPE="debug"
 BUILD_TARGET="all"
 RUN_AFTER_BUILD=false
-RUN_COMPONENT="service"
+RUN_COMPONENT="rcpd"
+API_FEATURE=false
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -23,26 +24,20 @@ while [[ $# -gt 0 ]]; do
             BUILD_TYPE="debug"
             shift
             ;;
-        --daemon)
-            BUILD_TARGET="daemon"
+        --rcpp)
+            BUILD_TARGET="rcpp"
             shift
             ;;
-        --server)
-            BUILD_TARGET="daemon"
-            echo "Warning: --server option is deprecated, use --daemon instead"
+        --rcpc)
+            BUILD_TARGET="rcpc"
             shift
             ;;
-        --service)
-            BUILD_TARGET="daemon"
-            echo "Warning: --service option is deprecated, use --daemon instead"
+        --rcpd)
+            BUILD_TARGET="rcpd"
             shift
             ;;
-        --client)
-            BUILD_TARGET="client"
-            shift
-            ;;
-        --ws-bridge)
-            BUILD_TARGET="ws-bridge"
+        --examples)
+            BUILD_TARGET="examples"
             shift
             ;;
         --all)

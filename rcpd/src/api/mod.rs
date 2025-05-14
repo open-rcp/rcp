@@ -1,9 +1,9 @@
 #[cfg(feature = "api")]
 pub mod config;
 #[cfg(feature = "api")]
-pub mod server;
-#[cfg(feature = "api")]
 pub mod handlers;
+#[cfg(feature = "api")]
+pub mod server;
 
 // Re-exports
 #[cfg(feature = "api")]

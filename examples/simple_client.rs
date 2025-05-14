@@ -1,4 +1,4 @@
-use rcp_client::{Client, ClientBuilder, AuthMethod};
+use rcpc::{Client, ClientBuilder, AuthMethod};
 use std::error::Error;
 
 #[tokio::main]

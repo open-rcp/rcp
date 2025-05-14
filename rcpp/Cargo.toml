@@ -1,0 +1,29 @@
+[package]
+name = "rcpp"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "Protocol definitions for the Rust/Remote Control Protocol (RCP)"
+
+# No edition-specific features as this is a core module that remains standard across all editions
+[features]
+default = []
+
+[dependencies]
+tokio = { workspace = true }
+bytes = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+serde_bytes = { workspace = true }
+log = { workspace = true }
+bincode = { workspace = true }
+sha2 = { workspace = true }
+aes-gcm = { workspace = true }
+rand = { workspace = true }
+byteorder = { workspace = true }
+uuid = { workspace = true }

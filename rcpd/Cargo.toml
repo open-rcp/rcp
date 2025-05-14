@@ -33,10 +33,11 @@ cli = [
     "atty"
 ]
 all = ["api", "cli"]
+dirs = ["dep:dirs"]
 
 [dependencies]
 # Core dependencies
-rcp-core = { path = "../rcp-core" }
+rcpp = { path = "../rcpp" }
 # Removed rcp-server dependency as we're integrating it directly
 
 # Command line and async

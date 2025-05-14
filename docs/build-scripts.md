@@ -37,10 +37,10 @@ All build scripts support similar arguments across platforms:
 
 ```bash
 # On Windows:
-scripts\windows\build.bat --release --server --run
+scripts\windows\build.bat --release --rcpd --run
 
 # On Linux/macOS:
-./scripts/linux/build.sh --release --client
+./scripts/linux/build.sh --release --rcpc
 ```
 
 ### Making Scripts Executable (Linux/macOS)
@@ -78,14 +78,15 @@ scripts\windows\build.bat [options]
 Available options:
 - `--release` - Build in release mode (optimized binaries)
 - `--debug` - Build in debug mode (default)
-- `--service` - Build the unified service component (with integrated server)  
-- `--client` - Build only the client component
-- `--ws-bridge` - Build only the WebSocket bridge component
+- `--rcpp` - Build the RCP protocol library
+- `--rcpc` - Build the RCP client library and CLI
+- `--rcpd` - Build the RCP daemon with integrated server
+- `--examples` - Build the example applications
 - `--all` - Build all components (default)
-- `--run-service` - Run the unified service (with integrated server) after building
-- `--run-client` - Run the client component after building
-- `--run-ws-bridge` - Run the WebSocket bridge component after building
-- `--api` - Enable the integrated API component when building the service
+- `--run-rcpd` - Run the RCP daemon after building
+- `--run-rcpc` - Run the RCP client after building
+- `--run-examples` - Run the example applications after building
+- `--api` - Enable the API feature when building rcpd
 
 ### Linux
 
@@ -169,38 +170,38 @@ PATH=[Updated to include OpenSSL]
 
 ## Examples
 
-### Building the Server in Release Mode and Running It
+### Building the RCP Daemon in Release Mode and Running It
 
 Windows:
 ```
-scripts\windows\build.bat --release --server --run
+scripts\windows\build.bat --release --rcpd --run-rcpd
 ```
 
 Linux:
 ```bash
-./scripts/linux/build.sh --release --server --run
+./scripts/linux/build.sh --release --rcpd --run-rcpd
 ```
 
 macOS:
 ```bash
-./scripts/macos/build.sh --release --server --run
+./scripts/macos/build.sh --release --rcpd --run-rcpd
 ```
 
-### Building Only the Client in Debug Mode
+### Building Only the RCP Client in Debug Mode
 
 Windows:
 ```
-scripts\windows\build.bat --debug --client
+scripts\windows\build.bat --debug --rcpc
 ```
 
 Linux:
 ```bash
-./scripts/linux/build.sh --debug --client
+./scripts/linux/build.sh --debug --rcpc
 ```
 
 macOS:
 ```bash
-./scripts/macos/build.sh --debug --client
+./scripts/macos/build.sh --debug --rcpc
 ```
 
 ### Building All Components in Release Mode
@@ -247,3 +248,12 @@ All build scripts follow a similar pattern:
 
 1. Parse command line arguments
 2. Set build type and target components
+3. Execute build commands with appropriate flags
+4. Run components if requested
+
+## Additional Resources
+
+For more information:
+
+- See [scripts/README.md](../scripts/README.md) for a detailed guide to all available scripts
+- See [development-workflow.md](development-workflow.md) for a recommended development workflow

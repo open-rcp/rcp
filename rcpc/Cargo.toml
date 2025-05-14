@@ -1,0 +1,38 @@
+[package]
+name = "rcpc"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "Client library for the Rust/Remote Control Protocol (RCP)"
+
+# Explicitly define both lib and bin targets
+[[bin]]
+name = "rcpc"
+path = "src/main.rs"
+
+[lib]
+name = "rcpc"
+path = "src/lib.rs"
+
+[dependencies]
+rcpp = { workspace = true }
+tokio = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+log = { workspace = true }
+env_logger = { workspace = true }
+clap = { version = "4.5.37", features = ["derive"] }
+serde = { workspace = true }
+serde_json = { workspace = true }
+uuid = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+futures-util = { workspace = true }
+rustls = { workspace = true }
+webpki-roots = { workspace = true }
+async-trait = "0.1.88"
+tokio-tungstenite = "0.26.2"
+url = "2.5.4"

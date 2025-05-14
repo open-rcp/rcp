@@ -1,4 +1,4 @@
-#[cfg(feature = "cli")] 
+#[cfg(feature = "cli")]
 use rcpd::cli::utils;
 
 fn main() {
@@ -19,7 +19,7 @@ fn main() {
         println!("3600 seconds: {}", hours);
         println!("172800 seconds: {}", days);
     }
-    
+
     #[cfg(not(feature = "cli"))]
     {
         println!("CLI feature is not enabled. Enable it with --features cli");

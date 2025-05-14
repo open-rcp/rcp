@@ -1,5 +1,4 @@
 use crate::server::error::{Error, Result};
-use log::error;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -106,7 +105,7 @@ impl UserManager {
     /// Add a new user
     pub async fn add_user(&self, user: User) -> Result<()> {
         let mut users = self.users.write().await;
-        
+
         // Check if username already exists
         for existing in users.values() {
             if existing.username == user.username {
@@ -116,7 +115,7 @@ impl UserManager {
                 )));
             }
         }
-        
+
         users.insert(user.id, user);
         Ok(())
     }
@@ -124,7 +123,7 @@ impl UserManager {
     /// Update a user
     pub async fn update_user(&self, user: User) -> Result<()> {
         let mut users = self.users.write().await;
-        
+
         // Check if user exists
         if !users.contains_key(&user.id) {
             return Err(Error::NotFound(format!(
@@ -132,7 +131,7 @@ impl UserManager {
                 user.id
             )));
         }
-        
+
         users.insert(user.id, user);
         Ok(())
     }
@@ -140,11 +139,11 @@ impl UserManager {
     /// Remove a user
     pub async fn remove_user(&self, id: &Uuid) -> Result<()> {
         let mut users = self.users.write().await;
-        
+
         if users.remove(id).is_none() {
             return Err(Error::NotFound(format!("User with ID '{}' not found", id)));
         }
-        
+
         Ok(())
     }
 

@@ -6,16 +6,16 @@ This guide provides detailed instructions for implementing and using the Rust/Re
 
 1. [Introduction](#introduction)
 2. [Architecture Overview](#architecture-overview)
-3. [Client Implementation](#client-implementation)
-4. [RCP Service Implementation](#service-implementation)
+3. [Protocol Library (rcpp)](#protocol-library)
+4. [Client Implementation (rcpc)](#client-implementation)
+5. [RCP Daemon Implementation (rcpd)](#daemon-implementation)
    - [Server Component](#server-component)
    - [API Component](#api-component)
-5. [CLI Implementation](#cli-implementation)
-6. [Desk Implementation](#desk-implementation)
-7. [Authentication](#authentication)
-8. [Error Handling](#error-handling)
-9. [Best Practices](#best-practices)
-10. [Examples](#examples)
+   - [CLI Component](#cli-component)
+6. [Authentication](#authentication)
+7. [Error Handling](#error-handling)
+8. [Best Practices](#best-practices)
+9. [Examples](#examples)
 
 ## Introduction
 
@@ -28,17 +28,17 @@ Key features:
 - Efficient data streaming
 - Reconnection support
 - Cross-platform compatibility
-- Runtime management via service
-- Administration via CLI, API, and Desk interface
+- Runtime management via daemon
+- Integrated CLI and optional API interface
 
 ## Architecture Overview
 
 RCP follows a modular architecture with the following key components:
 
-1. **Core Protocol**: Defines the basic message format, framing, and protocol state machine.
-2. **Authentication**: Mechanisms for authenticating clients with the server.
-3. **Services**: Pluggable components that provide specific functionality.
-4. **Session Management**: Handling of client sessions and permissions.
+1. **Protocol Library (rcpp)**: Defines the basic message format, framing, and protocol state machine.
+2. **Client Library (rcpc)**: Provides client connectivity and control interface.
+3. **Daemon (rcpd)**: Provides server functionality, session management, and administration.
+4. **Authentication**: Multiple methods for secure client authentication.
 5. **Runtime Service**: System service that manages application lifecycle.
 6. **CLI**: Command-line interface for administration.
 7. **API**: RESTful API for remote management.

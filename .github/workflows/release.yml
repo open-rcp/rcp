@@ -74,19 +74,19 @@ jobs:
             Each package includes the binary and necessary configuration files.
             
             #### Windows
-            - \`rcpd-windows.zip\`
-            - \`rcp-client-windows.zip\`
-            - \`rcp-bridge-windows.zip\`
+            - \`rcpp-windows.zip\` (RCP Protocol)
+            - \`rcpc-windows.zip\` (RCP Client)
+            - \`rcpd-windows.zip\` (RCP Daemon)
             
             #### Linux
-            - \`rcpd-linux.tar.gz\`
-            - \`rcp-client-linux.tar.gz\`
-            - \`rcp-bridge-linux.tar.gz\`
+            - \`rcpp-linux.tar.gz\` (RCP Protocol)
+            - \`rcpc-linux.tar.gz\` (RCP Client)
+            - \`rcpd-linux.tar.gz\` (RCP Daemon)
             
             #### macOS
-            - \`rcp-server-macos.tar.gz\`
-            - \`rcp-client-macos.tar.gz\`
-            - \`rcp-bridge-macos.tar.gz\``
+            - \`rcpp-macos.tar.gz\` (RCP Protocol)
+            - \`rcpc-macos.tar.gz\` (RCP Client)
+            - \`rcpd-macos.tar.gz\` (RCP Daemon)`
           });
           
           core.setOutput('upload_url', release.upload_url);
@@ -139,14 +139,70 @@ jobs:
     - name: Run Clippy
       run: cargo clippy --all-targets --all-features -- -D warnings
     
+    - name: Build RCP Protocol
+      run: cargo build --release --package rcpp --target ${{ matrix.target }}
+    
+    - name: Build RCP Client
+      run: cargo build --release --package rcpc --target ${{ matrix.target }}
+    
     - name: Build RCP Daemon
       run: cargo build --release --package rcpd --target ${{ matrix.target }}
     
-    - name: Build Client
-      run: cargo build --release --package rcp-client --target ${{ matrix.target }}
+    # Protocol package preparation
+    - name: Create Protocol Package Directory
+      run: mkdir -p rcpp-pkg
+      shell: bash
     
-    - name: Build WebSocket Bridge
-      run: cargo build --release --package rcp-ws-bridge --target ${{ matrix.target }}
+    - name: Copy Protocol Binary (Windows)
+      if: matrix.platform == 'windows'
+      run: |
+        cp target/${{ matrix.target }}/release/rcpp.exe rcpp-pkg/rcpp.exe
+        cp config.toml rcpp-pkg/config.toml
+      shell: bash
+    
+    - name: Copy Protocol Binary (Linux/macOS)
+      if: matrix.platform != 'windows'
+      run: |
+        cp target/${{ matrix.target }}/release/rcpp rcpp-pkg/rcpp
+        cp config.toml rcpp-pkg/config.toml
+      shell: bash
+    
+    - name: Package Protocol (Windows)
+      if: matrix.platform == 'windows'
+      run: Compress-Archive -Path rcpp-pkg/* -DestinationPath rcpp-windows.zip
+      shell: pwsh
+    
+    - name: Package Protocol (Linux/macOS)
+      if: matrix.platform != 'windows'
+      run: tar -czf rcpp-${{ matrix.platform }}.${{ matrix.archive_ext }} -C rcpp-pkg .
+      shell: bash
+    
+    # Client package preparation
+    - name: Create Client Package Directory
+      run: mkdir -p rcpc-pkg
+      shell: bash
+    
+    - name: Copy Client Binary (Windows)
+      if: matrix.platform == 'windows'
+      run: |
+        cp target/${{ matrix.target }}/release/rcpc.exe rcpc-pkg/rcpc.exe
+      shell: bash
+    
+    - name: Copy Client Binary (Linux/macOS)
+      if: matrix.platform != 'windows'
+      run: |
+        cp target/${{ matrix.target }}/release/rcpc rcpc-pkg/rcpc
+      shell: bash
+    
+    - name: Package Client (Windows)
+      if: matrix.platform == 'windows'
+      run: Compress-Archive -Path rcpc-pkg/* -DestinationPath rcpc-windows.zip
+      shell: pwsh
+    
+    - name: Package Client (Linux/macOS)
+      if: matrix.platform != 'windows'
+      run: tar -czf rcpc-${{ matrix.platform }}.${{ matrix.archive_ext }} -C rcpc-pkg .
+      shell: bash
     
     # Daemon package preparation
     - name: Create Daemon Package Directory
@@ -177,62 +233,6 @@ jobs:
       run: tar -czf rcpd-${{ matrix.platform }}.${{ matrix.archive_ext }} -C rcpd-pkg .
       shell: bash
     
-    # Client package preparation
-    - name: Create Client Package Directory
-      run: mkdir -p rcp-client-pkg
-      shell: bash
-    
-    - name: Copy Client Binary (Windows)
-      if: matrix.platform == 'windows'
-      run: |
-        cp target/${{ matrix.target }}/release/rcp-client.exe rcp-client-pkg/rcp-client.exe
-      shell: bash
-    
-    - name: Copy Client Binary (Linux/macOS)
-      if: matrix.platform != 'windows'
-      run: |
-        cp target/${{ matrix.target }}/release/rcp-client rcp-client-pkg/rcp-client
-      shell: bash
-    
-    - name: Package Client (Windows)
-      if: matrix.platform == 'windows'
-      run: Compress-Archive -Path rcp-client-pkg/* -DestinationPath rcp-client-windows.zip
-      shell: pwsh
-    
-    - name: Package Client (Linux/macOS)
-      if: matrix.platform != 'windows'
-      run: tar -czf rcp-client-${{ matrix.platform }}.${{ matrix.archive_ext }} -C rcp-client-pkg .
-      shell: bash
-    
-    # Bridge package preparation
-    - name: Create Bridge Package Directory
-      run: mkdir -p rcp-bridge-pkg
-      shell: bash
-    
-    - name: Copy Bridge Binary (Windows)
-      if: matrix.platform == 'windows'
-      run: |
-        cp target/${{ matrix.target }}/release/rcp-ws-bridge.exe rcp-bridge-pkg/rcp-bridge.exe
-        cp config.toml rcp-bridge-pkg/config.toml
-      shell: bash
-    
-    - name: Copy Bridge Binary (Linux/macOS)
-      if: matrix.platform != 'windows'
-      run: |
-        cp target/${{ matrix.target }}/release/rcp-ws-bridge rcp-bridge-pkg/rcp-bridge
-        cp config.toml rcp-bridge-pkg/config.toml
-      shell: bash
-    
-    - name: Package Bridge (Windows)
-      if: matrix.platform == 'windows'
-      run: Compress-Archive -Path rcp-bridge-pkg/* -DestinationPath rcp-bridge-windows.zip
-      shell: pwsh
-    
-    - name: Package Bridge (Linux/macOS)
-      if: matrix.platform != 'windows'
-      run: tar -czf rcp-bridge-${{ matrix.platform }}.${{ matrix.archive_ext }} -C rcp-bridge-pkg .
-      shell: bash
-    
     # Upload assets
     - name: Upload Release Assets
       uses: actions/github-script@v7
@@ -249,9 +249,9 @@ jobs:
           
           // Assets to upload
           const assets = [
-            { name: `rcpd-${platform}.${ext}`, path: `./rcpd-${platform}.${ext}` },
-            { name: `rcp-client-${platform}.${ext}`, path: `./rcp-client-${platform}.${ext}` },
-            { name: `rcp-bridge-${platform}.${ext}`, path: `./rcp-bridge-${platform}.${ext}` }
+            { name: `rcpp-${platform}.${ext}`, path: `./rcpp-${platform}.${ext}` },
+            { name: `rcpc-${platform}.${ext}`, path: `./rcpc-${platform}.${ext}` },
+            { name: `rcpd-${platform}.${ext}`, path: `./rcpd-${platform}.${ext}` }
           ];
           
           // Get release by tag
@@ -319,14 +319,13 @@ jobs:
           #   cargo login ${{ secrets.CRATES_IO_TOKEN }}
           #   
           #   # Try to publish each crate, but continue on error
-          #   cd rcp-core && cargo publish --allow-dirty || echo "Failed to publish rcp-core, it may already exist"
+          #   cd rcpp && cargo publish --allow-dirty || echo "Failed to publish rcpp, it may already exist"
           #   
           #   # Wait a bit for crates.io to index
           #   sleep 30
           #   
-          #   cd ../rcp-client && cargo publish --allow-dirty || echo "Failed to publish rcp-client, it may already exist"
-          #   cd ../rcp-server && cargo publish --allow-dirty || echo "Failed to publish rcp-server, it may already exist"
-          #   cd ../rcp-ws-bridge && cargo publish --allow-dirty || echo "Failed to publish rcp-ws-bridge, it may already exist"
+          #   cd ../rcpc && cargo publish --allow-dirty || echo "Failed to publish rcpc, it may already exist"
+          #   cd ../rcpd && cargo publish --allow-dirty || echo "Failed to publish rcpd, it may already exist"
           # else
           #   echo "CRATES_IO_TOKEN is not set. Skipping publish to crates.io."
           #   echo "To publish to crates.io, add a repository secret named CRATES_IO_TOKEN"

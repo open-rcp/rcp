@@ -1,6 +1,5 @@
 #[cfg(feature = "api")]
 /// API configuration module
-
 use serde::{Deserialize, Serialize};
 
 /// Configuration for the API server component
@@ -17,11 +16,11 @@ pub struct ApiConfig {
     /// Database connection string
     #[serde(default = "default_database_url")]
     pub database_url: String,
-    
+
     /// CORS allowed origins
     #[serde(default)]
     pub cors_allowed_origins: Vec<String>,
-    
+
     /// Authentication settings
     #[serde(default)]
     pub auth: ApiAuthConfig,
@@ -37,7 +36,7 @@ pub struct ApiAuthConfig {
     /// JWT secret for token-based authentication
     #[serde(default)]
     pub jwt_secret: Option<String>,
-    
+
     /// Token expiration time in seconds
     #[serde(default = "default_token_expiration")]
     pub token_expiration: u64,

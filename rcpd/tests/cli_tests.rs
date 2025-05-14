@@ -7,7 +7,7 @@
 mod cli_tests {
     use clap::Parser;
     use rcpd::{Cli, RcpdCommand};
-    
+
     #[test]
     fn test_parse_daemon_command() {
         let cli = Cli::parse_from(&["rcpd", "daemon"]);
@@ -16,7 +16,7 @@ mod cli_tests {
             _ => panic!("Expected Daemon command"),
         }
     }
-    
+
     #[test]
     fn test_parse_server_command() {
         let cli = Cli::parse_from(&["rcpd", "server", "status"]);
@@ -27,7 +27,7 @@ mod cli_tests {
             _ => panic!("Expected Server command"),
         }
     }
-    
+
     #[test]
     fn test_parse_service_command() {
         let cli = Cli::parse_from(&["rcpd", "service", "status"]);
@@ -38,7 +38,7 @@ mod cli_tests {
             _ => panic!("Expected Service command"),
         }
     }
-    
+
     #[test]
     fn test_parse_app_command() {
         let cli = Cli::parse_from(&["rcpd", "app", "list"]);
@@ -49,7 +49,7 @@ mod cli_tests {
             _ => panic!("Expected App command"),
         }
     }
-    
+
     #[test]
     fn test_parse_session_command() {
         let cli = Cli::parse_from(&["rcpd", "session", "list"]);
@@ -60,7 +60,7 @@ mod cli_tests {
             _ => panic!("Expected Session command"),
         }
     }
-    
+
     #[test]
     fn test_parse_user_command() {
         let cli = Cli::parse_from(&["rcpd", "user", "list"]);
@@ -71,7 +71,7 @@ mod cli_tests {
             _ => panic!("Expected User command"),
         }
     }
-    
+
     #[test]
     fn test_parse_config_command() {
         let cli = Cli::parse_from(&["rcpd", "config", "get", "server.port"]);
@@ -82,7 +82,7 @@ mod cli_tests {
             _ => panic!("Expected Config command"),
         }
     }
-    
+
     #[test]
     fn test_parse_diag_command() {
         let cli = Cli::parse_from(&["rcpd", "diag", "system"]);
@@ -93,7 +93,7 @@ mod cli_tests {
             _ => panic!("Expected Diag command"),
         }
     }
-    
+
     #[test]
     fn test_parse_completions_command() {
         let cli = Cli::parse_from(&["rcpd", "completions", "bash"]);
@@ -104,10 +104,10 @@ mod cli_tests {
             _ => panic!("Expected Completions command"),
         }
     }
-    
+
     // Import necessary types
     use rcpd::cli::commands::{
-        ServerCommand, ServiceCommand, AppCommand, SessionCommand,
-        ConfigCommand, UserCommand, DiagCommand,
+        AppCommand, ConfigCommand, DiagCommand, ServerCommand, ServiceCommand, SessionCommand,
+        UserCommand,
     };
 }

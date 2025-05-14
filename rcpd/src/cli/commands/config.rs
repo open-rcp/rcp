@@ -23,11 +23,16 @@ pub async fn handle_config_command(
             if let (Some(k), Some(v)) = (key, value) {
                 set_config(k, v, config_path).await
             } else {
-                Err(CliError::CommandError("Both key and value are required for set".to_string()))
+                Err(CliError::CommandExecutionError(
+                    "Both key and value are required for set".to_string(),
+                ))
             }
-        },
+        }
         "list" => list_config(config_path).await,
-        _ => Err(CliError::CommandError(format!("Unknown config action: {}", action))),
+        _ => Err(CliError::CommandExecutionError(format!(
+            "Unknown config action: {}",
+            action
+        ))),
     }
 }
 
@@ -35,30 +40,38 @@ pub async fn handle_config_command(
 #[cfg(feature = "cli")]
 async fn get_config(key: Option<&str>, config_path: Option<PathBuf>) -> Result<(), CliError> {
     use crate::cli::utils::{load_config, OutputFormatter};
-    
+
     let config = load_config(config_path)?;
     let formatter = OutputFormatter::new(true, false, false);
-    
+
     if let Some(key) = key {
         // Get specific config value
         match key {
-            "host" => formatter.info(&format!("host = {}", config.connection.host)),
-            "port" => formatter.info(&format!("port = {}", config.connection.port)),
-            "use_tls" => formatter.info(&format!("use_tls = {}", config.connection.use_tls)),
-            "verify_cert" => formatter.info(&format!("verify_cert = {}", config.connection.verify_cert)),
-            "log_level" => formatter.info(&format!("log_level = {}", config.log_level)),
-            "format" => formatter.info(&format!("format = {}", config.format)),
-            "color" => formatter.info(&format!("color = {}", config.color)),
-            "json_output" => formatter.info(&format!("json_output = {}", config.json_output)),
-            "quiet" => formatter.info(&format!("quiet = {}", config.quiet)),
-            "timeout_seconds" => formatter.info(&format!("timeout_seconds = {}", config.timeout_seconds)),
-            _ => return Err(CliError::ConfigError(format!("Unknown config key: {}", key))),
+            "host" => formatter.info(&format!("host = {}", config.service.host)),
+            "port" => formatter.info(&format!("port = {}", config.service.port)),
+            "use_tls" => formatter.info(&format!("use_tls = {}", config.service.use_tls)),
+            "verify_cert" => {
+                formatter.info(&format!("verify_cert = {}", config.service.skip_verify))
+            }
+            "format" => formatter.info(&format!("format = {:?}", config.global.format)),
+            "color" => formatter.info(&format!("color = {}", config.global.color)),
+            "json" => formatter.info(&format!("json = {}", config.global.json)),
+            "quiet" => formatter.info(&format!("quiet = {}", config.global.quiet)),
+            "timeout" => formatter.info(&format!("timeout = {}", config.service.timeout)),
+            _ => {
+                return Err(CliError::ConfigurationError(format!(
+                    "Unknown config key: {}",
+                    key
+                )));
+            }
         }
     } else {
         // Return error - need to specify a key
-        return Err(CliError::ConfigError("No configuration key specified".to_string()));
+        return Err(CliError::ConfigurationError(
+            "No configuration key specified".to_string(),
+        ));
     }
-    
+
     Ok(())
 }
 
@@ -66,78 +79,85 @@ async fn get_config(key: Option<&str>, config_path: Option<PathBuf>) -> Result<(
 #[cfg(feature = "cli")]
 async fn set_config(key: &str, value: &str, config_path: Option<PathBuf>) -> Result<(), CliError> {
     use crate::cli::utils::{load_config, save_config, OutputFormatter};
-    
+
     let mut config = load_config(config_path.clone())?;
     let formatter = OutputFormatter::new(true, false, false);
-    
+
     // Update config based on key
     match key {
-        "host" => config.connection.host = value.to_string(),
+        "host" => config.service.host = value.to_string(),
         "port" => {
             let port = value.parse::<u16>().map_err(|_| {
-                CliError::ConfigError("Port must be a valid number between 1-65535".to_string())
+                CliError::ConfigurationError(
+                    "Port must be a valid number between 1-65535".to_string(),
+                )
             })?;
-            config.connection.port = port;
-        },
+            config.service.port = port;
+        }
         "use_tls" => {
             let use_tls = value.parse::<bool>().map_err(|_| {
-                CliError::ConfigError("use_tls must be true or false".to_string())
+                CliError::ConfigurationError("use_tls must be true or false".to_string())
             })?;
-            config.connection.use_tls = use_tls;
-        },
+            config.service.use_tls = use_tls;
+        }
         "verify_cert" => {
             let verify_cert = value.parse::<bool>().map_err(|_| {
-                CliError::ConfigError("verify_cert must be true or false".to_string())
+                CliError::ConfigurationError("verify_cert must be true or false".to_string())
             })?;
-            config.connection.verify_cert = verify_cert;
-        },
-        "log_level" => {
-            match value.to_lowercase().as_str() {
-                "debug" | "info" | "warn" | "error" => config.log_level = value.to_lowercase(),
-                _ => return Err(CliError::ConfigError(
-                    "log_level must be debug, info, warn, or error".to_string()
-                )),
+            config.service.skip_verify = verify_cert;
+        }
+        "format" => match value.to_lowercase().as_str() {
+            "text" | "json" | "yaml" => {
+                if value.to_lowercase() == "text" {
+                    config.global.format = crate::cli::config::OutputFormat::Text;
+                } else if value.to_lowercase() == "json" {
+                    config.global.format = crate::cli::config::OutputFormat::Json;
+                } else {
+                    config.global.format = crate::cli::config::OutputFormat::Yaml;
+                }
             }
-        },
-        "format" => {
-            match value.to_lowercase().as_str() {
-                "human" | "json" => config.format = value.to_lowercase(),
-                _ => return Err(CliError::ConfigError(
-                    "format must be human or json".to_string()
-                )),
+            _ => {
+                return Err(CliError::ConfigurationError(
+                    "format must be text, json, or yaml".to_string(),
+                ))
             }
         },
         "color" => {
             let color = value.parse::<bool>().map_err(|_| {
-                CliError::ConfigError("color must be true or false".to_string())
+                CliError::ConfigurationError("color must be true or false".to_string())
             })?;
-            config.color = color;
-        },
-        "json_output" => {
-            let json_output = value.parse::<bool>().map_err(|_| {
-                CliError::ConfigError("json_output must be true or false".to_string())
+            config.global.color = color;
+        }
+        "json" => {
+            let json = value.parse::<bool>().map_err(|_| {
+                CliError::ConfigurationError("json must be true or false".to_string())
             })?;
-            config.json_output = json_output;
-        },
+            config.global.json = json;
+        }
         "quiet" => {
             let quiet = value.parse::<bool>().map_err(|_| {
-                CliError::ConfigError("quiet must be true or false".to_string())
+                CliError::ConfigurationError("quiet must be true or false".to_string())
             })?;
-            config.quiet = quiet;
-        },
-        "timeout_seconds" => {
+            config.global.quiet = quiet;
+        }
+        "timeout" => {
             let timeout = value.parse::<u64>().map_err(|_| {
-                CliError::ConfigError("timeout_seconds must be a valid number".to_string())
+                CliError::ConfigurationError("timeout must be a valid number".to_string())
             })?;
-            config.timeout_seconds = timeout;
-        },
-        _ => return Err(CliError::ConfigError(format!("Unknown config key: {}", key))),
+            config.service.timeout = timeout;
+        }
+        _ => {
+            return Err(CliError::ConfigurationError(format!(
+                "Unknown config key: {}",
+                key
+            )))
+        }
     }
-    
+
     // Save updated config
-    save_config(&config, config_path)?;
+    save_config(&config, config_path.expect("Config path required to save"))?;
     formatter.success(&format!("Updated {} = {}", key, value));
-    
+
     Ok(())
 }
 
@@ -145,46 +165,27 @@ async fn set_config(key: &str, value: &str, config_path: Option<PathBuf>) -> Res
 #[cfg(feature = "cli")]
 async fn list_config(config_path: Option<PathBuf>) -> Result<(), CliError> {
     use crate::cli::utils::{load_config, OutputFormatter};
-    
+
     let config = load_config(config_path)?;
     let formatter = OutputFormatter::new(true, false, false);
-    
+
     // Display connection settings
     formatter.info("Connection settings:");
-    formatter.info(&format!("  host = {}", config.connection.host));
-    formatter.info(&format!("  port = {}", config.connection.port));
-    formatter.info(&format!("  use_tls = {}", config.connection.use_tls));
-    formatter.info(&format!("  verify_cert = {}", config.connection.verify_cert));
-    
-    // Display authentication settings (only show if values are set)
-    formatter.info("Authentication settings:");
-    if let Some(ref username) = config.auth.username {
-        formatter.info(&format!("  username = {}", username));
-    } else {
-        formatter.info("  username = <not set>");
-    }
-    if config.auth.token.is_some() {
-        formatter.info("  token = <set>");
-    } else {
-        formatter.info("  token = <not set>");
-    }
-    if config.auth.psk.is_some() {
-        formatter.info("  psk = <set>");
-    } else {
-        formatter.info("  psk = <not set>");
-    }
-    
+    formatter.info(&format!("  host = {}", config.service.host));
+    formatter.info(&format!("  port = {}", config.service.port));
+    formatter.info(&format!("  use_tls = {}", config.service.use_tls));
+    formatter.info(&format!("  verify_cert = {}", config.service.skip_verify));
+
     // Display output settings
     formatter.info("Output settings:");
-    formatter.info(&format!("  log_level = {}", config.log_level));
-    formatter.info(&format!("  format = {}", config.format));
-    formatter.info(&format!("  color = {}", config.color));
-    formatter.info(&format!("  json_output = {}", config.json_output));
-    formatter.info(&format!("  quiet = {}", config.quiet));
-    
+    formatter.info(&format!("  format = {:?}", config.global.format));
+    formatter.info(&format!("  color = {}", config.global.color));
+    formatter.info(&format!("  json = {}", config.global.json));
+    formatter.info(&format!("  quiet = {}", config.global.quiet));
+
     // Display other settings
     formatter.info("Other settings:");
-    formatter.info(&format!("  timeout_seconds = {}", config.timeout_seconds));
-    
+    formatter.info(&format!("  timeout = {}", config.service.timeout));
+
     Ok(())
 }

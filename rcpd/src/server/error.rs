@@ -12,7 +12,7 @@ pub enum Error {
     Io(#[from] io::Error),
 
     #[error("Core protocol error: {0}")]
-    Core(#[from] rcp_core::Error),
+    Core(#[from] rcpp::Error),
 
     #[error("Configuration error: {0}")]
     Config(#[from] config::ConfigError),
