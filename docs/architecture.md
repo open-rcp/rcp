@@ -2,34 +2,39 @@
 
 ## System Architecture
 
-The Rust/Remote Control Protocol (RCP) is a modular service-oriented system with several components that work together. The architecture integrates server and API capabilities into the daemon component, while maintaining the CLI as a separate component for flexibility.
+The Rust/Remote Control Protocol (RCP) is a modular service-oriented system with several components that work together. The architecture uses three main components: Protocol (rcpp), Client (rcpc), and Daemon (rcpd).
 
 ```
 ┌─────────────┐        ┌───────────────────────────┐
 │ RCP Client  │◄───────┤   RCPD (RCP Daemon)       │
-└──────┬──────┘        │   ┌──────────┐ ┌───────┐  │
-       │               │   │  Server  │ │  API  │  │
- ┌─────▼─────┐         │   └──────────┘ └───────┘  │
- │  RCP Desk │         └───────────────┬───────────┘
- └───────────┘                         │
-                           ┌───────────▼───────────┐
-                           │       RCP CLI         │
-                           └───────────────────────┘
+│  (rcpc)     │        │   ┌──────────┐ ┌───────┐  │
+└──────┬──────┘        │   │  Server  │ │  API  │  │
+       │               │   └──────────┘ └───────┘  │
+ ┌─────▼─────┐         └──────────────────────────┘
+ │ User Apps │                    ▲
+ └───────────┘                    │
+                                  │
+                         ┌────────┴───────┐
+                         │  RCP Protocol  │
+                         │     (rcpp)     │
+                         └────────────────┘
 ```
 
 ## Core Components
 
-### 1. RCP Core Library (`rcp-core`)
+### 1. RCP Protocol Library (`rcpp`)
 
 - Protocol definitions and frame handling
 - Authentication mechanisms
-- Common utilities
+- Common utilities and data structures
+- Core binary format specifications
 
-### 2. RCP Client (`rcp-client`)
+### 2. RCP Client (`rcpc`)
 
 - Connects to RCP servers within the daemon
 - Handles application control and user input
 - Processes and displays streamed frames
+- Provides client-side connection management
 
 ### 3. RCPD (RCP Daemon) (`rcpd`)
 
@@ -39,13 +44,7 @@ The Rust/Remote Control Protocol (RCP) is a modular service-oriented system with
 - Provides RESTful endpoints for management (via "api" feature flag)
 - Manages application lifecycle and configuration
 - Provides specialized services for display, input, audio, clipboard, and file transfer
-
-### 4. RCP CLI (`rcp-cli`)
-
-- Command-line interface for server administration
-- Deliberately maintained as a separate component for separation of concerns
-
-### 5. RCP Admin (`rcp-admin`)
+- Includes CLI functionality for service management
 
 - Administrative web and desktop interface for server management
 - Built with SvelteKit (web) and Tauri (desktop)

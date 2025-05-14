@@ -169,7 +169,7 @@ fn test_protocol_bidirectional() {
                 .write_frame(&response_frame)
                 .await
                 .expect("Failed to write frame");
-            
+
             // Extract the connection to check the written data
             let inner_conn = proto.into_inner();
             let written_data = inner_conn.written_data();

@@ -26,14 +26,10 @@
 
 ```
 rcp/
-├── rcp-core/               # Protocol definitions, frame parsers, commands
-├── rcp-client/             # RCP client, app control interface
-├── rcpd/                   # Runtime daemon with integrated server and API capabilities
-├── rcp-cli/                # Command-line tool for server administration only
-├── rcp-admin/              # Administrative interface for server management
-├── rcp-desk/               # End-user client for virtual applications
-├── rcp-ws-bridge/          # (optional) WebSocket proxy for browser clients
-├── examples/               # Minimal demos (spawn notepad, etc.)
+├── rcpp/                   # Protocol definitions, frame parsers, commands
+├── rcpc/                   # RCP client library and CLI interface
+├── rcpd/                   # Runtime daemon with integrated server and API 
+├── examples/               # Minimal demos and example implementations
 └── docs/                   # Protocol spec & architecture documentation
 ```
 

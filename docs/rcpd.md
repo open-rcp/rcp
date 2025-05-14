@@ -14,7 +14,7 @@ Key responsibilities of RCPD include:
 - Runtime configuration
 - System integration (startup, permissions, etc.)
 - Monitoring and metrics collection
-- Communication with RCP CLI and RCP Admin
+- Command-line interface for administration
 
 ## Architecture
 
@@ -34,10 +34,10 @@ RCPD follows a modular design with integrated server and API components:
 │  │ Management  │  │ Management │  │ (feature-gated)│   │
 │  └─────────────┘  └────────────┘  └────────────────┘   │
 │                                                        │
-│  ┌─────────────────────────┐  ┌────────────────────┐   │
-│  │ Connection & Protocol   │  │ Logging &          │   │
-│  │ Handling                │  │ Monitoring         │   │
-│  └─────────────────────────┘  └────────────────────┘   │
+│  ┌─────────────┐  ┌────────────┐  ┌────────────────┐   │
+│  │ Connection  │  │ Logging &  │  │ CLI Commands   │   │
+│  │ Handling    │  │ Monitoring │  │ & Utilities    │   │
+│  └─────────────┘  └────────────┘  └────────────────┘   │
 └────────────────────────────────────────────────────────┘
 ```
 
@@ -47,7 +47,8 @@ RCPD integrates the following functionalities:
 
 1. **Server Component**: Handles client connections, sessions, authentication, and protocol processing
 2. **API Component**: Optional REST API endpoints for remote administration (enabled via feature flag)
-3. **Service Core**: Handles lifecycle management, configuration, user management, etc.
+3. **CLI Component**: Command-line interface for administration and management
+4. **Service Core**: Handles lifecycle management, configuration, user management, etc.
 
 ## Functionality
 

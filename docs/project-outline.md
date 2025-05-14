@@ -4,51 +4,47 @@ This document outlines the Rust/Remote Control Protocol (RCP) project structure,
 
 ## Project Architecture
 
-RCP follows a modular architecture with several core components that work together in a cohesive system:
+RCP follows a modular architecture with three main components that work together in a cohesive system:
 
-### Core Components
+### Current Components
 
-1. **rcp-core**: Core protocol library
+1. **rcpp (RCP Protocol)**: Core protocol library
    - Protocol definitions and frame handling
    - Authentication mechanisms
-   - Common utilities
+   - Common utilities and data structures
+   - Binary format and command definitions
 
-2. **rcpd (RCP Daemon)**: Runtime daemon with integrated components
-   - **Server Component**: Integrated component for handling client connections
-   - **API Component**: Feature-gated REST API for remote management (optional)
-   - Application lifecycle management and configuration
-   - Service orchestration
-
-3. **rcp-client**: Client library
-   - Connects to RCP servers within the daemon
+2. **rcpc (RCP Client)**: Client library and CLI
+   - Connects to RCP servers using the protocol
    - Handles application control and user input
-   - Processes and displays streamed frames
+   - Provides connection string parsing
+   - Service discovery and management
 
-4. **rcp-cli**: Command line interface
-   - Server administration tool
-   - Deliberately maintained as a separate component for separation of concerns
-   - Service and user management
+3. **rcpd (RCP Daemon)**: Runtime daemon with integrated components
+   - Server functionality: Handling client connections
+   - API functionality: Feature-gated REST API for remote management (optional)
+   - Application lifecycle management
+   - Configuration and service management
+   - CLI functionality for server administration
 
-5. **rcp-admin**: Administration interface
-   - Web interface (SvelteKit-based)
-   - Desktop application (Tauri)
-   - Server configuration and monitoring
+### Planned Components
 
-6. **rcp-desk**: End-user client application
+4. **RCP Desk**: End-user client application
    - Virtual application launcher
    - File transfer capabilities
    - User settings and preferences
 
-7. **rcp-ws-bridge**: WebSocket bridge
-   - Protocol translation for browser-based clients
-   - Frame transcoding for web compatibility
-   - Enables web applications to connect without native clients
+5. **RCP Admin**: Administration interface
+   - Web interface (SvelteKit-based)
+   - Desktop application (Tauri)
+   - Server configuration and monitoring
 
 ## Implementation Progress
 
 ### Completed Components
-1. ✅ Core Protocol Implementation
-2. ✅ Basic Server and Client
+1. ✅ Core Protocol Library (rcpp)
+2. ✅ Client Library (rcpc)
+3. ✅ Server/Daemon with integrated components (rcpd)
 3. ✅ Service Architecture
 4. ✅ Authentication System
 5. ✅ WebSocket Bridge

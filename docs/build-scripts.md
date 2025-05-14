@@ -37,7 +37,7 @@ All build scripts support similar arguments across platforms:
 
 ```bash
 # On Windows:
-scripts\windows\build.bat --release --server --run
+scripts\windows\build.bat --release --rcpd --run
 
 # On Linux/macOS:
 ./scripts/linux/build.sh --release --client
