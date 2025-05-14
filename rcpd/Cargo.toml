@@ -1,0 +1,86 @@
+[package]
+name = "rcpd"
+version = "0.1.0"
+edition = "2021"
+authors = ["Akash Shah"]
+description = "RCP Daemon - Runtime service for managing RCP server instances and applications with integrated server and optional API"
+
+[lib]
+name = "rcpd"
+path = "src/lib.rs"
+
+[[bin]]
+name = "rcpd"
+path = "src/main.rs"
+
+[features]
+default = []
+api = [
+    "axum", 
+    "tower-http", 
+    "sqlx", 
+    "tower", 
+    "serde_urlencoded", 
+    "serde_with", 
+    "mime"
+]
+cli = [
+    "clap/derive",
+    "colored",
+    "clap_complete",
+    "dirs",
+    "chrono",
+    "atty"
+]
+all = ["api", "cli"]
+dirs = ["dep:dirs"]
+
+[dependencies]
+# Core dependencies
+rcpp = { path = "../rcpp" }
+# Removed rcp-server dependency as we're integrating it directly
+
+# Command line and async
+clap = { version = "3.2", features = ["derive"] }
+tokio = { version = "1.0", features = ["full"] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+toml = "0.5"
+config = "0.15.11"
+
+# Logging and error handling
+log = "0.4"
+env_logger = "0.9"
+anyhow = "1.0"
+thiserror = "1.0"
+tracing = "0.1"
+tracing-subscriber = "0.3"
+
+# Networking and crypto
+rustls = "0.21"
+webpki-roots = "0.25"
+
+# Utilities
+daemonize = "0.5"
+dirs = { version = "4.0", optional = true }
+uuid = { version = "1.0", features = ["v4", "serde"] }
+futures-util = "0.3"
+async-trait = "0.1.88"
+libc = "0.2"
+
+# CLI specific dependencies (feature-gated)
+colored = { version = "2.1", optional = true }
+clap_complete = { version = "4.5", optional = true }
+chrono = { version = "0.4", features = ["serde"], optional = true }
+atty = { version = "0.2", optional = true }
+
+# API server dependencies (feature-gated)
+axum = { version = "0.6", optional = true }
+tower = { version = "0.4", optional = true }
+tower-http = { version = "0.4", features = ["trace", "cors"], optional = true }
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "sqlite", "postgres", "uuid", "time"], optional = true }
+serde_urlencoded = { version = "0.7", optional = true }
+serde_with = { version = "3.0", optional = true }
+mime = { version = "0.3", optional = true }
