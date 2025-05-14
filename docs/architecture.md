@@ -2,248 +2,99 @@
 
 ## System Architecture
 
-The Rust/Remote Control Protocol (RCP) is organized as a modular service-oriented system with several components that work together:
+The Rust/Remote Control Protocol (RCP) is a modular service-oriented system with several components that work together. The architecture integrates server and API capabilities into the daemon component, while maintaining the CLI as a separate component for flexibility.
 
 ```
-┌─────────────────┐    ┌─────────────┐       ┌─────────────┐
-│ RCP Client Lib  │◄───┤ RCP Server  │◄──────┤ RCP Service │
-└────────┬────────┘    └─────┬───────┘       └──────┬──────┘
-         │                   │                      │
-    ┌────▼────┐        ┌─────▼───────┐       ┌──────▼──────┐
-    │ RCP Desk│        │ Session Mgr │◄──────┤  RCP CLI    │
-    │(End-user│        └─────────────┘       └──────┬──────┘
-    │  App)   │                │                    │
-    └─────────┘         ┌──────▼─────────┐    ┌─────▼─────┐
-                        │  Application   │    │  RCP API  │
-                        │   Processes    │    └─────┬─────┘
-                        └────────────────┘          │
-                                               ┌────▼────┐
-                                               │RCP Admin│
-                                               │(Web/API)│
-                                               └─────────┘
+┌─────────────┐        ┌───────────────────────────┐
+│ RCP Client  │◄───────┤   RCPD (RCP Daemon)       │
+└──────┬──────┘        │   ┌──────────┐ ┌───────┐  │
+       │               │   │  Server  │ │  API  │  │
+ ┌─────▼─────┐         │   └──────────┘ └───────┘  │
+ │  RCP Desk │         └───────────────┬───────────┘
+ └───────────┘                         │
+                           ┌───────────▼───────────┐
+                           │       RCP CLI         │
+                           └───────────────────────┘
 ```
 
 ## Core Components
 
 ### 1. RCP Core Library (`rcp-core`)
 
-The foundation of the RCP system providing:
-
-- Protocol definitions
-- Frame parsing and serialization
+- Protocol definitions and frame handling
 - Authentication mechanisms
 - Common utilities
 
-### 2. RCP Server (`rcp-server`)
+### 2. RCP Client (`rcp-client`)
 
-- Listens for incoming TCP connections
-- Manages authentication and sessions
-- Spawns and controls applications
-- Provides specialized services:
-  - **Connection Service**: Handles core connection lifecycle
-  - **Display Service**: Manages screen capture and display information 
-  - **Input Service**: Processes remote keyboard and mouse events
-  - **Audio Service**: Handles audio streaming
-  - **Clipboard Service**: Manages clipboard synchronization
-  - **File Transfer Service**: Handles file operations between peers
-
-### 3. RCP Client (`rcp-client`)
-
-- Connects to RCP servers
-- Subscribes to required services
-- Sends application control commands
-- Handles user input
+- Connects to RCP servers within the daemon
+- Handles application control and user input
 - Processes and displays streamed frames
 
-### 4. RCP Service (`rcp-service`)
+### 3. RCPD (RCP Daemon) (`rcpd`)
 
-- Long-running daemon/service that manages RCP server instances
-- Application lifecycle management
-- Configuration handling and persistence
-- System integration (startup service, user permissions)
-- Logs and monitoring
-- Communication channel with CLI and API
+- Core component with integrated Server and API functionality
+- Long-running daemon/system service architecture
+- Handles connections, sessions, and protocol handling
+- Provides RESTful endpoints for management (via "api" feature flag)
+- Manages application lifecycle and configuration
+- Provides specialized services for display, input, audio, clipboard, and file transfer
 
-### 5. RCP CLI (`rcp-cli`)
+### 4. RCP CLI (`rcp-cli`)
 
-- Command-line interface for server administration only
-- Administrative tasks (user management, configuration, server control)
-- Server and service management
-- Session monitoring and management
-- Status reporting and diagnostics
-- Service installation/uninstallation
+- Command-line interface for server administration
+- Deliberately maintained as a separate component for separation of concerns
 
-### 6. RCP API (`rcp-api`)
+### 5. RCP Admin (`rcp-admin`)
 
-- RESTful API for remote management
-- Authentication and authorization for admin access
-- Server monitoring and management endpoints
-- User and permission management
-- Configuration management
-- Session information and metrics
-- Integration point for third-party systems
+- Administrative web and desktop interface for server management
+- Built with SvelteKit (web) and Tauri (desktop)
 
-### 7. RCP Admin (`rcp-admin`)
-
-- Administrative interface for server management
-- Built with SvelteKit for the web component
-- Desktop application built with Tauri
-- Server configuration and monitoring
-- User and access management
-- Application publishing and configuration
-
-### 8. RCP Desk (`rcp-desk`)
+### 6. RCP Desk (`rcp-desk`)
 
 - End-user client application for accessing virtual applications
 - Built with SvelteKit and Tauri
-- Connection management to RCP servers
-- Virtual application launcher
-- File transfer capabilities
-- Settings and profile management
-- User management
-- Session monitoring and control
-- Configuration interface
-- Analytics and reporting
 
-### 9. WebSocket Bridge (`rcp-ws-bridge`)
+### 7. WebSocket Bridge (`rcp-ws-bridge`)
 
-An optional component that bridges RCP protocol to WebSockets for browser clients:
-
-- Protocol translation
-- Frame transcoding
-- Web client interface
+- Bridges RCP protocol to WebSockets for browser clients
+- Handles protocol translation and frame transcoding for web compatibility
+- Enables web applications to connect without native clients
 
 ## Service Architecture
 
-RCP uses a subscription-based service model:
-
-```
-┌─────────────┐    ┌─────────────┐     ┌─────────────┐
-│ Display     │    │ Input       │     │ Clipboard   │
-│ Service     │    │ Service     │     │ Service     │
-└──────┬──────┘    └──────┬──────┘     └──────┬──────┘
-       │                  │                   │
-       └──────────┬───────┴─────────┬─────────┘
-                  │                 │
-        ┌─────────▼─────────┐      ┌▼─────────────────┐
-        │  Connection #1    │      │  Connection #2   │
-        │  (Subscribed to   │      │  (Subscribed to  │
-        │   all services)   │      │   input only)    │
-        └───────────────────┘      └──────────────────┘
-```
-
-Each client connection can subscribe to specific services based on permissions and needs.
-
-## Data Flow
-
-```
-Client → Server Flow:
-┌─────────┐    ┌──────────┐    ┌────────┐    ┌───────────┐
-│ User    │ → │ Client    │ → │ Server │ → │ App        │
-│ Input   │   │ Protocol  │   │ Session │   │ Process    │
-└─────────┘    └──────────┘    └────────┘    └───────────┘
-
-Server → Client Flow:
-┌───────────┐    ┌────────┐    ┌──────────┐    ┌─────────┐
-│ App       │ → │ Server  │ → │ Client    │ → │ Display  │
-│ Output    │   │ Session │   │ Rendering │   │          │
-└───────────┘    └────────┘    └──────────┘    └─────────┘
-
-Management Flow:
-┌───────────┐   ┌──────┐    ┌─────────────┐    ┌───────────┐
-│ RCP Admin │ → │ API  │ →  │ RCP Service │ →  │ RCP Server│
-└───────────┘   └──────┘    └─────────────┘    └───────────┘
-```
-
-## Runtime Service Architecture
-
-The RCP Service provides a runtime management layer that orchestrates the overall system:
-
-```
-┌────────────────────────────────────────────────────────┐
-│                     RCP Service                        │
-│                                                        │
-│  ┌─────────────┐  ┌────────────┐  ┌────────────────┐   │
-│  │ Config      │  │ Server     │  │ App Lifecycle  │   │
-│  │ Management  │  │ Management │  │ Management     │   │
-│  └─────────────┘  └────────────┘  └────────────────┘   │
-│                                                        │
-│  ┌─────────────┐  ┌────────────┐  ┌────────────────┐   │
-│  │ User        │  │ Session    │  │ Logging &      │   │
-│  │ Management  │  │ Management │  │ Monitoring     │   │
-│  └─────────────┘  └────────────┘  └────────────────┘   │
-└────────────────────────────────────────────────────────┘
-           ▲              ▲                 ▲
-           │              │                 │
-    ┌──────┴───────┐ ┌────┴─────┐    ┌─────┴─────┐
-    │  RCP CLI     │ │ RCP API  │    │ RCP Admin  │
-    └──────────────┘ └──────────┘    └───────────┘
-```
+RCP uses a subscription-based service model where each client connection subscribes to specific services (display, input, clipboard, etc.) based on permissions and needs.
 
 ## Connection Lifecycle
 
-1. **Connection Establishment**: Client connects to server over TCP/IP
-2. **Authentication**: Client authenticates using chosen method
-3. **Service Subscription**: Client subscribes to required services
-4. **Session Management**: Server tracks active sessions and handles reconnections
-5. **Application Control**: Launching, interacting with, and terminating applications
-6. **Connection Termination**: Graceful shutdown procedures
+1. Client connects to server over TCP/IP
+2. Client authenticates using chosen method
+3. Client subscribes to required services
+4. Server tracks active sessions and handles reconnections
+5. Client controls application launching and interaction
+6. Connection terminates with graceful shutdown
 
 ## Security Architecture
 
-RCP implements security at multiple levels:
-
-1. **Transport Security** - TLS encryption for all communications
-2. **Authentication** - Multiple authentication mechanisms:
-   - Pre-shared keys
-   - Public-key authentication
-   - Two-factor authentication
-3. **Authorization** - Fine-grained permissions for different operations:
-   - Input control
-   - Clipboard access
-   - Audio streaming
-   - File transfer
-4. **Session Isolation** - Separation between different client sessions
-5. **Audit Logging** - Comprehensive activity logging for security monitoring
-
-## Handling Special Cases
-
-### Privacy Mode
-RCP supports a privacy mode that temporarily blocks screen transmission while maintaining the connection.
-
-### File Transfer
-Secure file transfer with integrity verification and permission controls.
-
-### Multi-Display Support
-Dynamic handling of multiple displays with efficient screen region updates.
+- Transport Security: TLS encryption for all communications
+- Authentication: Pre-shared keys, public-key authentication, and 2FA
+- Authorization: Fine-grained permissions for different operations
+- Session Isolation: Separation between different client sessions
+- Audit Logging: Comprehensive activity logging for security monitoring
 
 ## Performance Considerations
 
-The RCP architecture is designed for high performance:
-
 - Binary protocol with minimal overhead
 - Efficient frame structure with selective updates
-- Stream-based data transfer
 - Optimized for low-latency operations
 - Adaptive quality settings based on network conditions
 - Connection quality monitoring
-
-## Communication Flow
-
-1. **Administration Flow**:
-   - rcp-admin -> rcp-server (Direct management interface)
-   - rcp-cli -> rcp-service -> rcp-server (Command-line administration)
-
-2. **End-User Flow**:
-   - rcp-desk -> rcp-client -> rcp-server (Native desktop client, direct connection)
-   - Web Client -> rcp-ws-bridge -> rcp-server (Browser client)
 
 ## Configuration Management
 
 - Server configurations stored in TOML files
 - Dynamic configuration updates without restart
 - User permissions and application settings in structured storage
-- Audit logging for security events
 
 ## Cross-Platform Strategy
 

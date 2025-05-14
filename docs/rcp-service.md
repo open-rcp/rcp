@@ -1,23 +1,26 @@
-# RCP Service
+# RCP Service (DEPRECATED)
 
-This document outlines the RCP Service, which provides runtime management for RCP applications and servers.
+> **DEPRECATED**: This document is deprecated. Please refer to [RCPD (RCP Daemon)](rcpd.md) for current documentation.
+
+This document previously outlined the RCP Service, which has been renamed to RCPD (RCP Daemon).
 
 ## Overview
 
-RCP Service is a long-running daemon/system service that manages the lifecycle of RCP servers and applications. It acts as a central management layer that handles configuration persistence, monitoring, and control of RCP components.
+RCP Service is a long-running daemon/system service that manages the lifecycle of applications and provides integrated server and API capabilities. It acts as a unified component that handles configuration persistence, monitoring, control, and communication within the RCP ecosystem.
 
 Key responsibilities of the RCP Service include:
 
-- Managing RCP Server instances
+- Integrated server functionality for handling client connections
+- Optional API endpoints for remote management (feature-gated)
 - Application lifecycle management
 - Runtime configuration
 - System integration (startup, permissions, etc.)
 - Monitoring and metrics collection
-- Communication with RCP CLI and RCP API
+- Communication with RCP CLI and RCP Admin
 
 ## Architecture
 
-The RCP Service follows a modular design:
+The RCP Service follows a modular design with integrated server and API components:
 
 ```
 ┌────────────────────────────────────────────────────────┐
@@ -25,26 +28,33 @@ The RCP Service follows a modular design:
 │                                                        │
 │  ┌─────────────┐  ┌────────────┐  ┌────────────────┐   │
 │  │ Config      │  │ Server     │  │ App Lifecycle  │   │
-│  │ Management  │  │ Management │  │ Management     │   │
+│  │ Management  │  │ Component  │  │ Management     │   │
 │  └─────────────┘  └────────────┘  └────────────────┘   │
 │                                                        │
 │  ┌─────────────┐  ┌────────────┐  ┌────────────────┐   │
-│  │ User        │  │ Session    │  │ Logging &      │   │
-│  │ Management  │  │ Management │  │ Monitoring     │   │
+│  │ User        │  │ Session    │  │ API Component  │   │
+│  │ Management  │  │ Management │  │ (feature-gated)│   │
 │  └─────────────┘  └────────────┘  └────────────────┘   │
+│                                                        │
+│  ┌─────────────────────────┐  ┌────────────────────┐   │
+│  │ Connection & Protocol   │  │ Logging &          │   │
+│  │ Handling               │  │ Monitoring         │   │
+│  └─────────────────────────┘  └────────────────────┘   │
 └────────────────────────────────────────────────────────┘
 ```
 
 ## Core Features
 
-### Server Management
+### Integrated Server Functionality
 
-The service manages multiple RCP server instances:
+The service includes integrated server functionality:
 
-- Starting and stopping server instances
-- Monitoring server health
-- Managing server configurations
-- Load balancing between multiple servers (advanced)
+- Direct handling of RCP protocol connections
+- Session management and authentication
+- Service subscription handling
+- Protocol versioning and compatibility
+- Connection health monitoring
+- Multiple simultaneous client support
 - Automatic recovery from failures
 
 ### Application Lifecycle Management

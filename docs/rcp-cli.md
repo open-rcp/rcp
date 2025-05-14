@@ -4,11 +4,13 @@ This document outlines the RCP CLI (Command Line Interface), which provides admi
 
 ## Overview
 
-RCP CLI is a command-line utility designed exclusively for administrators to interact with RCP Service and RCP Servers. It provides functionality for installation, configuration, monitoring, and management operations of the server side components only.
+RCP CLI is a command-line utility designed exclusively for administrators to interact with the RCP Daemon (RCPD), which includes integrated server and API functionality. It provides functionality for installation, configuration, monitoring, and management operations of the server-side components only. 
+
+The CLI is deliberately maintained as a separate component from the daemon to ensure clear separation of concerns and deployment flexibility.
 
 Key features of the RCP CLI include:
 
-- Service management (install, start, stop, status)
+- Daemon management (install, start, stop, status)
 - Server management and monitoring
 - Session control
 - User administration
@@ -17,17 +19,29 @@ Key features of the RCP CLI include:
 
 ## Architecture
 
-The RCP CLI interfaces with the RCP Service via either a local socket connection or the RCP API, depending on the command and availability:
+The RCP CLI interfaces with the integrated RCP Daemon (RCPD) via either a local socket connection or the API component (when enabled via the "api" feature), depending on the command and availability:
 
 ```
-┌─────────────┐     ┌─────────────────┐     ┌─────────────┐
-│  RCP CLI    │────►│  Local Socket   │────►│ RCP Service │
-└─────────────┘     └─────────────────┘     └─────────────┘
-       │                                          │
-       │            ┌─────────────────┐           │
-       └───────────►│     RCP API     │◄──────────┘
-                    └─────────────────┘
+┌─────────────┐     ┌─────────────────┐     ┌────────────────────────────────┐
+│  RCP CLI    │────►│  Local Socket   │────►│         RCPD                   │
+└─────────────┘     └─────────────────┘     │  ┌────────────┐  ┌───────────┐ │
+       │                                    │  │   Server   │  │    API    │ │
+       │            ┌─────────────────┐     │  │ Component  │  │ Component │ │
+       └───────────►│  HTTP/REST API  │─────►  └────────────┘  └───────────┘ │
+                    └─────────────────┘     └────────────────────────────────┘
 ```
+
+### Rationale for Keeping CLI Separate
+
+The CLI is maintained as a separate component from the daemon for several important reasons:
+
+1. **Separation of Concerns**: The CLI is a user interface component, while the daemon is a backend processing component with different development cycles.
+
+2. **Deployment Flexibility**: Users can install only the CLI on machines that need to remotely control the daemon, while the daemon can be deployed on servers without UI components.
+
+3. **Reduced Binary Size**: Daemon binaries remain focused and optimized for their specific role, while the CLI contains only what's needed for command-line interaction.
+
+4. **Independent Development**: CLI features can evolve independently from daemon implementation details, and updates to the CLI don't require rebuilding or redeploying the daemon.
 
 ## Command Structure
 
@@ -50,26 +64,26 @@ rcp-cli [global options] command [command options] [arguments...]
 
 ## Available Commands
 
-### Service Management
+### Daemon Management
 
 ```bash
-# Install RCP service
-rcp-cli service install [--auto-start] [--user USERNAME]
+# Install RCP daemon
+rcp-cli daemon install [--auto-start] [--user USERNAME]
 
-# Start the service
-rcp-cli service start
+# Start the daemon
+rcp-cli daemon start
 
-# Stop the service
-rcp-cli service stop
+# Stop the daemon
+rcp-cli daemon stop
 
-# Restart the service
-rcp-cli service restart
+# Restart the daemon
+rcp-cli daemon restart
 
-# Get service status
-rcp-cli service status
+# Get daemon status
+rcp-cli daemon status
 
-# Uninstall the service
-rcp-cli service uninstall
+# Uninstall the daemon
+rcp-cli daemon uninstall
 ```
 
 ### Server Management
@@ -192,8 +206,8 @@ color = true
 
 [connection]
 # Connection settings
-socket = "/var/run/rcp-service.sock"  # Unix
-# socket = "\\\\.\\pipe\\rcp-service"  # Windows
+socket = "/var/run/rcpd.sock"  # Unix
+# socket = "\\\\.\\pipe\\rcpd"  # Windows
 api_url = "http://localhost:8080/api/v1"
 timeout = 5  # seconds
 
@@ -278,7 +292,7 @@ cargo test -p rcp-cli
 ## Implementation Plan
 
 1. **Phase 1: Core Commands**
-   - Basic service management
+   - Basic daemon management
    - Status reporting
    - Configuration viewing
 
@@ -299,7 +313,7 @@ Windows environments have specific commands:
 
 ```powershell
 # Register as Windows Service
-rcp-cli service install --windows-service
+rcp-cli daemon install --windows-service
 
 # Configure firewall
 rcp-cli windows firewall --allow
@@ -311,7 +325,7 @@ Unix environments have specific commands:
 
 ```bash
 # Generate systemd unit file
-rcp-cli service systemd-unit > /etc/systemd/system/rcp-service.service
+rcp-cli daemon systemd-unit > /etc/systemd/system/rcpd.service
 
 # Generate completion for current shell
 rcp-cli completions auto > ~/.rcp-completion

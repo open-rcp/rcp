@@ -20,8 +20,8 @@ Milestone 1 focused on establishing the core protocol and foundational component
 - ✅ Created authentication mechanisms (PSK initially)
 - ✅ Developed error handling and protocol flow
 
-#### Server Implementation
-- ✅ Built TCP socket server with connection handling
+#### Server Component Implementation
+- ✅ Built TCP socket server component with connection handling
 - ✅ Created session management system
 - ✅ Implemented service subscription model
 - ✅ Developed basic security and authentication
@@ -104,51 +104,60 @@ Milestone 2 focuses on developing the management layer of the RCP system, which 
 
 ### Component Deliverables
 
-#### 1. RCP Service (`rcp-service`)
+#### 1. RCPD (RCP Daemon) (`rcpd`)
 
-The runtime service will provide centralized management of RCP server instances and applications.
+The unified daemon provides centralized management with integrated server component and optional API functionality.
 
 **Key Features:**
-- System service/daemon implementation for all supported platforms
+- System daemon implementation for all supported platforms
+- Integrated server component for handling client connections
+- Feature-gated API component for remote management (optional)
 - Application lifecycle management
 - Configuration persistence and management
-- Server instance management (start/stop/restart/status)
 - User and permission management
 - Monitoring and metrics collection
 - Logging and diagnostics
 
 **Tasks:**
-- [ ] Create base service structure with platform-specific implementations
-- [ ] Implement configuration management with persistence
-- [ ] Develop server instance management capabilities
-- [ ] Build application lifecycle management
-- [ ] Create user database and authentication management
-- [ ] Implement monitoring and metrics system
-- [ ] Develop IPC mechanisms for CLI/API communication
+- [x] Create base service structure with platform-specific implementations
+- [x] Implement configuration management with persistence
+- [x] Integrate server functionality directly into service
+- [x] Add feature-gated API component
+- [x] Build application lifecycle management
+- [x] Create user database and authentication management
+- [x] Implement monitoring and metrics system
 - [ ] Add comprehensive logging and diagnostics
-- [ ] Create service installation/uninstallation procedures
-- [ ] Write unit and integration tests
+- [x] Create service installation/uninstallation procedures
+- [x] Write unit and integration tests
 
-**Dependencies:** None (builds on existing Core, Server, Client components)
+**Dependencies:** Depends on RCP Core library
 
 #### 2. RCP CLI (`rcp-cli`)
 
-Command-line interface for administrators to interact with the RCP Service.
+Command-line interface for administrators to interact with RCPD, deliberately kept as a separate component.
 
 **Key Features:**
 - Service control commands (install, start, stop, status)
-- Server management commands
+- Server component management commands
 - User administration
 - Configuration management
 - Session control
 - Diagnostics and troubleshooting
 
 **Tasks:**
-- [ ] Design command structure and interface
-- [ ] Implement service communication layer
-- [ ] Create service management commands
-- [ ] Develop server control commands
-- [ ] Build user administration commands
+- [x] Design command structure and interface
+- [x] Implement service communication layer
+- [x] Create service management commands
+- [x] Develop server control commands
+- [x] Build user administration commands
+- [ ] Add comprehensive diagnostics support
+- [ ] Implement configuration validation
+
+**Rationale for Separation:**
+- Separation of concerns (UI vs backend)
+- Deployment flexibility
+- Reduced binary size
+- Independent development lifecycle
 - [ ] Implement configuration management commands
 - [ ] Develop session management features
 - [ ] Add diagnostic and troubleshooting utilities
@@ -158,9 +167,9 @@ Command-line interface for administrators to interact with the RCP Service.
 
 **Dependencies:** RCP Service
 
-#### 3. RCP API (`rcp-api`)
+#### 3. RCP API Component (Integrated in RCPD)
 
-RESTful API for remote management of RCP deployments.
+Feature-gated RESTful API component for remote management of RCP deployments, fully integrated into the RCP daemon architecture as an optional component enabled via feature flags.
 
 **Key Features:**
 - Authentication and authorization
@@ -173,20 +182,21 @@ RESTful API for remote management of RCP deployments.
 - Logs and diagnostics API
 
 **Tasks:**
-- [ ] Design API endpoints and structure
-- [ ] Implement authentication and authorization system
-- [ ] Create service communication layer
-- [ ] Develop server management endpoints
-- [ ] Build user management endpoints
-- [ ] Implement configuration management endpoints
-- [ ] Create session management endpoints
+- [x] Design API endpoints and structure
+- [x] Implement authentication and authorization system
+- [x] Create service integration points
+- [x] Develop server management endpoints
+- [x] Build user management endpoints
+- [x] Implement configuration management endpoints
+- [x] Create session management endpoints
 - [ ] Develop statistics and metrics endpoints
 - [ ] Add logs and diagnostics endpoints
 - [ ] Implement WebSocket endpoints for real-time updates
-- [ ] Create API documentation
-- [ ] Write unit and integration tests
+- [x] Create API documentation
+- [x] Write unit and integration tests
+- [x] Implement feature gate for optional deployment
 
-**Dependencies:** RCP Service
+**Dependencies:** None (fully integrated into RCPD)
 
 #### 4. RCP Desk (`rcp-desk`)
 

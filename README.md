@@ -27,11 +27,9 @@
 ```
 rcp/
 ├── rcp-core/               # Protocol definitions, frame parsers, commands
-├── rcp-server/             # RCP listener, app session manager
 ├── rcp-client/             # RCP client, app control interface
-├── rcp-service/            # Runtime service with app lifecycle management
+├── rcpd/                   # Runtime daemon with integrated server and API capabilities
 ├── rcp-cli/                # Command-line tool for server administration only
-├── rcp-api/                # RESTful API for remote management
 ├── rcp-admin/              # Administrative interface for server management
 ├── rcp-desk/               # End-user client for virtual applications
 ├── rcp-ws-bridge/          # (optional) WebSocket proxy for browser clients
@@ -85,10 +83,10 @@ cd rcp
 # Build the complete stack
 cargo build
 
-# Run the service
-cargo run -p rcp-service
+# Run the daemon
+cargo run -p rcpd
 
-# Use the CLI to manage the service
+# Use the CLI to manage the daemon
 cargo run -p rcp-cli -- status
 ```
 
@@ -163,11 +161,14 @@ RCP provides comprehensive documentation to help you understand, implement, and 
 - [Protocol Specification](docs/protocol-specification.md) - Technical specification of the RCP protocol
 - [Development Guidelines](docs/development-guidelines.md) - Guide for implementing RCP in applications
 - [Project Outline](docs/project-outline.md) - Project structure and development guidelines
+- [Directory Structure](DIRECTORY_STRUCTURE.md) - Explanation of project directories and files
+- [Quick Start Guide](QUICKSTART.md) - Fast path for new developers
 
 ### Component Documentation
-- [RCP Service](docs/rcp-service.md) - Documentation for the runtime service component
+- [RCPD (RCP Daemon)](docs/rcpd.md) - Documentation for the runtime daemon with integrated server
+- [RCPD Installation Guide](docs/rcpd-installation.md) - Comprehensive guide for building and installing RCPD
 - [RCP CLI](docs/rcp-cli.md) - Documentation for the command-line interface (server administration)
-- [RCP API](docs/rcp-api.md) - Documentation for the RESTful API
+- [RCP API](docs/rcp-api.md) - Documentation for the integrated REST API component
 - [RCP Admin](docs/rcp-admin.md) - Documentation for the administrative interface
 - [RCP Desk](docs/rcp-desk.md) - Documentation for the end-user client application
 
