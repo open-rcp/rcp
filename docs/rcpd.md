@@ -14,7 +14,7 @@ Key responsibilities of RCPD include:
 - Runtime configuration
 - System integration (startup, permissions, etc.)
 - Monitoring and metrics collection
-- Command-line interface for administration
+- CLI interface for administration
 
 ## Architecture
 
@@ -34,219 +34,105 @@ RCPD follows a modular design with integrated server and API components:
 │  │ Management  │  │ Management │  │ (feature-gated)│   │
 │  └─────────────┘  └────────────┘  └────────────────┘   │
 │                                                        │
-│  ┌─────────────┐  ┌────────────┐  ┌────────────────┐   │
-│  │ Connection  │  │ Logging &  │  │ CLI Commands   │   │
-│  │ Handling    │  │ Monitoring │  │ & Utilities    │   │
-│  └─────────────┘  └────────────┘  └────────────────┘   │
+│  ┌─────────────────────────┐  ┌────────────────────┐   │
+│  │ Connection & Protocol   │  │ CLI Interface      │   │
+│  │ Handling                │  │ & Commands         │   │
+│  └─────────────────────────┘  └────────────────────┘   │
 └────────────────────────────────────────────────────────┘
 ```
 
-### Component Integration
+## Component Integration
 
 RCPD integrates the following functionalities:
 
 1. **Server Component**: Handles client connections, sessions, authentication, and protocol processing
 2. **API Component**: Optional REST API endpoints for remote administration (enabled via feature flag)
-3. **CLI Component**: Command-line interface for administration and management
+3. **CLI Interface**: Command-line interface for service administration and management
 4. **Service Core**: Handles lifecycle management, configuration, user management, etc.
 
-## Functionality
+## Dependencies
 
-### Server Management
+- **rcpp**: Uses the RCP Protocol library for message format, commands, and frame handling
+- **tokio**: For asynchronous runtime and I/O
+- **clap**: For command-line argument parsing
+- **serde**: For configuration serialization/deserialization
 
-The server component within RCPD is responsible for:
+## Feature Flags
 
-- Accepting and authenticating client connections
-- Managing client sessions and subscriptions
-- Dispatching client requests to appropriate services
-- Managing application instances
-- Handling disconnections and reconnections
+RCPD uses feature flags to enable optional components:
 
-### Application Management
+- **api**: Enables the REST API component
+- **cli**: Enables the command-line interface
+- **all**: Enables all available features
 
-RCPD provides comprehensive application lifecycle management:
+## Command-Line Interface
 
-- Application launching and termination
-- Runtime environment configuration
-- Process monitoring
-- Resource allocation and control
-- Application whitelist management
-- Launch parameter configuration
-- Resource monitoring and limits
-- Process supervision
-- Exit status handling
-
-### Configuration Management
-
-Centralized configuration handling:
-
-- Storage of configuration in persistent storage
-- Configuration validation
-- Change tracking and versioning
-- Environment-specific configurations
-- Default values and templates
-
-### User Management
-
-User and permission handling:
-
-- User database management
-- Authentication provider integration
-- Permission assignment
-- Session tracking
-- Activity logging
-
-### Monitoring and Metrics
-
-Comprehensive system monitoring:
-
-- Resource usage tracking
-- Performance metrics collection
-- Threshold-based alerts
-- Historical data retention
-- Health check mechanisms
-
-## Installation
-
-For comprehensive build and installation instructions for all platforms, please refer to the [RCPD Installation Guide](rcpd-installation.md).
-
-### Quick Installation Summary
-
-#### Windows
-
-1. Build the daemon:
-   ```bash
-   scripts\windows\build.bat --release --daemon
-   ```
-
-2. Install as a Windows service:
-   ```bash
-   rcpd install-service
-   ```
-
-3. Start the service:
-   ```bash
-   sc start rcpd
-   ```
-
-#### Linux
-
-1. Build the daemon:
-   ```bash
-   ./scripts/linux/build.sh --release --daemon
-   ```
-
-2. Install the systemd service:
-   ```bash
-   sudo cp target/release/rcpd /usr/local/bin/
-   sudo cp rcpd/systemd/rcpd.service /etc/systemd/system/
-   sudo systemctl daemon-reload
-   ```
-
-3. Start the daemon:
-   ```bash
-   sudo systemctl start rcpd
-   ```
-
-#### macOS
-
-1. Build the daemon:
-   ```bash
-   ./scripts/macos/build.sh --release --daemon
-   ```
-
-2. Install the launchd service:
-   ```bash
-   sudo cp target/release/rcpd /usr/local/bin/
-   sudo cp rcpd/launchd/com.devstroop.rcpd.plist /Library/LaunchDaemons/
-   ```
-
-3. Start the daemon:
-   ```bash
-   sudo launchctl start com.devstroop.rcpd
-   ```
-
-## Configuration
-
-RCPD uses a TOML configuration file, typically located at:
-
-- Windows: `C:\Program Files\RCP\config.toml`
-- Linux: `/etc/rcpd/config.toml`
-- macOS: `/usr/local/etc/rcpd/config.toml`
-
-Example configuration:
-
-```toml
-# RCPD Configuration
-
-# Basic configuration
-address = "0.0.0.0"
-port = 8716
-work_dir = "/var/lib/rcpd"
-log_level = "info"
-
-# Server-specific configuration
-[server]
-address = "0.0.0.0"
-port = 8717
-max_connections = 100
-connection_timeout = 30
-idle_timeout = 300
-
-# API configuration (only used when built with the 'api' feature)
-[api]
-enabled = true
-address = "127.0.0.1"
-port = 8080
-auth_token_expiry = 3600
-
-# TLS configuration
-[tls]
-enabled = false
-cert_path = "/etc/rcpd/tls/cert.pem"
-key_path = "/etc/rcpd/tls/key.pem"
-```
-
-## IPC Interface
-
-RCPD provides an IPC interface for local control via a Unix socket or Windows named pipe:
-
-- Windows: `\\.\pipe\rcpd`
-- Unix: `/var/run/rcpd.sock`
-
-This interface is used by the RCP CLI to communicate with the daemon for management operations.
-
-## Command Line Usage
-
-RCPD supports several command-line options:
+RCPD includes a command-line interface for service management:
 
 ```
 USAGE:
-    rcpd [OPTIONS]
+    rcpd [OPTIONS] [SUBCOMMAND]
 
 OPTIONS:
-    -c, --config <FILE>     Path to config file [default: config.toml]
-    -d, --daemon            Run as a background daemon
-    -f, --foreground        Run in the foreground
-    -h, --help              Print help information
-    -v, --verbose           Verbose output
-    --version               Print version information
+    -c, --config <FILE>    Path to configuration file
+    -f, --foreground       Run in foreground (no daemon)
+    -v, --verbose          Enable verbose logging
+    -h, --help             Print help information
+    -V, --version          Print version information
+
+SUBCOMMANDS:
+    service      Service management commands
+    app          Application management
+    config       Configuration management
+    session      Session management
+    user         User management
+    completions  Generate shell completions
+    diag         Diagnostic tools
+    help         Print help information
 ```
 
-## Development Usage
+## System Integration
 
-For development purposes, you can run RCPD directly from Cargo:
+RCPD provides integration with operating system service managers:
 
-```bash
-cargo run -p rcpd -- --foreground
-```
+- **systemd** service units for Linux
+- **launchd** plist for macOS
+- **Windows Service** registration for Windows
 
-## API Reference
+## Configuration
 
-When built with the `api` feature, RCPD provides a RESTful API. See the [RCP API](rcp-api.md) documentation for details.
+RCPD's configuration includes settings for:
 
-## See Also
+- Server listening address and port
+- TLS certificate paths
+- Authentication methods
+- Application definitions
+- User permissions
+- Service behavior
+- API endpoint configuration (when enabled)
 
-- [RCP CLI](rcp-cli.md) - Command-line interface for administration
-- [RCP API](rcp-api.md) - API reference for the RCPD API component
-- [Server-Service Integration](server-service-integration.md) - Details on the integration of server and service components
+Configuration can be loaded from:
+
+- Default path (/etc/rcpd/config.toml)
+- Custom path specified with --config option
+- Environment variables
+
+## API Endpoints (Feature-gated)
+
+When built with the `api` feature, RCPD exposes RESTful endpoints:
+
+- `/api/v1/status` - Service status information
+- `/api/v1/apps` - Application management
+- `/api/v1/users` - User management
+- `/api/v1/sessions` - Active session management
+- `/api/v1/config` - Configuration management
+
+## Security
+
+RCPD implements several security measures:
+
+1. TLS encryption for all TCP connections
+2. Authentication for client connections
+3. Authorization for API access
+4. Secure storage of credentials
+5. Privilege separation when running as a system service

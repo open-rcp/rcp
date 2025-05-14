@@ -33,6 +33,13 @@ rcp/
 └── docs/                   # Protocol spec & architecture documentation
 ```
 
+For more detailed documentation on each component:
+- See [rcpp.md](docs/rcpp.md) for the protocol library
+- See [rcpc.md](docs/rcpc.md) for the client library
+- See [rcpd.md](docs/rcpd.md) for the daemon implementation
+- See [architecture.md](docs/architecture.md) for overall system design
+- See [development-workflow.md](docs/development-workflow.md) for development guidelines
+
 ---
 
 ## 📡 Protocol Overview — `RCP/1.0`

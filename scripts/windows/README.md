@@ -5,11 +5,12 @@ This folder contains simplified build scripts for Windows that avoid the need fo
 ## Build Scripts
 
 - `build.bat` - Main build script that builds the project without requiring libclang
-  - Usage: `build.bat [--release/-r] [server|client|ws-bridge|all]`
+  - Usage: `build.bat [--release/-r] [rcpp|rcpc|rcpd|examples|all] [--api] [--run]`
   - Examples:
-    - `build.bat` - Build the server component in debug mode
-    - `build.bat --release client` - Build the client component in release mode
+    - `build.bat` - Build the rcpd component in debug mode
+    - `build.bat --release rcpc` - Build the RCP client component in release mode
     - `build.bat -r all` - Build all components in release mode
+    - `build.bat --release rcpd --api --run` - Build rcpd with API feature and run it after building
 
 ## How Dependencies Are Managed
 

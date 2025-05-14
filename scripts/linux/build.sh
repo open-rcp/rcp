@@ -9,7 +9,8 @@ echo
 BUILD_TYPE="debug"
 BUILD_TARGET="all"
 RUN_AFTER_BUILD=false
-RUN_COMPONENT="service"
+RUN_COMPONENT="rcpd"
+API_FEATURE=false
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -23,20 +24,20 @@ while [[ $# -gt 0 ]]; do
             BUILD_TYPE="debug"
             shift
             ;;
-        --server)
-            BUILD_TARGET="service"
+        --rcpp)
+            BUILD_TARGET="rcpp"
             shift
             ;;
-        --service)
-            BUILD_TARGET="service"
+        --rcpc)
+            BUILD_TARGET="rcpc"
             shift
             ;;
-        --client)
-            BUILD_TARGET="client"
+        --rcpd)
+            BUILD_TARGET="rcpd"
             shift
             ;;
-        --ws-bridge)
-            BUILD_TARGET="ws-bridge"
+        --examples)
+            BUILD_TARGET="examples"
             shift
             ;;
         --all)
@@ -47,29 +48,28 @@ while [[ $# -gt 0 ]]; do
             RUN_AFTER_BUILD=true
             shift
             ;;
-        --run-server)
+        --run-rcpd)
             RUN_AFTER_BUILD=true
-            RUN_COMPONENT="service"
+            RUN_COMPONENT="rcpd"
             shift
             ;;
-        --run-service)
+        --run-rcpc)
             RUN_AFTER_BUILD=true
-            RUN_COMPONENT="service"
+            RUN_COMPONENT="rcpc"
             shift
             ;;
-        --run-client)
+        --run-examples)
             RUN_AFTER_BUILD=true
-            RUN_COMPONENT="client"
+            RUN_COMPONENT="examples"
             shift
             ;;
-        --run-ws-bridge)
-            RUN_AFTER_BUILD=true
-            RUN_COMPONENT="ws-bridge"
+        --api)
+            API_FEATURE=true
             shift
             ;;
         *)
             echo "Unknown option: $key"
-            echo "Usage: $0 [--release|--debug] [--server|--client|--ws-bridge|--all] [--run|--run-server|--run-client|--run-ws-bridge]"
+            echo "Usage: $0 [--release|--debug] [--rcpp|--rcpc|--rcpd|--examples|--all] [--run|--run-rcpd|--run-rcpc|--run-examples] [--api]"
             exit 1
             ;;
     esac
@@ -99,21 +99,34 @@ echo "Building RCP components..."
 # Build the selected components
 if [ "$BUILD_TARGET" == "all" ]; then
     echo "Building all components in $BUILD_TYPE mode..."
-    cargo build $BUILD_OPTS
+    if $API_FEATURE; then
+        echo "Enabling API feature for rcpd..."
+        cargo build $BUILD_OPTS --features "rcpd/api"
+    else
+        cargo build $BUILD_OPTS
+    fi
     if [ $? -ne 0 ]; then
         echo "Error building project"
         exit 1
     fi
 else
-    if [ "$BUILD_TARGET" == "service" ]; then
-        echo "Building RCP daemon in $BUILD_TYPE mode..."
-        cargo build $BUILD_OPTS -p rcpd
-    elif [ "$BUILD_TARGET" == "client" ]; then
-        echo "Building client component in $BUILD_TYPE mode..."
-        cargo build $BUILD_OPTS -p rcp-client
-    elif [ "$BUILD_TARGET" == "ws-bridge" ]; then
-        echo "Building WebSocket bridge component in $BUILD_TYPE mode..."
-        cargo build $BUILD_OPTS -p rcp-ws-bridge
+    if [ "$BUILD_TARGET" == "rcpd" ]; then
+        echo "Building RCP Daemon in $BUILD_TYPE mode..."
+        if $API_FEATURE; then
+            echo "Enabling API feature for rcpd..."
+            cargo build $BUILD_OPTS -p rcpd --features "api"
+        else
+            cargo build $BUILD_OPTS -p rcpd
+        fi
+    elif [ "$BUILD_TARGET" == "rcpc" ]; then
+        echo "Building RCP Client in $BUILD_TYPE mode..."
+        cargo build $BUILD_OPTS -p rcpc
+    elif [ "$BUILD_TARGET" == "rcpp" ]; then
+        echo "Building RCP Protocol in $BUILD_TYPE mode..."
+        cargo build $BUILD_OPTS -p rcpp
+    elif [ "$BUILD_TARGET" == "examples" ]; then
+        echo "Building examples in $BUILD_TYPE mode..."
+        cargo build $BUILD_OPTS -p rcp-examples
     fi
     
     if [ $? -ne 0 ]; then
@@ -125,19 +138,26 @@ fi
 echo
 echo "Build completed successfully!"
 
-# Run component if requested    if $RUN_AFTER_BUILD; then
+# Run component if requested
+if $RUN_AFTER_BUILD; then
     echo "Running $RUN_COMPONENT..."
     if [ "$BUILD_TYPE" == "release" ]; then
-        if [ "$RUN_COMPONENT" == "service" ]; then
+        if [ "$RUN_COMPONENT" == "rcpd" ]; then
             "./target/release/rcpd"
-        else
-            "./target/release/rcp-$RUN_COMPONENT"
+        elif [ "$RUN_COMPONENT" == "rcpc" ]; then
+            "./target/release/rcpc"
+        elif [ "$RUN_COMPONENT" == "examples" ]; then
+            echo "Please specify which example to run from the target/release directory"
+            ls -la "./target/release/examples" 2>/dev/null || echo "No examples built"
         fi
     else
-        if [ "$RUN_COMPONENT" == "service" ]; then
+        if [ "$RUN_COMPONENT" == "rcpd" ]; then
             "./target/debug/rcpd"
-        else
-            "./target/debug/rcp-$RUN_COMPONENT"
+        elif [ "$RUN_COMPONENT" == "rcpc" ]; then
+            "./target/debug/rcpc"
+        elif [ "$RUN_COMPONENT" == "examples" ]; then
+            echo "Please specify which example to run from the target/debug directory"
+            ls -la "./target/debug/examples" 2>/dev/null || echo "No examples built"
         fi
     fi
 fi
