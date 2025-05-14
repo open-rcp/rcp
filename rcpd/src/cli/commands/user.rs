@@ -91,22 +91,22 @@ pub async fn handle_list(client: &ServiceClient, formatter: &OutputFormatter) ->
                     let is_admin_str = if u.is_admin { "Yes" } else { "No" };
                     let created_at_str = match &u.created_at {
                         Some(s) => &s[..],
-                        None => "Unknown"
+                        None => "Unknown",
                     };
                     let last_login_str = match &u.last_login {
                         Some(s) => &s[..],
-                        None => "Never"
+                        None => "Never",
                     };
-                    
+
                     table.add_row(vec![
                         &u.id,
                         &u.username,
                         is_admin_str,
                         created_at_str,
-                        last_login_str
+                        last_login_str,
                     ]);
                 }
-            }
+            },
         );
     }
 

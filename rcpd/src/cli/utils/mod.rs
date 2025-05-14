@@ -411,17 +411,17 @@ pub fn format_duration(seconds: u64) -> String {
     if seconds < 60 {
         return format!("{} seconds", seconds);
     }
-    
+
     let minutes = seconds / 60;
     if minutes < 60 {
         return format!("{} minutes", minutes);
     }
-    
+
     let hours = minutes / 60;
     if hours < 24 {
         return format!("{} hours", hours);
     }
-    
+
     let days = hours / 24;
     format!("{} days", days)
 }

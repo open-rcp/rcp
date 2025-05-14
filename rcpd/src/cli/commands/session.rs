@@ -94,10 +94,10 @@ pub async fn handle_list(client: &ServiceClient, formatter: &OutputFormatter) ->
                             "None"
                         } else {
                             "Multiple"
-                        }
+                        },
                     ]);
                 }
-            }
+            },
         );
     }
 

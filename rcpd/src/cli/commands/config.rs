@@ -53,13 +53,11 @@ async fn get_config(key: Option<&str>, config_path: Option<PathBuf>) -> Result<(
             "verify_cert" => {
                 formatter.info(&format!("verify_cert = {}", config.service.skip_verify))
             }
-            "format" => formatter.info(&format!("format = {}", config.global.format)),
+            "format" => formatter.info(&format!("format = {:?}", config.global.format)),
             "color" => formatter.info(&format!("color = {}", config.global.color)),
             "json" => formatter.info(&format!("json = {}", config.global.json)),
             "quiet" => formatter.info(&format!("quiet = {}", config.global.quiet)),
-            "timeout" => {
-                formatter.info(&format!("timeout = {}", config.service.timeout))
-            }
+            "timeout" => formatter.info(&format!("timeout = {}", config.service.timeout)),
             _ => {
                 return Err(CliError::ConfigurationError(format!(
                     "Unknown config key: {}",
@@ -90,14 +88,16 @@ async fn set_config(key: &str, value: &str, config_path: Option<PathBuf>) -> Res
         "host" => config.service.host = value.to_string(),
         "port" => {
             let port = value.parse::<u16>().map_err(|_| {
-                CliError::ConfigurationError("Port must be a valid number between 1-65535".to_string())
+                CliError::ConfigurationError(
+                    "Port must be a valid number between 1-65535".to_string(),
+                )
             })?;
             config.service.port = port;
         }
         "use_tls" => {
-            let use_tls = value
-                .parse::<bool>()
-                .map_err(|_| CliError::ConfigurationError("use_tls must be true or false".to_string()))?;
+            let use_tls = value.parse::<bool>().map_err(|_| {
+                CliError::ConfigurationError("use_tls must be true or false".to_string())
+            })?;
             config.service.use_tls = use_tls;
         }
         "verify_cert" => {
@@ -123,9 +123,9 @@ async fn set_config(key: &str, value: &str, config_path: Option<PathBuf>) -> Res
             }
         },
         "color" => {
-            let color = value
-                .parse::<bool>()
-                .map_err(|_| CliError::ConfigurationError("color must be true or false".to_string()))?;
+            let color = value.parse::<bool>().map_err(|_| {
+                CliError::ConfigurationError("color must be true or false".to_string())
+            })?;
             config.global.color = color;
         }
         "json" => {
@@ -135,9 +135,9 @@ async fn set_config(key: &str, value: &str, config_path: Option<PathBuf>) -> Res
             config.global.json = json;
         }
         "quiet" => {
-            let quiet = value
-                .parse::<bool>()
-                .map_err(|_| CliError::ConfigurationError("quiet must be true or false".to_string()))?;
+            let quiet = value.parse::<bool>().map_err(|_| {
+                CliError::ConfigurationError("quiet must be true or false".to_string())
+            })?;
             config.global.quiet = quiet;
         }
         "timeout" => {
@@ -174,10 +174,7 @@ async fn list_config(config_path: Option<PathBuf>) -> Result<(), CliError> {
     formatter.info(&format!("  host = {}", config.service.host));
     formatter.info(&format!("  port = {}", config.service.port));
     formatter.info(&format!("  use_tls = {}", config.service.use_tls));
-    formatter.info(&format!(
-        "  verify_cert = {}",
-        config.service.skip_verify
-    ));
+    formatter.info(&format!("  verify_cert = {}", config.service.skip_verify));
 
     // Display output settings
     formatter.info("Output settings:");

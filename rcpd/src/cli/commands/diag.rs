@@ -99,7 +99,7 @@ pub async fn handle_network_diag(
 pub async fn handle_logs(lines: usize, follow: bool, formatter: &OutputFormatter) -> Result<()> {
     // This is just a placeholder - replace with actual log retrieval
     let logs = get_logs(lines).await?;
-    
+
     // Format logs
     if formatter.json_output {
         formatter
