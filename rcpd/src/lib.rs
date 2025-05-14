@@ -15,6 +15,9 @@ pub mod user;
 #[cfg(feature = "api")]
 pub mod api;
 
+#[cfg(feature = "cli")]
+pub mod cli;
+
 // Platform-specific modules (private)
 mod platform;
 

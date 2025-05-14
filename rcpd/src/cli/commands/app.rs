@@ -13,7 +13,7 @@ use colored::Colorize;
 use std::fmt::Display;
 
 #[cfg(feature = "cli")]
-use crate::{cli::utils::OutputFormatter, Cli};
+use crate::cli::{types::Cli, utils::OutputFormatter};
 
 /// Application representation
 #[cfg(feature = "cli")]

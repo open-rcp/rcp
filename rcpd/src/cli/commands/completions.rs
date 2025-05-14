@@ -9,14 +9,11 @@ use clap::CommandFactory;
 #[cfg(feature = "cli")]
 use std::path::Path;
 
-#[cfg(feature = "cli")]
-use crate::Cli;
-
 /// Handle completions command
 #[cfg(feature = "cli")]
 pub fn handle_completions_command(shell: clap_complete::Shell, dir: Option<&Path>) -> Result<()> {
     // Get command from clap
-    let cmd = Cli::command();
+    let cmd = crate::cli::types::Cli::command();
 
     // Due to version mismatch between clap 3.x and clap_complete 4.x,
     // we use a simpler approach to generate completions
