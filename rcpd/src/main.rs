@@ -96,9 +96,12 @@ async fn main() -> Result<()> {
         Ok(cfg) => {
             info!("Configuration loaded from {}", config_file);
             cfg
-        },
+        }
         Err(e) => {
-            info!("Failed to load config from {}: {}. Using defaults.", config_file, e);
+            info!(
+                "Failed to load config from {}: {}. Using defaults.",
+                config_file, e
+            );
             config::ServiceConfig::default()
         }
     };
@@ -107,28 +110,28 @@ async fn main() -> Result<()> {
     match cli.command {
         Some(ServiceCommand::Start) => {
             run_daemon(&cli, config).await?;
-        },
+        }
         Some(ServiceCommand::Stop) => {
             info!("Stopping RCP service...");
             daemon::stop()?;
-        },
+        }
         Some(ServiceCommand::Restart) => {
             info!("Restarting RCP service...");
             daemon::stop()?;
             run_daemon(&cli, config).await?;
-        },
+        }
         Some(ServiceCommand::Status) => {
             let status = daemon::status()?;
             println!("RCP Service Status: {}", status);
-        },
+        }
         Some(ServiceCommand::Install) => {
             info!("Installing RCP service...");
             daemon_install::install(&cli.config)?;
-        },
+        }
         Some(ServiceCommand::Uninstall) => {
             info!("Uninstalling RCP service...");
             daemon_install::uninstall()?;
-        },
+        }
         None => {
             // No command specified, run daemon
             run_daemon(&cli, config).await?;
@@ -142,17 +145,20 @@ async fn main() -> Result<()> {
 async fn run_daemon(cli: &Cli, config: config::ServiceConfig) -> Result<()> {
     #[cfg(feature = "api")]
     info!("Starting RCPD (with API)...");
-    
+
     #[cfg(not(feature = "api"))]
     info!("Starting RCPD...");
-    
+
     // Check if we should daemonize
     if !cli.foreground {
         let work_dir = std::env::current_dir()?;
         info!("Daemonizing process in {}", work_dir.display());
         daemon::daemonize(&work_dir)?;
     }
-    
+
     // Start the daemon
-    daemon::start(config, std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")))
+    daemon::start(
+        config,
+        std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")),
+    )
 }

@@ -33,6 +33,7 @@ cli = [
     "atty"
 ]
 all = ["api", "cli"]
+dirs = ["dep:dirs"]
 
 [dependencies]
 # Core dependencies

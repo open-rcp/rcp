@@ -54,7 +54,7 @@ impl Display for Session {
 pub async fn handle_list(client: &ServiceClient, formatter: &OutputFormatter) -> Result<()> {
     // This is a placeholder implementation - replace with actual client call
     // Format: client.list_sessions().await
-    
+
     // Sample sessions for demonstration
     let sessions = vec![
         Session {
@@ -76,42 +76,44 @@ pub async fn handle_list(client: &ServiceClient, formatter: &OutputFormatter) ->
             active_apps: vec!["browser".to_string()],
         },
     ];
-    
+
     if sessions.is_empty() {
         formatter.info("No active sessions found");
     } else {
         formatter.table(
-            &["ID", "User", "IP Address", "Connected", "Idle (s)", "Apps"],
-            &sessions
-                .iter()
-                .map(|s| {
-                    vec![
-                        s.id.clone(),
-                        s.username.clone(),
-                        s.client_ip.clone(),
-                        s.connected_at.clone(),
-                        s.idle_time.to_string(),
+            vec!["ID", "User", "IP Address", "Connected", "Idle (s)", "Apps"],
+            |table| {
+                for s in &sessions {
+                    table.add_row(vec![
+                        &s.id,
+                        &s.username,
+                        &s.client_ip,
+                        &s.connected_at,
+                        &s.idle_time.to_string(),
                         if s.active_apps.is_empty() {
-                            "None".to_string()
+                            "None"
                         } else {
-                            s.active_apps.join(", ")
-                        },
-                    ]
-                })
-                .collect::<Vec<_>>(),
-            None,
+                            "Multiple"
+                        }
+                    ]);
+                }
+            }
         );
     }
-    
+
     Ok(())
 }
 
 /// Handle showing session details
 #[cfg(feature = "cli")]
-pub async fn handle_info(session_id: &str, client: &ServiceClient, formatter: &OutputFormatter) -> Result<()> {
+pub async fn handle_info(
+    session_id: &str,
+    client: &ServiceClient,
+    formatter: &OutputFormatter,
+) -> Result<()> {
     // This is a placeholder implementation - replace with actual client call
     // Format: client.get_session(session_id).await
-    
+
     // Sample session for demonstration
     let session = Session {
         id: session_id.to_string(),
@@ -122,19 +124,28 @@ pub async fn handle_info(session_id: &str, client: &ServiceClient, formatter: &O
         idle_time: 120,
         active_apps: vec!["notepad".to_string(), "calculator".to_string()],
     };
-    
-    formatter.json(&session).unwrap_or_else(|e| formatter.error(&format!("Failed to format session data: {}", e)));
-    
+
+    formatter
+        .json(&session)
+        .unwrap_or_else(|e| formatter.error(&format!("Failed to format session data: {}", e)));
+
     Ok(())
 }
 
 /// Handle disconnecting a session
 #[cfg(feature = "cli")]
-pub async fn handle_disconnect(session_id: &str, client: &ServiceClient, formatter: &OutputFormatter) -> Result<()> {
+pub async fn handle_disconnect(
+    session_id: &str,
+    client: &ServiceClient,
+    formatter: &OutputFormatter,
+) -> Result<()> {
     // This is a placeholder implementation - replace with actual client call
     // Format: client.disconnect_session(session_id).await
-    
-    formatter.success(&format!("Session '{}' disconnected successfully", session_id));
-    
+
+    formatter.success(&format!(
+        "Session '{}' disconnected successfully",
+        session_id
+    ));
+
     Ok(())
 }

@@ -16,3 +16,6 @@ pub mod error;
 
 #[cfg(feature = "cli")]
 pub mod types;
+
+#[cfg(feature = "cli")]
+pub mod service;

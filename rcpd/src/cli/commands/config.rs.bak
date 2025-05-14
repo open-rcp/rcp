@@ -1,6 +1,11 @@
 //! CLI configuration management
 //!
-//! This module provides functionality for CLI configuration management.
+//! This module provides             _ => {
+                return Err(CliError::ConfigurationError(format!(
+                    "Unknown config key: {}",
+                    key
+                )));
+            }onality for CLI configuration management.
 
 #[cfg(feature = "cli")]
 use crate::cli::error::CliError;
@@ -61,15 +66,15 @@ async fn get_config(key: Option<&str>, config_path: Option<PathBuf>) -> Result<(
                 formatter.info(&format!("timeout = {}", config.service.timeout))
             }
             _ => {
-                return Err(CliError::ConfigurationError(format!(
+                return Err(CliError::ConfigError(format!(
                     "Unknown config key: {}",
                     key
-                )));
+                )))
             }
         }
     } else {
         // Return error - need to specify a key
-        return Err(CliError::ConfigurationError(
+        return Err(CliError::ConfigError(
             "No configuration key specified".to_string(),
         ));
     }
@@ -87,67 +92,67 @@ async fn set_config(key: &str, value: &str, config_path: Option<PathBuf>) -> Res
 
     // Update config based on key
     match key {
-        "host" => config.service.host = value.to_string(),
+        "host" => config.connection.host = value.to_string(),
         "port" => {
             let port = value.parse::<u16>().map_err(|_| {
-                CliError::ConfigurationError("Port must be a valid number between 1-65535".to_string())
+                CliError::ConfigError("Port must be a valid number between 1-65535".to_string())
             })?;
-            config.service.port = port;
+            config.connection.port = port;
         }
         "use_tls" => {
             let use_tls = value
                 .parse::<bool>()
-                .map_err(|_| CliError::ConfigurationError("use_tls must be true or false".to_string()))?;
-            config.service.use_tls = use_tls;
+                .map_err(|_| CliError::ConfigError("use_tls must be true or false".to_string()))?;
+            config.connection.use_tls = use_tls;
         }
         "verify_cert" => {
             let verify_cert = value.parse::<bool>().map_err(|_| {
-                CliError::ConfigurationError("verify_cert must be true or false".to_string())
+                CliError::ConfigError("verify_cert must be true or false".to_string())
             })?;
-            config.service.skip_verify = verify_cert;
+            config.connection.verify_cert = verify_cert;
         }
-        "format" => match value.to_lowercase().as_str() {
-            "text" | "json" | "yaml" => {
-                if value.to_lowercase() == "text" {
-                    config.global.format = crate::cli::config::OutputFormat::Text;
-                } else if value.to_lowercase() == "json" {
-                    config.global.format = crate::cli::config::OutputFormat::Json;
-                } else {
-                    config.global.format = crate::cli::config::OutputFormat::Yaml;
-                }
-            }
+        "log_level" => match value.to_lowercase().as_str() {
+            "debug" | "info" | "warn" | "error" => config.log_level = value.to_lowercase(),
             _ => {
-                return Err(CliError::ConfigurationError(
-                    "format must be text, json, or yaml".to_string(),
+                return Err(CliError::ConfigError(
+                    "log_level must be debug, info, warn, or error".to_string(),
+                ))
+            }
+        },
+        "format" => match value.to_lowercase().as_str() {
+            "human" | "json" => config.format = value.to_lowercase(),
+            _ => {
+                return Err(CliError::ConfigError(
+                    "format must be human or json".to_string(),
                 ))
             }
         },
         "color" => {
             let color = value
                 .parse::<bool>()
-                .map_err(|_| CliError::ConfigurationError("color must be true or false".to_string()))?;
-            config.global.color = color;
+                .map_err(|_| CliError::ConfigError("color must be true or false".to_string()))?;
+            config.color = color;
         }
-        "json" => {
-            let json = value.parse::<bool>().map_err(|_| {
-                CliError::ConfigurationError("json must be true or false".to_string())
+        "json_output" => {
+            let json_output = value.parse::<bool>().map_err(|_| {
+                CliError::ConfigError("json_output must be true or false".to_string())
             })?;
-            config.global.json = json;
+            config.json_output = json_output;
         }
         "quiet" => {
             let quiet = value
                 .parse::<bool>()
-                .map_err(|_| CliError::ConfigurationError("quiet must be true or false".to_string()))?;
-            config.global.quiet = quiet;
+                .map_err(|_| CliError::ConfigError("quiet must be true or false".to_string()))?;
+            config.quiet = quiet;
         }
-        "timeout" => {
+        "timeout_seconds" => {
             let timeout = value.parse::<u64>().map_err(|_| {
-                CliError::ConfigurationError("timeout must be a valid number".to_string())
+                CliError::ConfigError("timeout_seconds must be a valid number".to_string())
             })?;
-            config.service.timeout = timeout;
+            config.timeout_seconds = timeout;
         }
         _ => {
-            return Err(CliError::ConfigurationError(format!(
+            return Err(CliError::ConfigError(format!(
                 "Unknown config key: {}",
                 key
             )))
@@ -155,7 +160,7 @@ async fn set_config(key: &str, value: &str, config_path: Option<PathBuf>) -> Res
     }
 
     // Save updated config
-    save_config(&config, config_path.expect("Config path required to save"))?;
+    save_config(&config, config_path)?;
     formatter.success(&format!("Updated {} = {}", key, value));
 
     Ok(())
@@ -171,24 +176,43 @@ async fn list_config(config_path: Option<PathBuf>) -> Result<(), CliError> {
 
     // Display connection settings
     formatter.info("Connection settings:");
-    formatter.info(&format!("  host = {}", config.service.host));
-    formatter.info(&format!("  port = {}", config.service.port));
-    formatter.info(&format!("  use_tls = {}", config.service.use_tls));
+    formatter.info(&format!("  host = {}", config.connection.host));
+    formatter.info(&format!("  port = {}", config.connection.port));
+    formatter.info(&format!("  use_tls = {}", config.connection.use_tls));
     formatter.info(&format!(
         "  verify_cert = {}",
-        config.service.skip_verify
+        config.connection.verify_cert
     ));
+
+    // Display authentication settings (only show if values are set)
+    formatter.info("Authentication settings:");
+    if let Some(ref username) = config.auth.username {
+        formatter.info(&format!("  username = {}", username));
+    } else {
+        formatter.info("  username = <not set>");
+    }
+    if config.auth.token.is_some() {
+        formatter.info("  token = <set>");
+    } else {
+        formatter.info("  token = <not set>");
+    }
+    if config.auth.psk.is_some() {
+        formatter.info("  psk = <set>");
+    } else {
+        formatter.info("  psk = <not set>");
+    }
 
     // Display output settings
     formatter.info("Output settings:");
-    formatter.info(&format!("  format = {:?}", config.global.format));
-    formatter.info(&format!("  color = {}", config.global.color));
-    formatter.info(&format!("  json = {}", config.global.json));
-    formatter.info(&format!("  quiet = {}", config.global.quiet));
+    formatter.info(&format!("  log_level = {}", config.log_level));
+    formatter.info(&format!("  format = {}", config.format));
+    formatter.info(&format!("  color = {}", config.color));
+    formatter.info(&format!("  json_output = {}", config.json_output));
+    formatter.info(&format!("  quiet = {}", config.quiet));
 
     // Display other settings
     formatter.info("Other settings:");
-    formatter.info(&format!("  timeout = {}", config.service.timeout));
+    formatter.info(&format!("  timeout_seconds = {}", config.timeout_seconds));
 
     Ok(())
 }

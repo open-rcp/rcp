@@ -10,7 +10,7 @@ use std::default::Default;
 pub struct CliConfig {
     /// Global configuration
     pub global: GlobalConfig,
-    
+
     /// Service configuration
     pub service: ServiceConfig,
 }
@@ -20,13 +20,13 @@ pub struct CliConfig {
 pub struct GlobalConfig {
     /// Enable color output
     pub color: bool,
-    
+
     /// Enable JSON output
     pub json: bool,
-    
+
     /// Quiet mode
     pub quiet: bool,
-    
+
     /// Default output format
     pub format: OutputFormat,
 }
@@ -36,16 +36,16 @@ pub struct GlobalConfig {
 pub struct ServiceConfig {
     /// Service host
     pub host: String,
-    
+
     /// Service port
     pub port: u16,
-    
+
     /// Service timeout in seconds
     pub timeout: u64,
-    
+
     /// Use TLS
     pub use_tls: bool,
-    
+
     /// Skip TLS verification
     pub skip_verify: bool,
 }
@@ -55,10 +55,10 @@ pub struct ServiceConfig {
 pub enum OutputFormat {
     /// Text output
     Text,
-    
+
     /// JSON output
     Json,
-    
+
     /// YAML output
     Yaml,
 }

@@ -21,17 +21,21 @@ use crate::Cli;
 #[cfg(feature = "cli")]
 pub fn handle_completions_command(shell: clap_complete::Shell, dir: Option<&Path>) -> Result<()> {
     // Get command from clap
-    use clap::CommandFactory;
     use crate::Cli;
+    use clap::CommandFactory;
     let mut cmd = Cli::command();
-    
+
     if let Some(dir) = dir {
         generate_to(shell, &mut cmd, "rcpd", dir)?;
-        println!("Completions for shell '{}' written to directory: {}", shell, dir.display());
+        println!(
+            "Completions for shell '{}' written to directory: {}",
+            shell,
+            dir.display()
+        );
     } else {
         generate(shell, &mut cmd, "rcpd", &mut io::stdout());
     }
-    
+
     Ok(())
 }
 
@@ -54,6 +58,6 @@ pub fn handle_auto_completions(dir: Option<&Path>) -> Result<()> {
         // Default to bash if SHELL is not set
         clap_complete::Shell::Bash
     };
-    
+
     handle_completions_command(shell, dir)
 }
