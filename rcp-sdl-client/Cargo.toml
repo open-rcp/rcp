@@ -1,0 +1,27 @@
+[package]
+name = "rcp-sdl-client"
+version = "0.1.0"
+edition = "2021"
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "RCP Client with SDL-based GUI"
+
+[build-dependencies]
+pkg-config = "0.3.32"
+
+[dependencies]
+rcp-client = { path = "../rcp-client" }
+rcp-core = { path = "../rcp-core" }
+tokio = { workspace = true }
+thiserror = { workspace = true }
+log = { workspace = true }
+env_logger = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+sdl2 = { version = "0.37", features = ["image", "gfx", "ttf"] }
+gl = "0.14.0"
+egui = "0.26.0"
+uuid = { version = "1.7.0", features = ["v4", "serde"] }
+config = "0.15.0"
+directories = "5.0.1"
