@@ -148,10 +148,10 @@ async fn connect_with_string() -> Result<(), Box<dyn std::error::Error>> {
 
 ```bash
 # Connect using an SSH-like connection string
-rcp-client connect user:pass@host:8716
+rcpc connect user:pass@host:8716
 
 # Execute a command using connection string
-rcp-client execute user:pass@host:8716 my_command arg1 arg2
+rcpc execute user:pass@host:8716 my_command arg1 arg2
 ```
 
 ### Working with Services
