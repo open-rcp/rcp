@@ -6,8 +6,6 @@
 #[cfg(feature = "cli")]
 use anyhow::Result;
 #[cfg(feature = "cli")]
-use colored::Colorize;
-#[cfg(feature = "cli")]
 use std::fmt::{Display, Formatter};
 
 #[cfg(feature = "cli")]

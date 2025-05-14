@@ -7,8 +7,6 @@ use anyhow::Result;
 #[cfg(feature = "cli")]
 use clap::CommandFactory;
 #[cfg(feature = "cli")]
-use std::io;
-#[cfg(feature = "cli")]
 use std::path::Path;
 
 #[cfg(feature = "cli")]
@@ -18,7 +16,7 @@ use crate::Cli;
 #[cfg(feature = "cli")]
 pub fn handle_completions_command(shell: clap_complete::Shell, dir: Option<&Path>) -> Result<()> {
     // Get command from clap
-    let mut cmd = Cli::command();
+    let cmd = Cli::command();
 
     // Due to version mismatch between clap 3.x and clap_complete 4.x,
     // we use a simpler approach to generate completions

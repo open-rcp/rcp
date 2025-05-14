@@ -1,9 +1,7 @@
 use rcpc::ClientBuilder;
 use std::error::Error;
-use std::io::{self, Write};
+use std::io::{self};
 use std::process::{Command, Stdio};
-use std::time::Duration;
-use tokio::time::sleep;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {

@@ -10,8 +10,6 @@ use crate::cli::service::ServiceClient;
 use crate::cli::utils::OutputFormatter;
 #[cfg(feature = "cli")]
 use anyhow::Result;
-#[cfg(feature = "cli")]
-use std::process::Command;
 
 /// Handle service status command
 #[cfg(feature = "cli")]

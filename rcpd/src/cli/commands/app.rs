@@ -180,7 +180,7 @@ pub enum AppCommand {
 /// List available applications
 #[cfg(feature = "cli")]
 async fn list_applications(cli: &mut Cli, filter: Option<&str>) -> Result<()> {
-    let mut formatter = OutputFormatter::new(cli.json, true, false);
+    let formatter = OutputFormatter::new(cli.json, true, false);
 
     // TODO: Implement service client request to get applications
     let applications = vec![
@@ -219,7 +219,7 @@ async fn list_applications(cli: &mut Cli, filter: Option<&str>) -> Result<()> {
 /// Show application details
 #[cfg(feature = "cli")]
 async fn show_application(cli: &mut Cli, id: &str) -> Result<()> {
-    let mut formatter = OutputFormatter::new(cli.json, true, false);
+    let formatter = OutputFormatter::new(cli.json, true, false);
 
     // TODO: Implement service client request to get application by ID
     // This is just sample data - replace with actual service client call
@@ -246,7 +246,7 @@ async fn create_application(
     working_dir: Option<&str>,
     enabled: bool,
 ) -> Result<()> {
-    let mut formatter = OutputFormatter::new(cli.json, true, false);
+    let formatter = OutputFormatter::new(cli.json, true, false);
 
     // TODO: Implement service client request to create application
     // This is just sample code - replace with actual service client call
@@ -275,7 +275,7 @@ async fn update_application(
     working_dir: Option<&str>,
     enabled: Option<bool>,
 ) -> Result<()> {
-    let mut formatter = OutputFormatter::new(cli.json, true, false);
+    let formatter = OutputFormatter::new(cli.json, true, false);
 
     // TODO: Implement service client request to update application
     // This is just sample code - replace with actual service client call
@@ -312,7 +312,7 @@ async fn update_application(
 /// Delete an application
 #[cfg(feature = "cli")]
 async fn delete_application(cli: &mut Cli, id: &str) -> Result<()> {
-    let mut formatter = OutputFormatter::new(cli.json, true, false);
+    let formatter = OutputFormatter::new(cli.json, true, false);
 
     // TODO: Implement service client request to delete application
     // This is just sample code - replace with actual service client call
@@ -324,7 +324,7 @@ async fn delete_application(cli: &mut Cli, id: &str) -> Result<()> {
 /// Enable or disable an application
 #[cfg(feature = "cli")]
 async fn set_application_status(cli: &mut Cli, id: &str, enabled: bool) -> Result<()> {
-    let mut formatter = OutputFormatter::new(cli.json, true, false);
+    let formatter = OutputFormatter::new(cli.json, true, false);
 
     // TODO: Implement service client request to enable/disable application
     // This is just sample code - replace with actual service client call

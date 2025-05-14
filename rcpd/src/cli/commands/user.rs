@@ -5,10 +5,6 @@
 
 #[cfg(feature = "cli")]
 use anyhow::Result;
-#[cfg(feature = "cli")]
-use clap::Parser;
-#[cfg(feature = "cli")]
-use colored::Colorize;
 
 #[cfg(feature = "cli")]
 use crate::cli::service::ServiceClient;

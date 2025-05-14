@@ -1,5 +1,4 @@
 use crate::server::error::{Error, Result};
-use log::error;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;

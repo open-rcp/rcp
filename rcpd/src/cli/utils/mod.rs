@@ -339,7 +339,6 @@ pub fn load_config(
 ) -> Result<crate::cli::config::CliConfig> {
     use crate::cli::config::CliConfig;
     use std::fs;
-    use std::path::PathBuf;
 
     // Determine the configuration file path
     let path = if let Some(path) = config_path {
