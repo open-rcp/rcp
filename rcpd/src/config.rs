@@ -1,6 +1,6 @@
-use crate::server::config::ServerConfig;
 #[cfg(feature = "api")]
 use crate::api::ApiConfig;
+use crate::server::config::ServerConfig;
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
@@ -10,11 +10,11 @@ pub struct ServiceConfig {
     pub address: String,
     pub port: u16,
     pub tls: TlsConfig,
-    
+
     /// Integrated server configuration
     #[serde(default)]
     pub server: ServerConfig,
-    
+
     /// Integrated API configuration (when api feature is enabled)
     #[cfg(feature = "api")]
     pub api: Option<ApiConfig>,
@@ -43,7 +43,7 @@ impl Default for ServiceConfig {
                 api: Some(ApiConfig::default()),
             }
         }
-        
+
         #[cfg(not(feature = "api"))]
         Self {
             address: "127.0.0.1".to_string(),

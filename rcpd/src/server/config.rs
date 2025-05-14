@@ -219,22 +219,23 @@ impl ServerConfig {
         let builder = config::Config::builder()
             .add_source(config::File::with_name(path.as_ref().to_str().unwrap()))
             .add_source(config::Environment::with_prefix("RCP_SERVER"));
-            
-        let config = builder.build()
+
+        let config = builder
+            .build()
             .map_err(|e| crate::server::error::Error::Config(e))?;
-            
-        let server_config: ServerConfig = config.try_deserialize()
+
+        let server_config: ServerConfig = config
+            .try_deserialize()
             .map_err(|e| crate::server::error::Error::Config(e))?;
-            
+
         Ok(server_config)
     }
 
     /// Save configuration to a file
     pub fn to_file<P: AsRef<Path>>(&self, path: P) -> Result<()> {
-        let toml = toml::to_string(self)
-            .map_err(|e| crate::server::error::Error::Other(e.to_string()))?;
-            
-        std::fs::write(path, toml)
-            .map_err(|e| e.into())
+        let toml =
+            toml::to_string(self).map_err(|e| crate::server::error::Error::Other(e.to_string()))?;
+
+        std::fs::write(path, toml).map_err(|e| e.into())
     }
 }

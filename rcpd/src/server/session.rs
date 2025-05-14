@@ -5,8 +5,8 @@ use crate::server::{
 use log::{debug, error, info};
 use rcpp::{ConnectionState, Frame};
 use std::collections::HashMap;
-use tokio::net::TcpStream;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio::net::TcpStream;
 use uuid::Uuid;
 
 /// A client session on the server
@@ -61,12 +61,7 @@ impl ServiceFactory {
 
 impl Session {
     /// Create a new session
-    pub fn new(
-        id: Uuid,
-        tcp_stream: TcpStream,
-        config: ServerConfig,
-        peer_addr: String,
-    ) -> Self {
+    pub fn new(id: Uuid, tcp_stream: TcpStream, config: ServerConfig, peer_addr: String) -> Self {
         Self {
             id,
             stream: tcp_stream,
@@ -112,11 +107,11 @@ impl Session {
 
         // Simplified session handling for now
         info!("Session {} authenticated and ready", self.id);
-        
+
         // In a real implementation, we would have a frame processing loop here
         // For now, we'll just keep the connection alive and simulate activity
         let mut buffer = [0u8; 1024];
-        
+
         loop {
             match self.stream.read(&mut buffer).await {
                 Ok(0) => {
@@ -127,7 +122,7 @@ impl Session {
                 Ok(_) => {
                     // Process the request - simplified for now
                     debug!("Received data from client");
-                    
+
                     // Send back a simple response - just some bytes for now
                     let response_data = vec![0, 1, 2, 3, 4];
                     if let Err(e) = self.stream.write_all(&response_data).await {
@@ -148,10 +143,10 @@ impl Session {
     /// Handle initial protocol handshake
     async fn handle_handshake(&mut self) -> Result<()> {
         debug!("Handling handshake");
-        
+
         // Here would be the implementation of the protocol handshake
         // For brevity, I'm providing a simplified version
-        
+
         self.state = ConnectionState::Authenticated;
         Ok(())
     }
@@ -159,16 +154,16 @@ impl Session {
     /// Handle authentication
     async fn authenticate(&mut self) -> Result<()> {
         debug!("Authenticating client");
-        
+
         if !self.config.auth.required {
             debug!("Authentication not required");
             self.state = ConnectionState::Authenticated;
             return Ok(());
         }
-        
+
         // Here would be the actual authentication implementation
         // For brevity, I'm providing a simplified version
-        
+
         self.state = ConnectionState::Authenticated;
         Ok(())
     }

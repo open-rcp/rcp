@@ -7,9 +7,9 @@ pub mod error;
 pub mod instance;
 pub mod lifecycle;
 pub mod manager;
+pub mod server;
 pub mod service;
 pub mod user;
-pub mod server;
 
 // Feature-gated modules
 #[cfg(feature = "api")]
@@ -20,6 +20,6 @@ mod platform;
 
 // Re-export common types for external usage
 pub use config::ServiceConfig;
-pub use error::{ServiceError, Result};
+pub use error::{Result, ServiceError};
 pub use manager::ServiceManager;
 pub use service::Service;
