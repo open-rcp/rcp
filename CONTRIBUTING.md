@@ -91,9 +91,9 @@ All contributors are expected to adhere to our Code of Conduct. Please be respec
 
 ```
 open-rcp/
-├── rcp-core/       # Protocol definitions, frame parsers, commands
+├── rcpp/       # Protocol definitions, frame parsers, commands
 ├── rcp-server/     # RCP listener, app session manager
-├── rcp-client/     # TCP client, app control interface
+├── rcpc/     # TCP client, app control interface
 ├── rcp-ws-bridge/  # WebSocket proxy for browser clients
 ├── examples/       # Minimal demos
 └── docs/           # Protocol spec & diagrams

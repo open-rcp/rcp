@@ -103,7 +103,7 @@ Connect with a single, convenient connection string:
 
 ```bash
 # Connect using SSH-style string format: [user[:pass]@]host[:port][/path]
-rcp-client connect admin:secretkey@192.168.1.100:8716
+rcpc connect admin:secretkey@192.168.1.100:8716
 ```
 
 #### Using Command-Line Parameters
@@ -112,10 +112,10 @@ Connect using host and port flags (must be specified before the connect command)
 
 ```bash
 # Connect using command-line parameters (defaults to "test_key" as PSK)
-rcp-client -H 127.0.0.1 -p 8716 connect
+rcpc -H 127.0.0.1 -p 8716 connect
 
 # Connect with a custom PSK specified via --psk flag
-rcp-client -H 127.0.0.1 -p 8716 connect --psk customkey
+rcpc -H 127.0.0.1 -p 8716 connect --psk customkey
 ```
 
 ### 🖥️ Using the Admin Interface

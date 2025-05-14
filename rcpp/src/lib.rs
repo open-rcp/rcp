@@ -33,7 +33,7 @@
 //!
 //! The core library is designed to be fully open source and standard,
 //! with no division between different editions or tiers.
-//! All core modules (rcp-core, rcp-server, rcp-service, rcp-client, rcp-ws-bridge)
+//! All core modules (rcpp, rcp-server, rcp-service, rcpc, rcp-ws-bridge)
 //! provide the same complete functionality regardless of deployment scenario.
 //! Any edition-specific features would only exist in the interface projects
 //! (rcp-admin, rcp-desk, rcp-api, rcp-cli).

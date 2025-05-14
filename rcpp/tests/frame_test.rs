@@ -1,4 +1,4 @@
-// filepath: /Volumes/EXT/repos/open-rcp/rcp/rcp-core/tests/frame_test.rs
+// filepath: /Volumes/EXT/repos/open-rcp/rcp/rcpp/tests/frame_test.rs
 use rcpp::{CommandId, Frame};
 
 #[test]

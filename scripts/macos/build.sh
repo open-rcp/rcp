@@ -133,7 +133,7 @@ else
         cargo build $BUILD_OPTS -p rcpd
     elif [ "$BUILD_TARGET" == "client" ]; then
         echo "Building client component in $BUILD_TYPE mode..."
-        cargo build $BUILD_OPTS -p rcp-client
+        cargo build $BUILD_OPTS -p rcpc
     elif [ "$BUILD_TARGET" == "ws-bridge" ]; then
         echo "Building WebSocket bridge component in $BUILD_TYPE mode..."
         cargo build $BUILD_OPTS -p rcp-ws-bridge

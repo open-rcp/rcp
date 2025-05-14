@@ -1,4 +1,4 @@
-// filepath: /Volumes/EXT/repos/open-rcp/rcp/rcp-core/tests/auth_test.rs
+// filepath: /Volumes/EXT/repos/open-rcp/rcp/rcpp/tests/auth_test.rs
 use rcpp::*;
 
 #[test]

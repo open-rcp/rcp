@@ -77,7 +77,7 @@ RCP follows a modular architecture with three main components that work together
 
 ```
 rcp/
-├── rcp-core/           # Core protocol definitions
+├── rcpp/           # Core protocol definitions
 │   └── src/
 │       ├── auth.rs     # Authentication modules
 │       ├── command.rs  # Protocol commands
@@ -87,7 +87,7 @@ rcp/
 │       ├── lib.rs      # Main library entry
 │       ├── protocol.rs # Protocol handling
 │       └── utils.rs    # Utilities
-├── rcp-client/         # Client library
+├── rcpc/         # Client library
 │   └── src/            # Client implementation
 ├── rcpd/               # Runtime daemon with integrated server and API
 │   └── src/
@@ -174,7 +174,7 @@ When working on the RCP project, it's common to have to switch between different
 
 To add a new command to the protocol:
 
-1. Add a new variant to the `CommandId` enum in `rcp-core/src/command.rs`
+1. Add a new variant to the `CommandId` enum in `rcpp/src/command.rs`
 2. Define the command payload structure(s) in the same file
 3. Update the command handler in the session implementation
 
