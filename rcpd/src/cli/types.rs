@@ -4,6 +4,153 @@
 
 #[cfg(feature = "cli")]
 use clap::Parser;
+#[cfg(feature = "cli")]
+use clap_complete::Shell;
+
+/// Main CLI struct for RCPD
+#[cfg(feature = "cli")]
+#[derive(Parser, Debug)]
+#[clap(author, version, about, long_about = None)]
+pub struct Cli {
+    /// Config file path
+    #[clap(short, long, default_value = "rcpd.toml")]
+    pub config: String,
+
+    /// Run in foreground (no daemon)
+    #[clap(short, long)]
+    pub foreground: bool,
+
+    /// Enable verbose logging
+    #[clap(short, long)]
+    pub verbose: bool,
+
+    /// Output in JSON format
+    #[clap(long)]
+    pub json: bool,
+
+    /// Command to execute
+    #[clap(subcommand)]
+    pub command: Option<RcpdCommand>,
+}
+
+/// Top-level RCPD commands
+#[cfg(feature = "cli")]
+#[derive(Parser, Debug)]
+pub enum RcpdCommand {
+    /// Daemon management commands
+    Daemon {
+        /// Daemon subcommand
+        #[clap(subcommand)]
+        command: Option<DaemonCommand>,
+    },
+
+    /// Server management commands
+    Server {
+        /// Server subcommand
+        #[clap(subcommand)]
+        command: ServerCommand,
+    },
+
+    /// Service management commands
+    Service {
+        /// Service subcommand
+        #[clap(subcommand)]
+        command: ServiceCommand,
+    },
+
+    /// Application management commands
+    App {
+        /// Application subcommand
+        #[clap(subcommand)]
+        command: AppCommand,
+    },
+
+    /// Session management commands
+    Session {
+        /// Session subcommand
+        #[clap(subcommand)]
+        command: SessionCommand,
+    },
+
+    /// User management commands
+    User {
+        /// User subcommand
+        #[clap(subcommand)]
+        command: UserCommand,
+    },
+
+    /// Configuration management commands
+    Config {
+        /// Config subcommand
+        #[clap(subcommand)]
+        command: ConfigCommand,
+    },
+
+    /// Diagnostics commands
+    Diag {
+        /// Diagnostics subcommand
+        #[clap(subcommand)]
+        command: DiagCommand,
+    },
+
+    /// Generate shell completions
+    Completions {
+        /// Shell to generate completions for
+        #[clap(value_parser)]
+        shell: Shell,
+    },
+}
+
+/// Daemon commands
+#[cfg(feature = "cli")]
+#[derive(Parser, Debug)]
+pub enum DaemonCommand {
+    /// Start the daemon
+    Start,
+
+    /// Stop the daemon
+    Stop,
+
+    /// Restart the daemon
+    Restart,
+
+    /// Show daemon status
+    Status,
+}
+
+/// Service commands
+#[cfg(feature = "cli")]
+#[derive(Parser, Debug)]
+pub enum ServiceCommand {
+    /// Display service status
+    Status,
+
+    /// Start the service
+    Start,
+
+    /// Stop the service
+    Stop,
+
+    /// Restart the service
+    Restart,
+
+    /// Install service
+    Install,
+
+    /// Uninstall service
+    Uninstall,
+
+    /// Display service logs
+    Logs {
+        /// Number of lines to display
+        #[clap(default_value = "10")]
+        lines: usize,
+
+        /// Follow log output
+        #[clap(short, long)]
+        follow: bool,
+    },
+}
 
 /// Server commands
 #[cfg(feature = "cli")]

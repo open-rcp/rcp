@@ -6,7 +6,10 @@
 #[cfg(feature = "cli")]
 mod cli_tests {
     use clap::Parser;
-    use rcpd::{Cli, RcpdCommand};
+    use rcpd::cli::types::{
+        AppCommand, Cli, ConfigCommand, DiagCommand, RcpdCommand, ServerCommand, ServiceCommand,
+        SessionCommand, UserCommand,
+    };
 
     #[test]
     fn test_parse_daemon_command() {
@@ -105,9 +108,5 @@ mod cli_tests {
         }
     }
 
-    // Import necessary types
-    use rcpd::cli::commands::{
-        AppCommand, ConfigCommand, DiagCommand, ServerCommand, ServiceCommand, SessionCommand,
-        UserCommand,
-    };
+    // Types are already imported at the top of the module
 }
