@@ -2,6 +2,12 @@
 
 **RCP/1.0** (Rust/Remote Control Protocol) is a low-level, high-performance protocol designed to enable secure remote control of desktop applications over TCP/IP using the Rust programming language. Built for performance, portability, and flexibility, RCP is designed to be the foundation for remote app virtualization or distributed desktop protocols.
 
+
+![CI Status](https://github.com/open-rcp/rcp/actions/workflows/ci.yml/badge.svg)
+![Build Status](https://github.com/open-rcp/rcp/actions/workflows/build.yml/badge.svg)
+![Release Status](https://github.com/open-rcp/rcp/actions/workflows/release.yml/badge.svg)
+
+
 > 🔒 Secure. ⚡ Fast. 🧩 Modular. 🦀 Rust-native.
 
 ---
