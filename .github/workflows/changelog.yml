@@ -4,6 +4,13 @@ on:
   push:
     branches:
       - master
+    paths:
+      - 'rcpp/**'
+      - 'rcpc/**'
+      - 'rcpd/**'
+      - 'src/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
   pull_request:
     types: [closed]
     branches:
@@ -62,8 +69,23 @@ jobs:
             echo "Previous tag: $prev_tag"
           fi
       
+      # Check if we need to update changelog based on significant changes
+      - name: Check for significant changes
+        id: check_changes
+        run: |
+          # Look for commits with conventional commit prefixes that indicate changelog-worthy changes
+          change_count=$(git log ${{ steps.prev_tag.outputs.prev_tag }}..HEAD --pretty=format:"%s" --grep="^feat\|^fix\|^improve\|^refactor\|^perf\|^docs" | wc -l)
+          if [ "$change_count" -gt 0 ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "Found $change_count significant changes since last tag"
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "No significant changes found since last tag"
+          fi
+      
       - name: Generate changelog entry
         id: changelog
+        if: steps.check_changes.outputs.has_changes == 'true'
         run: |
           echo "## ${{ steps.version.outputs.version }} ($(date '+%Y-%m-%d'))" > temp_changelog.md
           echo "" >> temp_changelog.md
@@ -90,6 +112,7 @@ jobs:
           cat temp_changelog.md
       
       - name: Update CHANGELOG.md
+        if: steps.check_changes.outputs.has_changes == 'true'
         run: |
           if [ -f CHANGELOG.md ]; then
             cat temp_changelog.md > new_changelog.md
@@ -103,6 +126,7 @@ jobs:
           fi
       
       - name: Create Pull Request or Commit Directly
+        if: steps.check_changes.outputs.has_changes == 'true'
         run: |
           if [ "${{ github.event_name }}" = "push" ]; then
             # In autonomous mode, commit directly to the branch
@@ -121,7 +145,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Create Pull Request (fallback)
-        if: github.event_name == 'workflow_dispatch' && failure()
+        if: steps.check_changes.outputs.has_changes == 'true' && github.event_name == 'workflow_dispatch' && failure()
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}

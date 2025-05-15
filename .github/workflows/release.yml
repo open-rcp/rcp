@@ -7,9 +7,8 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version to release (e.g. v0.1.0)'
+        description: 'Version to release (e.g., v0.2.0)'
         required: true
-        default: 'v0.1.0'
 
 # Add permissions block for GITHUB_TOKEN
 permissions:
@@ -30,122 +29,152 @@ jobs:
       version: ${{ steps.get_version.outputs.version }}
     
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
     - name: Get version
       id: get_version
       run: |
         if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
           echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
         else
-          # Remove refs/tags/ prefix
+          # Extract version from tag name
           echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
         fi
+        echo "Using version: $(cat $GITHUB_OUTPUT | grep version | cut -d= -f2)"
     
     - name: Validate version format
       run: |
-        VERSION="${{ steps.get_version.outputs.version }}"
-        
-        # Check if version starts with v and followed by numbers and dots
-        if [[ ! "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+ ]]; then
-          echo "::error::Invalid version format: $VERSION. Version must start with 'v' followed by semantic version (e.g. v1.2.3)"
+        VERSION=$(cat $GITHUB_OUTPUT | grep version | cut -d= -f2)
+        if ! [[ $VERSION =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$ ]]; then
+          echo "Invalid version format: $VERSION"
+          echo "Version must be in format v1.2.3 or v1.2.3-alpha"
           exit 1
         fi
+    
+    - name: Generate release notes
+      id: release_notes
+      run: |
+        # Get previous tag for comparison
+        prev_tag=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+        if [ -z "$prev_tag" ]; then
+          prev_tag=$(git rev-list --max-parents=0 HEAD)  # First commit
+          echo "No previous tag, using first commit as reference: $prev_tag"
+        fi
         
-        echo "Version format is valid: $VERSION"
+        # Create a release notes file with sections for features, fixes, etc.
+        echo "## Changes in ${{ steps.get_version.outputs.version }}" > RELEASE_NOTES.md
+        echo "" >> RELEASE_NOTES.md
+        
+        # Features
+        echo "### Features" >> RELEASE_NOTES.md
+        git log $prev_tag..HEAD --pretty=format:"- %s" --grep="^feat" | grep -v "^$" | sort >> RELEASE_NOTES.md || echo "- No new features in this release" >> RELEASE_NOTES.md
+        echo "" >> RELEASE_NOTES.md
+        
+        # Bug fixes
+        echo "### Bug Fixes" >> RELEASE_NOTES.md
+        git log $prev_tag..HEAD --pretty=format:"- %s" --grep="^fix" | grep -v "^$" | sort >> RELEASE_NOTES.md || echo "- No bug fixes in this release" >> RELEASE_NOTES.md
+        echo "" >> RELEASE_NOTES.md
+        
+        # Improvements
+        echo "### Improvements" >> RELEASE_NOTES.md
+        git log $prev_tag..HEAD --pretty=format:"- %s" --grep="^improve\|^refactor\|^perf" | grep -v "^$" | sort >> RELEASE_NOTES.md || echo "- No improvements in this release" >> RELEASE_NOTES.md
+        echo "" >> RELEASE_NOTES.md
+        
+        # Documentation changes
+        echo "### Documentation" >> RELEASE_NOTES.md
+        git log $prev_tag..HEAD --pretty=format:"- %s" --grep="^docs" | grep -v "^$" | sort >> RELEASE_NOTES.md || echo "- No documentation changes in this release" >> RELEASE_NOTES.md
+        
+        cat RELEASE_NOTES.md
     
     - name: Create Release
       id: create_release
-      uses: actions/github-script@v7
+      uses: softprops/action-gh-release@v2
       with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-          const { data: release } = await github.rest.repos.createRelease({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            tag_name: '${{ steps.get_version.outputs.version }}',
-            name: 'Release ${{ steps.get_version.outputs.version }}',
-            draft: true,
-            prerelease: false,
-            body: `## RCP ${{ steps.get_version.outputs.version }}
-            
-            Please refer to [CHANGELOG.md](https://github.com/open-rcp/rcp/blob/main/CHANGELOG.md) for detailed changes.
-            
-            ### Downloads
-            
-            Each package includes the binary and necessary configuration files.
-            
-            #### Windows
-            - \`rcpp-windows.zip\` (RCP Protocol)
-            - \`rcpc-windows.zip\` (RCP Client)
-            - \`rcpd-windows.zip\` (RCP Daemon)
-            
-            #### Linux
-            - \`rcpp-linux.tar.gz\` (RCP Protocol)
-            - \`rcpc-linux.tar.gz\` (RCP Client)
-            - \`rcpd-linux.tar.gz\` (RCP Daemon)
-            
-            #### macOS
-            - \`rcpp-macos.tar.gz\` (RCP Protocol)
-            - \`rcpc-macos.tar.gz\` (RCP Client)
-            - \`rcpd-macos.tar.gz\` (RCP Daemon)`
-          });
-          
-          core.setOutput('upload_url', release.upload_url);
-          return release;
-
+        name: RCP ${{ steps.get_version.outputs.version }}
+        tag_name: ${{ steps.get_version.outputs.version }}
+        body_path: RELEASE_NOTES.md
+        draft: true
+        fail_on_unmatched_files: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  
   build:
-    name: Build for ${{ matrix.os }}
+    name: Build for ${{ matrix.platform }}
     needs: create_release
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-latest
-            platform: linux
+          - platform: linux
+            os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
+            deps_cmd: >
+              sudo apt-get update && 
+              sudo apt-get install -y libglib2.0-dev libgtk-3-dev libwebkit2gtk-4.1-dev pkg-config
             archive_ext: tar.gz
-            archive_cmd: tar -czf
-          - os: windows-latest
-            platform: windows
+          - platform: windows
+            os: windows-latest
             target: x86_64-pc-windows-msvc
+            deps_cmd: choco install pkgconfiglite
             archive_ext: zip
-            archive_cmd: zip -r
-          - os: macos-latest
-            platform: macos
+          - platform: macos
+            os: macos-latest
             target: x86_64-apple-darwin
+            deps_cmd: brew install pkg-config
             archive_ext: tar.gz
-            archive_cmd: tar -czf
     
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    # Check for cached build from CI workflow to speed up builds
+    - name: Check for cached build
+      id: cached-build
+      uses: actions/cache@v3
+      with:
+        path: target/${{ matrix.target }}/release
+        key: rcp-${{ matrix.platform }}-release-${{ hashFiles('**/Cargo.lock', '**/*.rs') }}
+        restore-keys: |
+          rcp-${{ matrix.platform }}-release-
     
     - name: Setup Rust
       uses: dtolnay/rust-toolchain@stable
       with:
-        toolchain: stable
-        target: ${{ matrix.target }}
+        targets: ${{ matrix.target }}
+        components: clippy, rustfmt
     
     - name: Rust cache
       uses: swatinem/rust-cache@v2
       with:
-        shared-key: "build-${{ matrix.target }}"
+        shared-key: "rcp-${{ matrix.platform }}-release-${{ hashFiles('**/Cargo.lock') }}"
+        cache-on-failure: true
     
-    - name: Install dependencies for Linux
-      if: matrix.platform == 'linux'
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y libssl-dev pkg-config zip unzip
+    - name: Install dependencies for platform
+      if: matrix.deps_cmd != ''
+      run: ${{ matrix.deps_cmd }}
+      shell: bash
     
+    # Skip clippy if we have a cached build
     - name: Run Clippy
+      if: steps.cached-build.outputs.cache-hit != 'true'
       run: cargo clippy --all-targets --all-features -- -D warnings
     
+    # Build each component for release
     - name: Build RCP Protocol
+      if: steps.cached-build.outputs.cache-hit != 'true'
       run: cargo build --release --package rcpp --target ${{ matrix.target }}
     
     - name: Build RCP Client
+      if: steps.cached-build.outputs.cache-hit != 'true'
       run: cargo build --release --package rcpc --target ${{ matrix.target }}
     
     - name: Build RCP Daemon
+      if: steps.cached-build.outputs.cache-hit != 'true'
       run: cargo build --release --package rcpd --target ${{ matrix.target }}
     
     # Protocol package preparation
@@ -213,14 +242,14 @@ jobs:
       if: matrix.platform == 'windows'
       run: |
         cp target/${{ matrix.target }}/release/rcpd.exe rcpd-pkg/rcpd.exe
-        cp config.toml rcpd-pkg/config.toml
+        cp rcpd_config.toml rcpd-pkg/rcpd_config.toml
       shell: bash
     
     - name: Copy Daemon Binary (Linux/macOS)
       if: matrix.platform != 'windows'
       run: |
         cp target/${{ matrix.target }}/release/rcpd rcpd-pkg/rcpd
-        cp config.toml rcpd-pkg/config.toml
+        cp rcpd_config.toml rcpd-pkg/rcpd_config.toml
       shell: bash
     
     - name: Package Daemon (Windows)
@@ -233,66 +262,17 @@ jobs:
       run: tar -czf rcpd-${{ matrix.platform }}.${{ matrix.archive_ext }} -C rcpd-pkg .
       shell: bash
     
-    # Upload assets
+    # Upload all assets
     - name: Upload Release Assets
-      uses: actions/github-script@v7
+      uses: softprops/action-gh-release@v2
       with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-          const fs = require('fs');
-          const path = require('path');
-          
-          // Define the asset files based on platform
-          const platform = '${{ matrix.platform }}';
-          const ext = platform === 'windows' ? 'zip' : 'tar.gz';
-          const contentType = platform === 'windows' ? 'application/zip' : 'application/gzip';
-          
-          // Assets to upload
-          const assets = [
-            { name: `rcpp-${platform}.${ext}`, path: `./rcpp-${platform}.${ext}` },
-            { name: `rcpc-${platform}.${ext}`, path: `./rcpc-${platform}.${ext}` },
-            { name: `rcpd-${platform}.${ext}`, path: `./rcpd-${platform}.${ext}` }
-          ];
-          
-          // Get release by tag
-          const { data: releases } = await github.rest.repos.listReleases({
-            owner: context.repo.owner,
-            repo: context.repo.repo
-          });
-          
-          const release = releases.find(r => r.tag_name === '${{ needs.create_release.outputs.version }}');
-          
-          if (!release) {
-            core.setFailed(`No release found with tag: ${{ needs.create_release.outputs.version }}`);
-            return;
-          }
-          
-          // Upload each asset
-          for (const asset of assets) {
-            console.log(`Uploading ${asset.name}...`);
-            
-            try {
-              // Read file as binary
-              const fileContent = fs.readFileSync(asset.path);
-              
-              await github.rest.repos.uploadReleaseAsset({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                release_id: release.id,
-                name: asset.name,
-                data: fileContent,
-                headers: {
-                  'content-type': contentType,
-                  'content-length': fs.statSync(asset.path).size
-                }
-              });
-              
-              console.log(`Successfully uploaded ${asset.name}`);
-            } catch (error) {
-              console.error(`Failed to upload ${asset.name}: ${error.message}`);
-              core.warning(`Failed to upload ${asset.name}: ${error.message}`);
-            }
-          }
+        tag_name: ${{ needs.create_release.outputs.version }}
+        files: |
+          rcpp-${{ matrix.platform }}.${{ matrix.archive_ext || 'zip' }}
+          rcpc-${{ matrix.platform }}.${{ matrix.archive_ext || 'zip' }}
+          rcpd-${{ matrix.platform }}.${{ matrix.archive_ext || 'zip' }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   publish:
     name: Publish Release
@@ -300,78 +280,10 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ !failure() && !cancelled() }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          toolchain: stable
-      
-      - name: Publish to crates.io
-        run: |
-          echo "Skipping crates.io publication by default"
-          echo "To publish to crates.io, uncomment the publication step in the workflow file"
-          
-          # Uncomment the following section to enable crates.io publishing
-          # if [ -n "${{ secrets.CRATES_IO_TOKEN }}" ]; then
-          #   echo "Publishing to crates.io..."
-          #   cargo login ${{ secrets.CRATES_IO_TOKEN }}
-          #   
-          #   # Try to publish each crate, but continue on error
-          #   cd rcpp && cargo publish --allow-dirty || echo "Failed to publish rcpp, it may already exist"
-          #   
-          #   # Wait a bit for crates.io to index
-          #   sleep 30
-          #   
-          #   cd ../rcpc && cargo publish --allow-dirty || echo "Failed to publish rcpc, it may already exist"
-          #   cd ../rcpd && cargo publish --allow-dirty || echo "Failed to publish rcpd, it may already exist"
-          # else
-          #   echo "CRATES_IO_TOKEN is not set. Skipping publish to crates.io."
-          #   echo "To publish to crates.io, add a repository secret named CRATES_IO_TOKEN"
-        if: ${{ false }}  # This line ensures this step is always skipped
-      
-      - name: Finalize GitHub Release
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            // For workflow_dispatch events, use the specified version
-            // For tag events, extract the tag name from GITHUB_REF
-            let versionTag = '${{ needs.create_release.outputs.version }}';
-            
-            // Make sure the version tag doesn't include 'refs/tags/' prefix
-            if (versionTag.startsWith('refs/tags/')) {
-              versionTag = versionTag.replace('refs/tags/', '');
-            }
-            
-            console.log(`Looking for draft release with tag: ${versionTag}`);
-            
-            const { data: releases } = await github.rest.repos.listReleases({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              per_page: 10
-            });
-            
-            // Find the draft release with matching tag
-            const draftRelease = releases.find(release => 
-              release.draft === true && 
-              release.tag_name === versionTag
-            );
-            
-            if (draftRelease) {
-              console.log(`Finalizing release id: ${draftRelease.id}`);
-              await github.rest.repos.updateRelease({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                release_id: draftRelease.id,
-                draft: false
-              });
-              console.log(`Successfully finalized release: ${versionTag}`);
-            } else {
-              console.log(`No matching draft release found for tag: ${versionTag}`);
-              console.log('Available releases:');
-              releases.forEach(release => {
-                console.log(`- ${release.tag_name} (Draft: ${release.draft})`);
-              });
-            }
+    - name: Update Release Status
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ needs.create_release.outputs.version }}
+        draft: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
