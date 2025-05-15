@@ -4,7 +4,6 @@
 
 
 ![CI Status](https://github.com/open-rcp/rcp/actions/workflows/ci.yml/badge.svg)
-![Build Status](https://github.com/open-rcp/rcp/actions/workflows/build.yml/badge.svg)
 ![Release Status](https://github.com/open-rcp/rcp/actions/workflows/release.yml/badge.svg)
 
 
