@@ -60,11 +60,11 @@ pub async fn handle_system_diag(formatter: &OutputFormatter) -> Result<()> {
 /// Handle network diagnostics command
 #[cfg(feature = "cli")]
 pub async fn handle_network_diag(
-    client: &ServiceClient,
+    _client: &ServiceClient,
     formatter: &OutputFormatter,
 ) -> Result<()> {
     // Check network connectivity to service
-    let service_check = ping_service(&client).await;
+    let service_check = ping_service(_client).await;
 
     // Format network diagnostics
     if formatter.json_output {
@@ -233,6 +233,7 @@ fn network_interfaces() -> HashMap<String, String> {
 }
 
 #[cfg(feature = "cli")]
+#[allow(clippy::needless_borrow)]
 async fn ping_service(client: &ServiceClient) -> String {
     // This is a placeholder - in a real implementation, we'd actually ping the service
     match client.get_status().await {

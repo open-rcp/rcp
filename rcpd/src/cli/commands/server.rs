@@ -45,7 +45,7 @@ pub async fn handle_status(
 /// Handle server restart command
 #[cfg(feature = "cli")]
 pub async fn handle_restart(
-    client: &ServiceClient,
+    _client: &ServiceClient,
     formatter: &OutputFormatter,
 ) -> Result<(), CliError> {
     let request = crate::cli::utils::confirmation::ConfirmationRequest::new()
@@ -75,7 +75,7 @@ pub mod config {
     /// Handle server config display command
     #[cfg(feature = "cli")]
     pub async fn handle_display(
-        client: &ServiceClient,
+        _client: &ServiceClient,
         formatter: &OutputFormatter,
     ) -> Result<(), CliError> {
         // This is a placeholder - in real implementation, it would fetch actual server config
@@ -96,7 +96,7 @@ pub mod config {
     pub async fn handle_update(
         key: &str,
         value: &str,
-        client: &ServiceClient,
+        _client: &ServiceClient,
         formatter: &OutputFormatter,
     ) -> Result<(), CliError> {
         // This is a placeholder - in real implementation, it would update server config

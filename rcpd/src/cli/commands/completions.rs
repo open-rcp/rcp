@@ -13,7 +13,7 @@ use std::path::Path;
 #[cfg(feature = "cli")]
 pub fn handle_completions_command(shell: clap_complete::Shell, dir: Option<&Path>) -> Result<()> {
     // Get command from clap
-    let cmd = crate::cli::types::Cli::command();
+    let _cmd = crate::cli::types::Cli::command();
 
     // Due to version mismatch between clap 3.x and clap_complete 4.x,
     // we use a simpler approach to generate completions

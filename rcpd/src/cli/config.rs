@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use std::default::Default;
 
 /// CLI configuration
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct CliConfig {
     /// Global configuration
     pub global: GlobalConfig,
@@ -63,14 +63,7 @@ pub enum OutputFormat {
     Yaml,
 }
 
-impl Default for CliConfig {
-    fn default() -> Self {
-        Self {
-            global: GlobalConfig::default(),
-            service: ServiceConfig::default(),
-        }
-    }
-}
+// Default implementation is now derived
 
 impl Default for GlobalConfig {
     fn default() -> Self {

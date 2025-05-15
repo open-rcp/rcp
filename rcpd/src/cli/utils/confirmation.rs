@@ -12,6 +12,12 @@ pub struct ConfirmationRequest {
 }
 
 #[cfg(feature = "cli")]
+impl Default for ConfirmationRequest {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ConfirmationRequest {
     /// Create a new confirmation request
     pub fn new() -> Self {
