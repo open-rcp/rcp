@@ -212,7 +212,7 @@ async fn list_applications(cli: &mut Cli, filter: Option<&str>) -> Result<()> {
         applications
     };
 
-    formatter.output_list(&filtered, "Applications", "No applications found");
+    let _ = formatter.output_list(&filtered, "Applications", "No applications found");
     Ok(())
 }
 
@@ -232,7 +232,7 @@ async fn show_application(cli: &mut Cli, id: &str) -> Result<()> {
         enabled: true,
     };
 
-    formatter.output_item(&application, "Application Details");
+    let _ = formatter.output_item(&application, "Application Details");
     Ok(())
 }
 
@@ -260,7 +260,7 @@ async fn create_application(
     };
 
     formatter.output_success(&format!("Application '{}' created successfully", name));
-    formatter.output_item(&application, "Application Details");
+    let _ = formatter.output_item(&application, "Application Details");
     Ok(())
 }
 

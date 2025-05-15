@@ -222,11 +222,11 @@ impl ServerConfig {
 
         let config = builder
             .build()
-            .map_err(|e| crate::server::error::Error::Config(e))?;
+            .map_err(crate::server::error::Error::Config)?;
 
         let server_config: ServerConfig = config
             .try_deserialize()
-            .map_err(|e| crate::server::error::Error::Config(e))?;
+            .map_err(crate::server::error::Error::Config)?;
 
         Ok(server_config)
     }

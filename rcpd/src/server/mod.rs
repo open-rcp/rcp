@@ -3,6 +3,8 @@
 
 pub mod config;
 pub mod error;
+// Apply clippy allow to avoid module inception warning
+#[allow(clippy::module_inception)]
 pub mod server;
 pub mod session;
 pub mod user;

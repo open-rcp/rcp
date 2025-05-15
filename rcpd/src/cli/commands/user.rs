@@ -55,7 +55,7 @@ pub async fn handle_status(client: &ServiceClient, formatter: &OutputFormatter) 
 
 /// Handle listing users
 #[cfg(feature = "cli")]
-pub async fn handle_list(client: &ServiceClient, formatter: &OutputFormatter) -> Result<()> {
+pub async fn handle_list(_client: &ServiceClient, formatter: &OutputFormatter) -> Result<()> {
     // This is a placeholder implementation - replace with actual client call
     // Format: client.list_users().await
 
@@ -113,9 +113,9 @@ pub async fn handle_list(client: &ServiceClient, formatter: &OutputFormatter) ->
 #[cfg(feature = "cli")]
 pub async fn handle_create(
     username: &str,
-    password: &str,
+    _password: &str,
     is_admin: bool,
-    client: &ServiceClient,
+    _client: &ServiceClient,
     formatter: &OutputFormatter,
 ) -> Result<()> {
     // This is a placeholder implementation - replace with actual client call
@@ -134,7 +134,7 @@ pub async fn handle_create(
 #[cfg(feature = "cli")]
 pub async fn handle_delete(
     user_id: &str,
-    client: &ServiceClient,
+    _client: &ServiceClient,
     formatter: &OutputFormatter,
 ) -> Result<()> {
     // This is a placeholder implementation - replace with actual client call
@@ -149,7 +149,7 @@ pub async fn handle_delete(
 #[cfg(feature = "cli")]
 pub async fn handle_info(
     user_id: &str,
-    client: &ServiceClient,
+    _client: &ServiceClient,
     formatter: &OutputFormatter,
 ) -> Result<()> {
     // This is a placeholder implementation - replace with actual client call
@@ -164,7 +164,7 @@ pub async fn handle_info(
         last_login: Some("2024-05-14T10:30:00Z".to_string()),
     };
 
-    formatter.output_item(&user, &format!("User '{}'", user_id));
+    let _ = formatter.output_item(&user, &format!("User '{}'", user_id));
 
     Ok(())
 }
@@ -175,7 +175,7 @@ pub async fn handle_update(
     user_id: &str,
     password: Option<&str>,
     is_admin: Option<bool>,
-    client: &ServiceClient,
+    _client: &ServiceClient,
     formatter: &OutputFormatter,
 ) -> Result<()> {
     // This is a placeholder implementation - replace with actual client call

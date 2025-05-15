@@ -1,7 +1,7 @@
 use crate::{config::ServiceConfig, error::ServiceError, server::Server};
 // Conditionally import API types
 #[cfg(feature = "api")]
-use crate::api::{ApiConfig, ApiServer};
+use crate::api::ApiServer;
 
 use log::{debug, error, info};
 use std::path::PathBuf;
@@ -131,7 +131,7 @@ impl ServiceManager {
         }
 
         // Send shutdown signal
-        if let Err(_) = self.shutdown_tx.send(()).await {
+        if self.shutdown_tx.send(()).await.is_err() {
             error!("Failed to send shutdown signal");
         }
 
@@ -145,10 +145,7 @@ impl ServiceManager {
             let server = server_arc.lock().await;
 
             // Get server information
-            let running = match server.is_running().await {
-                true => true,
-                false => false,
-            };
+            let running = server.is_running().await;
 
             let uptime = server.uptime().await;
             let sessions = match running {

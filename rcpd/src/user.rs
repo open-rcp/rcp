@@ -20,6 +20,12 @@ pub struct UserManager {
     users: HashMap<String, ServiceUser>,
 }
 
+impl Default for UserManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl UserManager {
     #[allow(dead_code)]
     pub fn new() -> Self {

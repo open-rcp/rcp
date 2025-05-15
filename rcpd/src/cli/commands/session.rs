@@ -49,7 +49,7 @@ impl Display for Session {
 
 /// Handle listing sessions
 #[cfg(feature = "cli")]
-pub async fn handle_list(client: &ServiceClient, formatter: &OutputFormatter) -> Result<()> {
+pub async fn handle_list(_client: &ServiceClient, formatter: &OutputFormatter) -> Result<()> {
     // This is a placeholder implementation - replace with actual client call
     // Format: client.list_sessions().await
 
@@ -106,7 +106,7 @@ pub async fn handle_list(client: &ServiceClient, formatter: &OutputFormatter) ->
 #[cfg(feature = "cli")]
 pub async fn handle_info(
     session_id: &str,
-    client: &ServiceClient,
+    _client: &ServiceClient,
     formatter: &OutputFormatter,
 ) -> Result<()> {
     // This is a placeholder implementation - replace with actual client call
@@ -134,7 +134,7 @@ pub async fn handle_info(
 #[cfg(feature = "cli")]
 pub async fn handle_disconnect(
     session_id: &str,
-    client: &ServiceClient,
+    _client: &ServiceClient,
     formatter: &OutputFormatter,
 ) -> Result<()> {
     // This is a placeholder implementation - replace with actual client call

@@ -34,9 +34,11 @@ pub struct Session {
     client_name: Option<String>,
 
     /// Session permissions
+    #[allow(dead_code)]
     permissions: Vec<String>,
 
     /// Active services
+    #[allow(dead_code)]
     services: HashMap<String, Box<dyn ServiceTrait + Send>>,
 }
 
@@ -51,11 +53,9 @@ pub trait ServiceTrait {
 pub struct ServiceFactory;
 
 impl ServiceFactory {
-    pub fn create_service(name: &str) -> Option<Box<dyn ServiceTrait + Send>> {
-        match name {
-            // Add service implementations as needed
-            _ => None,
-        }
+    pub fn create_service(_name: &str) -> Option<Box<dyn ServiceTrait + Send>> {
+        // Add service implementations as needed
+        None
     }
 }
 

@@ -17,11 +17,13 @@ pub trait Platform {
     fn cleanup_socket() -> Result<(), ServiceError>;
 }
 
+#[allow(dead_code)]
 pub fn install_service() -> Result<()> {
     // TODO: Implement service installation based on platform
     Ok(())
 }
 
+#[allow(dead_code)]
 pub fn uninstall_service() -> Result<()> {
     // TODO: Implement service uninstallation based on platform
     Ok(())
