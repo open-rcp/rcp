@@ -5,11 +5,10 @@
 			"path": "../.."
 		},
 		{
-			"name": "rcp_client",
-			"path": "../../../rcp_client"
+			"path": "../../../flutter-rcp-client"
 		},
 		{
-			"path": "../../../rust_rcp_client"
+			"path": "../../../rust-rcp-client"
 		}
 	],
 	"settings": {}
