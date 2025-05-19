@@ -9,7 +9,7 @@
 			"path": "../../../rcp_client"
 		},
 		{
-			"path": "../../../rcp_client_rust"
+			"path": "../../../rust_rcp_client"
 		}
 	],
 	"settings": {}
