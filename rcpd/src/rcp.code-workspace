@@ -7,6 +7,9 @@
 		{
 			"name": "rcp_client",
 			"path": "../../../rcp_client"
+		},
+		{
+			"path": "../../../rcp_client_rust"
 		}
 	],
 	"settings": {}

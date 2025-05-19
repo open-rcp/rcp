@@ -1,7 +1,7 @@
+use anyhow::Result;
 use rcpd::auth::factory::{AuthConfig, AuthProviderType, NativeAuthConfig};
 use rcpd::auth::manager::AuthManager;
 use rcpd::server::user::UserRole;
-use anyhow::Result;
 use std::collections::HashMap;
 use tokio::test;
 
@@ -74,15 +74,12 @@ async fn test_unix_native_auth() -> Result<()> {
         fallback_to_internal: true,
         native: NativeAuthConfig {
             allow_all_users: false,
-            require_group: Some("wheel".to_string()),  // Common Unix admin group
+            require_group: Some("wheel".to_string()), // Common Unix admin group
             permission_mapping: true,
             admin_groups: vec!["wheel".to_string(), "operator".to_string()],
             permission_mappings: {
                 let mut mappings = HashMap::new();
-                mappings.insert(
-                    "users".to_string(),
-                    vec!["connect:basic".to_string()],
-                );
+                mappings.insert("users".to_string(), vec!["connect:basic".to_string()]);
                 mappings.insert("wheel".to_string(), vec!["admin:*".to_string()]);
                 mappings
             },

@@ -35,12 +35,12 @@ impl Default for UnixAuthConfig {
             require_group: Some("rcp-users".to_string()),
             permission_mapping: true,
             admin_groups: vec![
-                "wheel".to_string(),      // Common on FreeBSD, OpenBSD, NetBSD
-                "operator".to_string(),   // FreeBSD, some other BSDs
-                "admin".to_string(),      // Some Unix variants
-                "adm".to_string(),        // Solaris, some Linux distros
-                "sys".to_string(),        // SunOS, Solaris
-                "staff".to_string(),      // Some Unix variants
+                "wheel".to_string(),    // Common on FreeBSD, OpenBSD, NetBSD
+                "operator".to_string(), // FreeBSD, some other BSDs
+                "admin".to_string(),    // Some Unix variants
+                "adm".to_string(),      // Solaris, some Linux distros
+                "sys".to_string(),      // SunOS, Solaris
+                "staff".to_string(),    // Some Unix variants
             ],
             permission_mappings: HashMap::new(),
         }
