@@ -160,6 +160,43 @@ The client app provides an intuitive interface for:
 
 ---
 
+## 🔑 Authentication Options
+
+RCP supports several authentication methods:
+
+- **Pre-shared key** (PSK): Simple shared secret authentication
+- **Native OS Authentication**: Leverages the host operating system's user accounts
+- **Public key**: SSH-like asymmetric cryptography (coming soon)
+- **LDAP & OAuth**: Enterprise directory integration (coming soon)
+
+### Native OS Authentication
+
+The native authentication feature allows RCP to use existing OS user accounts:
+
+```toml
+# Sample native auth configuration 
+[server.auth]
+provider = "native"       # Use native OS authentication
+required = true           # Authentication is required
+psk = "customkey"         # Optional fallback for service accounts
+fallback_to_internal = true  # Fall back to internal auth if needed
+
+[server.auth.native]
+allow_all_users = false   # Only specified users can connect
+require_group = "staff"   # Required OS group for access
+permission_mapping = true # Map OS groups to RCP permissions
+admin_groups = ["admin", "wheel"]
+```
+
+This enables:
+- Single sign-on with OS credentials
+- Permission mapping from OS groups to RCP permissions
+- Integration with enterprise directory services
+
+See [Native Authentication Guide](docs/native-authentication-guide.md) for details.
+
+---
+
 ## 📚 Documentation
 
 RCP provides comprehensive documentation to help you understand, implement, and extend the protocol:

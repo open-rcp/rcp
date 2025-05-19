@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"name": "rcp",
+			"path": "../.."
+		},
+		{
+			"name": "rcp_client",
+			"path": "../../../rcp_client"
+		}
+	],
+	"settings": {}
+}
