@@ -77,6 +77,54 @@ pub struct AuthConfig {
     /// Allowed client IDs
     #[serde(default)]
     pub allowed_clients: Vec<String>,
+
+    /// Authentication provider type (internal, native, ldap, oauth)
+    #[serde(default)]
+    pub provider: String,
+
+    /// Whether to fall back to internal authentication if native fails
+    #[serde(default)]
+    pub fallback_to_internal: bool,
+
+    /// Native authentication configuration
+    #[serde(default)]
+    pub native: NativeAuthConfig,
+}
+
+/// Native authentication configuration
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NativeAuthConfig {
+    /// Whether to allow all OS users
+    #[serde(default)]
+    pub allow_all_users: bool,
+
+    /// Required OS group for RCP access
+    pub require_group: Option<String>,
+
+    /// Whether to map OS groups to RCP permissions
+    #[serde(default = "default_true")]
+    pub permission_mapping: bool,
+
+    /// OS groups with admin privileges
+    #[serde(default = "default_admin_groups")]
+    pub admin_groups: Vec<String>,
+
+    /// Custom permission mappings (group -> permissions)
+    #[serde(default)]
+    pub permission_mappings: std::collections::HashMap<String, Vec<String>>,
+}
+
+fn default_true() -> bool {
+    true
+}
+
+fn default_admin_groups() -> Vec<String> {
+    vec![
+        "administrators".to_string(),
+        "wheel".to_string(),
+        "sudo".to_string(),
+        "admin".to_string(),
+    ]
 }
 
 fn default_auth_required() -> bool {
@@ -89,6 +137,21 @@ impl Default for AuthConfig {
             required: true,
             psk: None,
             allowed_clients: Vec::new(),
+            provider: "internal".to_string(),
+            fallback_to_internal: false,
+            native: NativeAuthConfig::default(),
+        }
+    }
+}
+
+impl Default for NativeAuthConfig {
+    fn default() -> Self {
+        Self {
+            allow_all_users: false,
+            require_group: None,
+            permission_mapping: true,
+            admin_groups: default_admin_groups(),
+            permission_mappings: std::collections::HashMap::new(),
         }
     }
 }

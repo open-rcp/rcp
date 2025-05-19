@@ -1,0 +1,63 @@
+# Service configuration
+address = "127.0.0.1"
+port = 8716
+daemonize = false  # Run in foreground mode
+
+# TLS configuration for the service
+[tls]
+enabled = false
+cert_path = "cert.pem"
+key_path = "key.pem"
+
+# Server configuration
+[server]
+address = "0.0.0.0"
+port = 8717
+
+# Server TLS configuration
+[server.tls]
+enabled = false
+cert_path = "server-cert.pem"
+key_path = "server-key.pem"
+
+# Server authentication - using native OS authentication
+[server.auth]
+required = true
+psk = "customkey"
+provider = "native"
+fallback_to_internal = true
+
+# Native authentication configuration
+[server.auth.native]
+allow_all_users = false
+require_group = "staff"  # On macOS, most users are in the 'staff' group
+permission_mapping = true
+admin_groups = ["admin", "wheel"]
+
+# Custom permission mappings
+# Map macOS groups to RCP permissions
+[server.auth.native.permission_mappings]
+"admin" = ["admin:*", "connect:*", "app:*"]
+"staff" = ["connect:*", "app:safari"]
+
+# Optional API configuration
+[api]
+address = "0.0.0.0"
+port = 8718
+# Use any origin instead of a specific wildcard pattern
+cors_allowed_origins = []
+
+# Application configuration
+[server.applications]
+enabled = true
+app_dir = "/tmp/rcp-apps"
+
+# Define specific applications
+[server.applications.apps.safari]
+id = "safari"
+name = "Safari Browser"
+executable_path = "/Applications/Safari.app/Contents/MacOS/Safari"
+args = []
+required_permissions = ["app:safari"]
+file_associations = ["html", "htm", "webarchive"]
+start_maximized = false

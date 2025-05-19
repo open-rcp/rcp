@@ -1,0 +1,15 @@
+{
+	"folders": [
+		{
+			"name": "rcp",
+			"path": "../.."
+		},
+		{
+			"path": "../../../flutter-rcp-client"
+		},
+		{
+			"path": "../../../rust-rcp-client"
+		}
+	],
+	"settings": {}
+}

@@ -2,6 +2,7 @@
 // Exposes the core functionality of the RCP daemon
 
 // Public modules
+pub mod auth;
 pub mod config;
 pub mod error;
 pub mod instance;
