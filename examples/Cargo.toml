@@ -3,6 +3,10 @@ name = "rcp-examples"
 version = "0.1.0"
 edition = "2021"
 
+[features]
+default = []
+cli = ["rcpdaemon/cli"]
+
 [[bin]]
 name = "format_duration_example"
 path = "src/format_duration_example.rs"
