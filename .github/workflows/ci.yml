@@ -69,10 +69,23 @@ jobs:
         git submodule update --init --recursive
       shell: bash
     
-    # Platform dependencies (apt/brew/choco)
-    - name: Install platform dependencies
+    # Platform dependencies for Linux
+    - name: Install Linux dependencies
+      if: matrix.os == 'ubuntu-latest'
       run: ${{ matrix.deps_cmd }}
-      shell: ${{ runner.os == 'Windows' && 'pwsh' || 'bash' }}
+      shell: bash
+      
+    # Platform dependencies for macOS
+    - name: Install macOS dependencies
+      if: matrix.os == 'macos-latest'
+      run: ${{ matrix.deps_cmd }}
+      shell: bash
+      
+    # Platform dependencies for Windows
+    - name: Install Windows dependencies
+      if: matrix.os == 'windows-latest'
+      run: ${{ matrix.deps_cmd }}
+      shell: powershell
     
     - name: Setup Rust
       uses: dtolnay/rust-toolchain@stable
