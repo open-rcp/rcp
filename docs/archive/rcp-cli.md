@@ -4,7 +4,7 @@ This document outlines the RCP CLI (Command Line Interface), which provides admi
 
 ## Overview
 
-RCP CLI is a command-line utility designed exclusively for administrators to interact with the RCP Daemon (RCPD), which includes integrated server and API functionality. It provides functionality for installation, configuration, monitoring, and management operations of the server-side components only. 
+RCP CLI is a command-line utility designed exclusively for administrators to interact with the RCP Daemon (rcpdaemon), which includes integrated server and API functionality. It provides functionality for installation, configuration, monitoring, and management operations of the server-side components only. 
 
 The CLI is deliberately maintained as a separate component from the daemon to ensure clear separation of concerns and deployment flexibility.
 
@@ -19,11 +19,11 @@ Key features of the RCP CLI include:
 
 ## Architecture
 
-The RCP CLI interfaces with the integrated RCP Daemon (RCPD) via either a local socket connection or the API component (when enabled via the "api" feature), depending on the command and availability:
+The RCP CLI interfaces with the integrated RCP Daemon (rcpdaemon) via either a local socket connection or the API component (when enabled via the "api" feature), depending on the command and availability:
 
 ```
 ┌─────────────┐     ┌─────────────────┐     ┌────────────────────────────────┐
-│  RCP CLI    │────►│  Local Socket   │────►│         RCPD                   │
+│  RCP CLI    │────►│  Local Socket   │────►│         rcpdaemon                   │
 └─────────────┘     └─────────────────┘     │  ┌────────────┐  ┌───────────┐ │
        │                                    │  │   Server   │  │    API    │ │
        │            ┌─────────────────┐     │  │ Component  │  │ Component │ │
@@ -206,8 +206,8 @@ color = true
 
 [connection]
 # Connection settings
-socket = "/var/run/rcpd.sock"  # Unix
-# socket = "\\\\.\\pipe\\rcpd"  # Windows
+socket = "/var/run/rcpdaemon.sock"  # Unix
+# socket = "\\\\.\\pipe\\rcpdaemon"  # Windows
 api_url = "http://localhost:8080/api/v1"
 timeout = 5  # seconds
 
@@ -325,7 +325,7 @@ Unix environments have specific commands:
 
 ```bash
 # Generate systemd unit file
-rcp-cli daemon systemd-unit > /etc/systemd/system/rcpd.service
+rcp-cli daemon systemd-unit > /etc/systemd/system/rcpdaemon.service
 
 # Generate completion for current shell
 rcp-cli completions auto > ~/.rcp-completion

@@ -1,8 +1,8 @@
 # RCP Service (DEPRECATED)
 
-> **DEPRECATED**: This document is deprecated. Please refer to [RCPD (RCP Daemon)](rcpd.md) for current documentation.
+> **DEPRECATED**: This document is deprecated. Please refer to [rcpdaemon (RCP Daemon)](rcpdaemon.md) for current documentation.
 
-This document previously outlined the RCP Service, which has been renamed to RCPD (RCP Daemon).
+This document previously outlined the RCP Service, which has been renamed to rcpdaemon (RCP Daemon).
 
 ## Overview
 

@@ -1,8 +1,8 @@
 [workspace]
 members = [
-    "rcpp",
-    "rcpc",
-    "rcpd",
+    "rcpcore",
+    "rcpcli",
+    "rcpdaemon",
     "examples"
 ]
 resolver = "2"
@@ -37,7 +37,7 @@ aes-gcm = "0.10.3"
 rand = "0.9.1"
 byteorder = "1.5.0"
 image = { version = "0.25.6", features = ["jpeg", "png"] }
-rcpp = { path = "rcpp" }
+rcpcore = { path = "rcpcore" }
 pkg-config = "0.3.32"
 
 [profile.dev]

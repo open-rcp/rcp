@@ -12,7 +12,7 @@ name = "simple_client"
 path = "src/simple_client.rs"
 
 [dependencies]
-rcpd = { path = "../rcpd", features = ["cli"] }
-rcpc = { path = "../rcpc" }
-rcpp = { path = "../rcpp" }
+rcpdaemon = { path = "../rcpdaemon", features = ["cli"] }
+rcpcli = { path = "../rcpcli" }
+rcpcore = { path = "../rcpcore" }
 tokio = { version = "1", features = ["full"] }

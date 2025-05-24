@@ -20,7 +20,6 @@
 - 📦 **Modular protocol structure** for easy extension
 - 🛠️ **Dynamic configuration** of applications via cli/api/desk
 - 🎛️ **CLI tooling** for streamlined administration
-- 🖥️ **Tauri-based management UI** for cross-platform administration
 - 📡 **RESTful management API** for integration with existing systems
 - 📁 **Future support**: clipboard, file transfer, remote shell
 - 🔗 **SSH-like connection strings** for simple client connections
@@ -31,17 +30,17 @@
 
 ```
 rcp/
-├── rcpp/                   # Protocol definitions, frame parsers, commands
-├── rcpc/                   # RCP client library and CLI interface
-├── rcpd/                   # Runtime daemon with integrated server and API 
+├── rcpcore/                   # Protocol definitions, frame parsers, commands
+├── rcpcli/                   # RCP client library and CLI interface
+├── rcpdaemon/                   # Runtime daemon with integrated server and API 
 ├── examples/               # Minimal demos and example implementations
 └── docs/                   # Protocol spec & architecture documentation
 ```
 
 For more detailed documentation on each component:
-- See [rcpp.md](docs/rcpp.md) for the protocol library
-- See [rcpc.md](docs/rcpc.md) for the client library
-- See [rcpd.md](docs/rcpd.md) for the daemon implementation
+- See [rcpcore.md](docs/rcpcore.md) for the protocol library
+- See [rcpcli.md](docs/rcpcli.md) for the client library
+- See [rcpdaemon.md](docs/rcpdaemon.md) for the daemon implementation
 - See [architecture.md](docs/architecture.md) for overall system design
 - See [development-workflow.md](docs/development-workflow.md) for development guidelines
 
@@ -92,7 +91,7 @@ cd rcp
 cargo build
 
 # Run the daemon
-cargo run -p rcpd
+cargo run -p rcpdaemon
 
 # Use the CLI to manage the daemon
 cargo run -p rcp-cli -- status
@@ -108,7 +107,7 @@ Connect with a single, convenient connection string:
 
 ```bash
 # Connect using SSH-style string format: [user[:pass]@]host[:port][/path]
-rcpc connect admin:secretkey@192.168.1.100:8716
+rcpcli connect admin:secretkey@192.168.1.100:8716
 ```
 
 #### Using Command-Line Parameters
@@ -117,10 +116,10 @@ Connect using host and port flags (must be specified before the connect command)
 
 ```bash
 # Connect using command-line parameters (defaults to "test_key" as PSK)
-rcpc -H 127.0.0.1 -p 8716 connect
+rcpcli -H 127.0.0.1 -p 8716 connect
 
 # Connect with a custom PSK specified via --psk flag
-rcpc -H 127.0.0.1 -p 8716 connect --psk customkey
+rcpcli -H 127.0.0.1 -p 8716 connect --psk customkey
 ```
 
 ### 🖥️ Using the Admin Interface
@@ -210,8 +209,8 @@ RCP provides comprehensive documentation to help you understand, implement, and 
 - [Quick Start Guide](QUICKSTART.md) - Fast path for new developers
 
 ### Component Documentation
-- [RCPD (RCP Daemon)](docs/rcpd.md) - Documentation for the runtime daemon with integrated server
-- [RCPD Installation Guide](docs/rcpd-installation.md) - Comprehensive guide for building and installing RCPD
+- [rcpdaemon (RCP Daemon)](docs/rcpdaemon.md) - Documentation for the runtime daemon with integrated server
+- [rcpdaemon Installation Guide](docs/rcpdaemon-installation.md) - Comprehensive guide for building and installing rcpdaemon
 - [RCP CLI](docs/rcp-cli.md) - Documentation for the command-line interface (server administration)
 - [RCP API](docs/rcp-api.md) - Documentation for the integrated REST API component
 - [RCP Admin](docs/rcp-admin.md) - Documentation for the administrative interface

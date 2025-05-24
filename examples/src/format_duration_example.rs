@@ -1,5 +1,5 @@
 #[cfg(feature = "cli")]
-use rcpd::cli::utils;
+use rcpdaemon::cli::utils;
 
 fn main() {
     // Test different duration values

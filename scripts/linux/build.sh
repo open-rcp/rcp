@@ -9,7 +9,7 @@ echo
 BUILD_TYPE="debug"
 BUILD_TARGET="all"
 RUN_AFTER_BUILD=false
-RUN_COMPONENT="rcpd"
+RUN_COMPONENT="rcpdaemon"
 API_FEATURE=false
 
 # Parse command line arguments
@@ -24,16 +24,16 @@ while [[ $# -gt 0 ]]; do
             BUILD_TYPE="debug"
             shift
             ;;
-        --rcpp)
-            BUILD_TARGET="rcpp"
+        --rcpcore)
+            BUILD_TARGET="rcpcore"
             shift
             ;;
-        --rcpc)
-            BUILD_TARGET="rcpc"
+        --rcpcli)
+            BUILD_TARGET="rcpcli"
             shift
             ;;
-        --rcpd)
-            BUILD_TARGET="rcpd"
+        --rcpdaemon)
+            BUILD_TARGET="rcpdaemon"
             shift
             ;;
         --examples)
@@ -48,14 +48,14 @@ while [[ $# -gt 0 ]]; do
             RUN_AFTER_BUILD=true
             shift
             ;;
-        --run-rcpd)
+        --run-rcpdaemon)
             RUN_AFTER_BUILD=true
-            RUN_COMPONENT="rcpd"
+            RUN_COMPONENT="rcpdaemon"
             shift
             ;;
-        --run-rcpc)
+        --run-rcpcli)
             RUN_AFTER_BUILD=true
-            RUN_COMPONENT="rcpc"
+            RUN_COMPONENT="rcpcli"
             shift
             ;;
         --run-examples)
@@ -69,7 +69,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         *)
             echo "Unknown option: $key"
-            echo "Usage: $0 [--release|--debug] [--rcpp|--rcpc|--rcpd|--examples|--all] [--run|--run-rcpd|--run-rcpc|--run-examples] [--api]"
+            echo "Usage: $0 [--release|--debug] [--rcpcore|--rcpcli|--rcpdaemon|--examples|--all] [--run|--run-rcpdaemon|--run-rcpcli|--run-examples] [--api]"
             exit 1
             ;;
     esac
@@ -100,8 +100,8 @@ echo "Building RCP components..."
 if [ "$BUILD_TARGET" == "all" ]; then
     echo "Building all components in $BUILD_TYPE mode..."
     if $API_FEATURE; then
-        echo "Enabling API feature for rcpd..."
-        cargo build $BUILD_OPTS --features "rcpd/api"
+        echo "Enabling API feature for rcpdaemon..."
+        cargo build $BUILD_OPTS --features "rcpdaemon/api"
     else
         cargo build $BUILD_OPTS
     fi
@@ -110,20 +110,20 @@ if [ "$BUILD_TARGET" == "all" ]; then
         exit 1
     fi
 else
-    if [ "$BUILD_TARGET" == "rcpd" ]; then
+    if [ "$BUILD_TARGET" == "rcpdaemon" ]; then
         echo "Building RCP Daemon in $BUILD_TYPE mode..."
         if $API_FEATURE; then
-            echo "Enabling API feature for rcpd..."
-            cargo build $BUILD_OPTS -p rcpd --features "api"
+            echo "Enabling API feature for rcpdaemon..."
+            cargo build $BUILD_OPTS -p rcpdaemon --features "api"
         else
-            cargo build $BUILD_OPTS -p rcpd
+            cargo build $BUILD_OPTS -p rcpdaemon
         fi
-    elif [ "$BUILD_TARGET" == "rcpc" ]; then
+    elif [ "$BUILD_TARGET" == "rcpcli" ]; then
         echo "Building RCP Client in $BUILD_TYPE mode..."
-        cargo build $BUILD_OPTS -p rcpc
-    elif [ "$BUILD_TARGET" == "rcpp" ]; then
+        cargo build $BUILD_OPTS -p rcpcli
+    elif [ "$BUILD_TARGET" == "rcpcore" ]; then
         echo "Building RCP Protocol in $BUILD_TYPE mode..."
-        cargo build $BUILD_OPTS -p rcpp
+        cargo build $BUILD_OPTS -p rcpcore
     elif [ "$BUILD_TARGET" == "examples" ]; then
         echo "Building examples in $BUILD_TYPE mode..."
         cargo build $BUILD_OPTS -p rcp-examples
@@ -142,19 +142,19 @@ echo "Build completed successfully!"
 if $RUN_AFTER_BUILD; then
     echo "Running $RUN_COMPONENT..."
     if [ "$BUILD_TYPE" == "release" ]; then
-        if [ "$RUN_COMPONENT" == "rcpd" ]; then
-            "./target/release/rcpd"
-        elif [ "$RUN_COMPONENT" == "rcpc" ]; then
-            "./target/release/rcpc"
+        if [ "$RUN_COMPONENT" == "rcpdaemon" ]; then
+            "./target/release/rcpdaemon"
+        elif [ "$RUN_COMPONENT" == "rcpcli" ]; then
+            "./target/release/rcpcli"
         elif [ "$RUN_COMPONENT" == "examples" ]; then
             echo "Please specify which example to run from the target/release directory"
             ls -la "./target/release/examples" 2>/dev/null || echo "No examples built"
         fi
     else
-        if [ "$RUN_COMPONENT" == "rcpd" ]; then
-            "./target/debug/rcpd"
-        elif [ "$RUN_COMPONENT" == "rcpc" ]; then
-            "./target/debug/rcpc"
+        if [ "$RUN_COMPONENT" == "rcpdaemon" ]; then
+            "./target/debug/rcpdaemon"
+        elif [ "$RUN_COMPONENT" == "rcpcli" ]; then
+            "./target/debug/rcpcli"
         elif [ "$RUN_COMPONENT" == "examples" ]; then
             echo "Please specify which example to run from the target/debug directory"
             ls -la "./target/debug/examples" 2>/dev/null || echo "No examples built"

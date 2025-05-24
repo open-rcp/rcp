@@ -7,21 +7,21 @@ This document summarizes the changes made to refactor the documentation to align
 ### 1. Updated Core Architecture Documentation
 
 The architecture documentation was updated to reflect the current three-component structure:
-- `rcpp` - Protocol library
-- `rcpc` - Client library and CLI interface
-- `rcpd` - Daemon with integrated server and API
+- `rcpcore` - Protocol library
+- `rcpcli` - Client library and CLI interface
+- `rcpdaemon` - Daemon with integrated server and API
 
 ### 2. Created Component-Specific Documentation
 
 Created or updated detailed documentation for each component:
-- `rcpp.md` - Documentation for the protocol library
-- `rcpc.md` - Documentation for the client library
-- `rcpd.md` - Updated documentation for the daemon
+- `rcpcore.md` - Documentation for the protocol library
+- `rcpcli.md` - Documentation for the client library
+- `rcpdaemon.md` - Updated documentation for the daemon
 
 ### 3. Updated Build Documentation
 
 Modified build-scripts.md to reflect current component names and build options:
-- Updated component references from `service`/`client` to `rcpd`/`rcpc`/`rcpp`
+- Updated component references from `service`/`client` to `rcpdaemon`/`rcpcli`/`rcpcore`
 - Updated examples with current command-line options
 - Fixed inconsistencies in script usage descriptions
 
@@ -34,9 +34,9 @@ Moved outdated documentation to the docs/archive/ directory:
 - `server-service-integration-details.md` - Technical details of completed integration
 - `documentation-update-summary.md` - Summary of previous documentation updates
 - `roadmap-legacy.md` - Outdated roadmap information
-- `rcp-api.md` - API now integrated into rcpd
-- `rcp-cli.md` - CLI now part of rcpc and rcpd
-- `rcp-service.md` - Renamed to rcpd
+- `rcp-api.md` - API now integrated into rcpdaemon
+- `rcp-cli.md` - CLI now part of rcpcli and rcpdaemon
+- `rcp-service.md` - Renamed to rcpdaemon
 
 ### 5. Updated Project Outline
 
@@ -49,7 +49,7 @@ Modified project-outline.md to:
 ### 6. Refactored Build Scripts
 
 Updated build scripts in the `scripts` directory to align with the current component structure:
-- Renamed component arguments from `--service`, `--client`, etc. to `--rcpp`, `--rcpc`, `--rcpd`
+- Renamed component arguments from `--service`, `--client`, etc. to `--rcpcore`, `--rcpcli`, `--rcpdaemon`
 - Added support for building and running specific components
 - Updated feature flags and options to match current functionality
 - Created a comprehensive README for the scripts directory
@@ -78,10 +78,10 @@ docs/
 ├── rcp-admin.md             # Future admin interface (planned)
 ├── rcp-desk.md              # Future desktop client (planned)
 ├── rcp-flutter-client.md    # Future mobile client (planned)
-├── rcpc.md                  # RCP Client documentation
-├── rcpd-installation.md     # RCPD installation guide
-├── rcpd.md                  # RCPD documentation
-├── rcpp.md                  # RCP Protocol documentation
+├── rcpcli.md                  # RCP Client documentation
+├── rcpdaemon-installation.md     # rcpdaemon installation guide
+├── rcpdaemon.md                  # rcpdaemon documentation
+├── rcpcore.md                  # RCP Protocol documentation
 └── archive/                 # Archived documentation
 ```
 
@@ -117,9 +117,9 @@ The following documentation files were archived as they're no longer relevant to
 4. `server-service-integration-details.md` - Integration already completed
 5. `documentation-update-summary.md` - Meta-document no longer needed
 6. `roadmap-legacy.md` - Legacy roadmap
-7. `rcp-api.md` - Now part of rcpd
-8. `rcp-service.md` - Renamed to rcpd
-9. `rcp-cli.md` - Now part of rcpc and rcpd
+7. `rcp-api.md` - Now part of rcpdaemon
+8. `rcp-service.md` - Renamed to rcpdaemon
+9. `rcp-cli.md` - Now part of rcpcli and rcpdaemon
 
 ## Next Steps
 

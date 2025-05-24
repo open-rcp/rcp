@@ -1,13 +1,13 @@
 [package]
-name = "rust-rcpc"
+name = "rust-rcpcli"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
 license.workspace = true
 
 [dependencies]
-rcpc = { path = "../../rcpc" }
-rcpp = { path = "../../rcpp" }
+rcpcli = { path = "../../rcpcli" }
+rcpcore = { path = "../../rcpcore" }
 tokio = { workspace = true }
 anyhow = { workspace = true }
 log = { workspace = true }

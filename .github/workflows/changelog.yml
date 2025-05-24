@@ -5,9 +5,9 @@ on:
     branches:
       - master
     paths:
-      - 'rcpp/**'
-      - 'rcpc/**'
-      - 'rcpd/**'
+      - 'rcpcore/**'
+      - 'rcpcli/**'
+      - 'rcpdaemon/**'
       - 'src/**'
       - 'Cargo.toml'
       - 'Cargo.lock'

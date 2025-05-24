@@ -57,16 +57,16 @@ Ensured consistent terminology across all documentation:
 ## Terminology Consistency Update (May 2025)
 
 ### Renamed Components
-- `rcp-service` → `rcpd` (RCP Daemon)
-- "RCP Service" → "RCPD" or "RCP Daemon"
+- `rcp-service` → `rcpdaemon` (RCP Daemon)
+- "RCP Service" → "rcpdaemon" or "RCP Daemon"
 - "Service" → "Daemon" where referring to the system component
 
 ### Updated References
 - `ServiceConfig` → `DaemonConfig`
 - `Service` class → `Daemon` class
-- `/etc/rcp-service/` → `/etc/rcpd/`
-- `\\.\pipe\rcp-service` → `\\.\pipe\rcpd`
-- `/var/run/rcp-service.sock` → `/var/run/rcpd.sock`
+- `/etc/rcp-service/` → `/etc/rcpdaemon/`
+- `\\.\pipe\rcp-service` → `\\.\pipe\rcpdaemon`
+- `/var/run/rcp-service.sock` → `/var/run/rcpdaemon.sock`
 
 ### Updated Commands and Options
 - `--server` and `--service` → `--daemon`

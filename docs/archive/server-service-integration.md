@@ -149,7 +149,7 @@ Total: ~4 weeks
 2. `rcp-server`: Already integrated into service
 3. `rcp-api`: Will be integrated into service
 4. `rcp-cli`: Updated to work with unified service while remaining a separate component
-5. `rcpc`: Possibly updated to directly communicate with service
+5. `rcpcli`: Possibly updated to directly communicate with service
 6. Documentation: Updated to reflect new unified architecture
 
 ## API Integration Implementation
@@ -243,7 +243,7 @@ Here's how I'd approach integrating the server into the service:
 
 ```
 rcp/
-├── rcpp/           (Keep as is - shared functionality)
+├── rcpcore/           (Keep as is - shared functionality)
 ├── rcp-service/        (Enhanced to include server functionality)
 │   ├── src/
 │   │   ├── server/     (Server implementation moved here)
@@ -404,7 +404,7 @@ While keeping the CLI separate, we'll enhance its integration with the unified s
    - Optimize communication between CLI and service components
 
 2. **Shared Core Types**: 
-   - Continue using `rcpp` for common types and protocols
+   - Continue using `rcpcore` for common types and protocols
    - Ensure consistency between CLI and service data models
 
 3. **Unified Authentication**: 

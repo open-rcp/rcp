@@ -1,8 +1,8 @@
-# RCP Client (rcpc)
+# RCP Client (rcpcli)
 
 ## Overview
 
-The RCP Client library (`rcpc`) provides a robust client implementation for connecting to RCPD servers. It manages connections, authentication, session handling, and provides both a library API and CLI interface for client operations.
+The RCP Client library (`rcpcli`) provides a robust client implementation for connecting to rcpdaemon servers. It manages connections, authentication, session handling, and provides both a library API and CLI interface for client operations.
 
 ## Features
 
@@ -70,15 +70,15 @@ pub struct ServiceClient {
 The client includes a command-line interface for manual operations:
 
 ```
-$ rcpc connect rcp://server.example.com:9277
-$ rcpc launch notepad
-$ rcpc list apps
-$ rcpc disconnect
+$ rcpcli connect rcp://server.example.com:9277
+$ rcpcli launch notepad
+$ rcpcli list apps
+$ rcpcli disconnect
 ```
 
 ## Integration
 
-The RCP Client uses the RCP Protocol (`rcpp`) library for message format and protocol handling. It can be:
+The RCP Client uses the RCP Protocol (`rcpcore`) library for message format and protocol handling. It can be:
 
 1. Used as a library in custom applications
 2. Run as a command-line tool

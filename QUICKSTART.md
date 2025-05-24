@@ -81,9 +81,9 @@ To build and run the client:
 Run specific tests:
 
 ```bash
-cargo test -p rcpp
-cargo test -p rcpd
-cargo test -p rcpc
+cargo test -p rcpcore
+cargo test -p rcpdaemon
+cargo test -p rcpcli
 ```
 
 Run all tests:
@@ -98,9 +98,9 @@ cargo test --all
 
 For initial development, focus on one component at a time:
 
-1. Start with core protocol changes in `rcpp`
-2. Update the daemon implementation in `rcpd` 
-3. Modify the client library in `rcpc`
+1. Start with core protocol changes in `rcpcore`
+2. Update the daemon implementation in `rcpdaemon` 
+3. Modify the client library in `rcpcli`
 4. Update CLI commands in `rcp-cli`
 5. Adapt the admin interface and end-user applications last
 
@@ -109,9 +109,9 @@ For initial development, focus on one component at a time:
 For feature development that spans multiple components:
 
 1. Create a branch for your feature
-2. Define interfaces in `rcpp` first
-3. Implement server-side functionality in `rcpd`
-4. Add client-side support in `rcpc`
+2. Define interfaces in `rcpcore` first
+3. Implement server-side functionality in `rcpdaemon`
+4. Add client-side support in `rcpcli`
 5. Update CLI/admin/desk components as needed
 6. Write tests for each component
 7. Submit a PR with changes to all affected components

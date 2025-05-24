@@ -167,99 +167,99 @@ jobs:
     # Build each component for release
     - name: Build RCP Protocol
       if: steps.cached-build.outputs.cache-hit != 'true'
-      run: cargo build --release --package rcpp --target ${{ matrix.target }}
+      run: cargo build --release --package rcpcore --target ${{ matrix.target }}
     
     - name: Build RCP Client
       if: steps.cached-build.outputs.cache-hit != 'true'
-      run: cargo build --release --package rcpc --target ${{ matrix.target }}
+      run: cargo build --release --package rcpcli --target ${{ matrix.target }}
     
     - name: Build RCP Daemon
       if: steps.cached-build.outputs.cache-hit != 'true'
-      run: cargo build --release --package rcpd --target ${{ matrix.target }}
+      run: cargo build --release --package rcpdaemon --target ${{ matrix.target }}
     
     # Protocol package preparation
     - name: Create Protocol Package Directory
-      run: mkdir -p rcpp-pkg
+      run: mkdir -p rcpcore-pkg
       shell: bash
     
     - name: Copy Protocol Binary (Windows)
       if: matrix.platform == 'windows'
       run: |
-        cp target/${{ matrix.target }}/release/rcpp.exe rcpp-pkg/rcpp.exe
-        cp config.toml rcpp-pkg/config.toml
+        cp target/${{ matrix.target }}/release/rcpcore.exe rcpcore-pkg/rcpcore.exe
+        cp config.toml rcpcore-pkg/config.toml
       shell: bash
     
     - name: Copy Protocol Binary (Linux/macOS)
       if: matrix.platform != 'windows'
       run: |
-        cp target/${{ matrix.target }}/release/rcpp rcpp-pkg/rcpp
-        cp config.toml rcpp-pkg/config.toml
+        cp target/${{ matrix.target }}/release/rcpcore rcpcore-pkg/rcpcore
+        cp config.toml rcpcore-pkg/config.toml
       shell: bash
     
     - name: Package Protocol (Windows)
       if: matrix.platform == 'windows'
-      run: Compress-Archive -Path rcpp-pkg/* -DestinationPath rcpp-windows.zip
+      run: Compress-Archive -Path rcpcore-pkg/* -DestinationPath rcpcore-windows.zip
       shell: pwsh
     
     - name: Package Protocol (Linux/macOS)
       if: matrix.platform != 'windows'
-      run: tar -czf rcpp-${{ matrix.platform }}.${{ matrix.archive_ext }} -C rcpp-pkg .
+      run: tar -czf rcpcore-${{ matrix.platform }}.${{ matrix.archive_ext }} -C rcpcore-pkg .
       shell: bash
     
     # Client package preparation
     - name: Create Client Package Directory
-      run: mkdir -p rcpc-pkg
+      run: mkdir -p rcpcli-pkg
       shell: bash
     
     - name: Copy Client Binary (Windows)
       if: matrix.platform == 'windows'
       run: |
-        cp target/${{ matrix.target }}/release/rcpc.exe rcpc-pkg/rcpc.exe
+        cp target/${{ matrix.target }}/release/rcpcli.exe rcpcli-pkg/rcpcli.exe
       shell: bash
     
     - name: Copy Client Binary (Linux/macOS)
       if: matrix.platform != 'windows'
       run: |
-        cp target/${{ matrix.target }}/release/rcpc rcpc-pkg/rcpc
+        cp target/${{ matrix.target }}/release/rcpcli rcpcli-pkg/rcpcli
       shell: bash
     
     - name: Package Client (Windows)
       if: matrix.platform == 'windows'
-      run: Compress-Archive -Path rcpc-pkg/* -DestinationPath rcpc-windows.zip
+      run: Compress-Archive -Path rcpcli-pkg/* -DestinationPath rcpcli-windows.zip
       shell: pwsh
     
     - name: Package Client (Linux/macOS)
       if: matrix.platform != 'windows'
-      run: tar -czf rcpc-${{ matrix.platform }}.${{ matrix.archive_ext }} -C rcpc-pkg .
+      run: tar -czf rcpcli-${{ matrix.platform }}.${{ matrix.archive_ext }} -C rcpcli-pkg .
       shell: bash
     
     # Daemon package preparation
     - name: Create Daemon Package Directory
-      run: mkdir -p rcpd-pkg
+      run: mkdir -p rcpdaemon-pkg
       shell: bash
     
     - name: Copy Daemon Binary (Windows)
       if: matrix.platform == 'windows'
       run: |
-        cp target/${{ matrix.target }}/release/rcpd.exe rcpd-pkg/rcpd.exe
-        cp rcpd_config.toml rcpd-pkg/rcpd_config.toml
+        cp target/${{ matrix.target }}/release/rcpdaemon.exe rcpdaemon-pkg/rcpdaemon.exe
+        cp rcpdaemon_config.toml rcpdaemon-pkg/rcpdaemon_config.toml
       shell: bash
     
     - name: Copy Daemon Binary (Linux/macOS)
       if: matrix.platform != 'windows'
       run: |
-        cp target/${{ matrix.target }}/release/rcpd rcpd-pkg/rcpd
-        cp rcpd_config.toml rcpd-pkg/rcpd_config.toml
+        cp target/${{ matrix.target }}/release/rcpdaemon rcpdaemon-pkg/rcpdaemon
+        cp rcpdaemon_config.toml rcpdaemon-pkg/rcpdaemon_config.toml
       shell: bash
     
     - name: Package Daemon (Windows)
       if: matrix.platform == 'windows'
-      run: Compress-Archive -Path rcpd-pkg/* -DestinationPath rcpd-windows.zip
+      run: Compress-Archive -Path rcpdaemon-pkg/* -DestinationPath rcpdaemon-windows.zip
       shell: pwsh
     
     - name: Package Daemon (Linux/macOS)
       if: matrix.platform != 'windows'
-      run: tar -czf rcpd-${{ matrix.platform }}.${{ matrix.archive_ext }} -C rcpd-pkg .
+      run: tar -czf rcpdaemon-${{ matrix.platform }}.${{ matrix.archive_ext }} -C rcpdaemon-pkg .
       shell: bash
     
     # Upload all assets
@@ -268,9 +268,9 @@ jobs:
       with:
         tag_name: ${{ needs.create_release.outputs.version }}
         files: |
-          rcpp-${{ matrix.platform }}.${{ matrix.archive_ext || 'zip' }}
-          rcpc-${{ matrix.platform }}.${{ matrix.archive_ext || 'zip' }}
-          rcpd-${{ matrix.platform }}.${{ matrix.archive_ext || 'zip' }}
+          rcpcore-${{ matrix.platform }}.${{ matrix.archive_ext || 'zip' }}
+          rcpcli-${{ matrix.platform }}.${{ matrix.archive_ext || 'zip' }}
+          rcpdaemon-${{ matrix.platform }}.${{ matrix.archive_ext || 'zip' }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

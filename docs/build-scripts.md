@@ -37,10 +37,10 @@ All build scripts support similar arguments across platforms:
 
 ```bash
 # On Windows:
-scripts\windows\build.bat --release --rcpd --run
+scripts\windows\build.bat --release --rcpdaemon --run
 
 # On Linux/macOS:
-./scripts/linux/build.sh --release --rcpc
+./scripts/linux/build.sh --release --rcpcli
 ```
 
 ### Making Scripts Executable (Linux/macOS)
@@ -78,15 +78,15 @@ scripts\windows\build.bat [options]
 Available options:
 - `--release` - Build in release mode (optimized binaries)
 - `--debug` - Build in debug mode (default)
-- `--rcpp` - Build the RCP protocol library
-- `--rcpc` - Build the RCP client library and CLI
-- `--rcpd` - Build the RCP daemon with integrated server
+- `--rcpcore` - Build the RCP protocol library
+- `--rcpcli` - Build the RCP client library and CLI
+- `--rcpdaemon` - Build the RCP daemon with integrated server
 - `--examples` - Build the example applications
 - `--all` - Build all components (default)
-- `--run-rcpd` - Run the RCP daemon after building
-- `--run-rcpc` - Run the RCP client after building
+- `--run-rcpdaemon` - Run the RCP daemon after building
+- `--run-rcpcli` - Run the RCP client after building
 - `--run-examples` - Run the example applications after building
-- `--api` - Enable the API feature when building rcpd
+- `--api` - Enable the API feature when building rcpdaemon
 
 ### Linux
 
@@ -174,34 +174,34 @@ PATH=[Updated to include OpenSSL]
 
 Windows:
 ```
-scripts\windows\build.bat --release --rcpd --run-rcpd
+scripts\windows\build.bat --release --rcpdaemon --run-rcpdaemon
 ```
 
 Linux:
 ```bash
-./scripts/linux/build.sh --release --rcpd --run-rcpd
+./scripts/linux/build.sh --release --rcpdaemon --run-rcpdaemon
 ```
 
 macOS:
 ```bash
-./scripts/macos/build.sh --release --rcpd --run-rcpd
+./scripts/macos/build.sh --release --rcpdaemon --run-rcpdaemon
 ```
 
 ### Building Only the RCP Client in Debug Mode
 
 Windows:
 ```
-scripts\windows\build.bat --debug --rcpc
+scripts\windows\build.bat --debug --rcpcli
 ```
 
 Linux:
 ```bash
-./scripts/linux/build.sh --debug --rcpc
+./scripts/linux/build.sh --debug --rcpcli
 ```
 
 macOS:
 ```bash
-./scripts/macos/build.sh --debug --rcpc
+./scripts/macos/build.sh --debug --rcpcli
 ```
 
 ### Building All Components in Release Mode

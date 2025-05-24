@@ -117,7 +117,7 @@ echo "Created test configuration at $TEST_CONFIG"
 
 # Start RCP daemon in background with test config
 echo "Starting RCP daemon with native authentication..."
-RCP_BIN="./target/debug/rcpd"
+RCP_BIN="./target/debug/rcpdaemon"
 
 # Check if binary exists, build if needed
 if [ ! -f "$RCP_BIN" ]; then
@@ -144,7 +144,7 @@ sleep 2
 
 # Test authentication using the connect command
 echo -e "\n=== Testing Authentication with Connect ==="
-./target/debug/rcpc -H 127.0.0.1 -p 8717 connect --psk "test_integration_key"
+./target/debug/rcpcli -H 127.0.0.1 -p 8717 connect --psk "test_integration_key"
 if [ $? -eq 0 ]; then
     echo "✅ Authentication succeeded"
 else
@@ -154,7 +154,7 @@ fi
 
 # Try to execute a command as a test of permissions
 echo -e "\n=== Testing Permissions with Execute ==="
-./target/debug/rcpc -H 127.0.0.1 -p 8717 execute --psk "test_integration_key" "status"
+./target/debug/rcpcli -H 127.0.0.1 -p 8717 execute --psk "test_integration_key" "status"
 if [ $? -eq 0 ]; then
     echo "✅ Command execution succeeded"
 else

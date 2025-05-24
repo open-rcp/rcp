@@ -9,7 +9,7 @@ echo
 BUILD_TYPE="debug"
 BUILD_TARGET="all"
 RUN_AFTER_BUILD=false
-RUN_COMPONENT="rcpd"
+RUN_COMPONENT="rcpdaemon"
 API_FEATURE=false
 
 # Parse command line arguments
@@ -24,16 +24,16 @@ while [[ $# -gt 0 ]]; do
             BUILD_TYPE="debug"
             shift
             ;;
-        --rcpp)
-            BUILD_TARGET="rcpp"
+        --rcpcore)
+            BUILD_TARGET="rcpcore"
             shift
             ;;
-        --rcpc)
-            BUILD_TARGET="rcpc"
+        --rcpcli)
+            BUILD_TARGET="rcpcli"
             shift
             ;;
-        --rcpd)
-            BUILD_TARGET="rcpd"
+        --rcpdaemon)
+            BUILD_TARGET="rcpdaemon"
             shift
             ;;
         --examples)
@@ -130,10 +130,10 @@ if [ "$BUILD_TARGET" == "all" ]; then
 else
     if [ "$BUILD_TARGET" == "daemon" ]; then
         echo "Building RCP daemon in $BUILD_TYPE mode..."
-        cargo build $BUILD_OPTS -p rcpd
+        cargo build $BUILD_OPTS -p rcpdaemon
     elif [ "$BUILD_TARGET" == "client" ]; then
         echo "Building client component in $BUILD_TYPE mode..."
-        cargo build $BUILD_OPTS -p rcpc
+        cargo build $BUILD_OPTS -p rcpcli
     elif [ "$BUILD_TARGET" == "ws-bridge" ]; then
         echo "Building WebSocket bridge component in $BUILD_TYPE mode..."
         cargo build $BUILD_OPTS -p rcp-ws-bridge
@@ -153,13 +153,13 @@ if $RUN_AFTER_BUILD; then
     echo "Running $RUN_COMPONENT..."
     if [ "$BUILD_TYPE" == "release" ]; then
         if [ "$RUN_COMPONENT" == "daemon" ]; then
-            "./target/release/rcpd"
+            "./target/release/rcpdaemon"
         else
             "./target/release/rcp-$RUN_COMPONENT"
         fi
     else
         if [ "$RUN_COMPONENT" == "daemon" ]; then
-            "./target/debug/rcpd"
+            "./target/debug/rcpdaemon"
         else
             "./target/debug/rcp-$RUN_COMPONENT"
         fi

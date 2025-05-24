@@ -104,7 +104,7 @@ Milestone 2 focuses on developing the management layer of the RCP system, which 
 
 ### Component Deliverables
 
-#### 1. RCPD (RCP Daemon) (`rcpd`)
+#### 1. rcpdaemon (RCP Daemon) (`rcpdaemon`)
 
 The unified daemon provides centralized management with integrated server component and optional API functionality.
 
@@ -134,7 +134,7 @@ The unified daemon provides centralized management with integrated server compon
 
 #### 2. RCP CLI (`rcp-cli`)
 
-Command-line interface for administrators to interact with RCPD, deliberately kept as a separate component.
+Command-line interface for administrators to interact with rcpdaemon, deliberately kept as a separate component.
 
 **Key Features:**
 - Service control commands (install, start, stop, status)
@@ -167,7 +167,7 @@ Command-line interface for administrators to interact with RCPD, deliberately ke
 
 **Dependencies:** RCP Service
 
-#### 3. RCP API Component (Integrated in RCPD)
+#### 3. RCP API Component (Integrated in rcpdaemon)
 
 Feature-gated RESTful API component for remote management of RCP deployments, fully integrated into the RCP daemon architecture as an optional component enabled via feature flags.
 
@@ -196,7 +196,7 @@ Feature-gated RESTful API component for remote management of RCP deployments, fu
 - [x] Write unit and integration tests
 - [x] Implement feature gate for optional deployment
 
-**Dependencies:** None (fully integrated into RCPD)
+**Dependencies:** None (fully integrated into rcpdaemon)
 
 #### 4. RCP Desk (`rcp-desk`)
 

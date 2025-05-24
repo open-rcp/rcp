@@ -1,4 +1,4 @@
-use rcpc::{Client, ClientBuilder, AuthMethod};
+use rcpcli::{Client, ClientBuilder, AuthMethod};
 use std::error::Error;
 
 #[tokio::main]
@@ -9,7 +9,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // Build client
     let mut client = ClientBuilder::new()
         .host("127.0.0.1")
-        .port(8717)  // RCP Server port from your rcpd_config.toml
+        .port(8717)  // RCP Server port from your rcpdaemon_config.toml
         .client_name("RCP-Test-Client")
         .build();
     

@@ -1,12 +1,12 @@
-# RCP Daemon (RCPD)
+# RCP Daemon (rcpdaemon)
 
-This document outlines the RCP Daemon (RCPD), which provides runtime management for RCP applications with integrated server and API functionality.
+This document outlines the RCP Daemon (rcpdaemon), which provides runtime management for RCP applications with integrated server and API functionality.
 
 ## Overview
 
-RCPD is a long-running daemon/system service that manages the lifecycle of applications and provides integrated server and API capabilities. It acts as a unified component that handles configuration persistence, monitoring, control, and communication within the RCP ecosystem.
+rcpdaemon is a long-running daemon/system service that manages the lifecycle of applications and provides integrated server and API capabilities. It acts as a unified component that handles configuration persistence, monitoring, control, and communication within the RCP ecosystem.
 
-Key responsibilities of RCPD include:
+Key responsibilities of rcpdaemon include:
 
 - Integrated server functionality for handling client connections
 - Optional API endpoints for remote management (feature-gated)
@@ -18,11 +18,11 @@ Key responsibilities of RCPD include:
 
 ## Architecture
 
-RCPD follows a modular design with integrated server and API components:
+rcpdaemon follows a modular design with integrated server and API components:
 
 ```
 ┌────────────────────────────────────────────────────────┐
-│                        RCPD                            │
+│                        rcpdaemon                            │
 │                                                        │
 │  ┌─────────────┐  ┌────────────┐  ┌────────────────┐   │
 │  │ Config      │  │ Server     │  │ App Lifecycle  │   │
@@ -43,7 +43,7 @@ RCPD follows a modular design with integrated server and API components:
 
 ## Component Integration
 
-RCPD integrates the following functionalities:
+rcpdaemon integrates the following functionalities:
 
 1. **Server Component**: Handles client connections, sessions, authentication, and protocol processing
 2. **API Component**: Optional REST API endpoints for remote administration (enabled via feature flag)
@@ -52,14 +52,14 @@ RCPD integrates the following functionalities:
 
 ## Dependencies
 
-- **rcpp**: Uses the RCP Protocol library for message format, commands, and frame handling
+- **rcpcore**: Uses the RCP Protocol library for message format, commands, and frame handling
 - **tokio**: For asynchronous runtime and I/O
 - **clap**: For command-line argument parsing
 - **serde**: For configuration serialization/deserialization
 
 ## Feature Flags
 
-RCPD uses feature flags to enable optional components:
+rcpdaemon uses feature flags to enable optional components:
 
 - **api**: Enables the REST API component
 - **cli**: Enables the command-line interface
@@ -67,11 +67,11 @@ RCPD uses feature flags to enable optional components:
 
 ## Command-Line Interface
 
-RCPD includes a command-line interface for service management:
+rcpdaemon includes a command-line interface for service management:
 
 ```
 USAGE:
-    rcpd [OPTIONS] [SUBCOMMAND]
+    rcpdaemon [OPTIONS] [SUBCOMMAND]
 
 OPTIONS:
     -c, --config <FILE>    Path to configuration file
@@ -93,7 +93,7 @@ SUBCOMMANDS:
 
 ## System Integration
 
-RCPD provides integration with operating system service managers:
+rcpdaemon provides integration with operating system service managers:
 
 - **systemd** service units for Linux
 - **launchd** plist for macOS
@@ -101,7 +101,7 @@ RCPD provides integration with operating system service managers:
 
 ## Configuration
 
-RCPD's configuration includes settings for:
+rcpdaemon's configuration includes settings for:
 
 - Server listening address and port
 - TLS certificate paths
@@ -113,13 +113,13 @@ RCPD's configuration includes settings for:
 
 Configuration can be loaded from:
 
-- Default path (/etc/rcpd/config.toml)
+- Default path (/etc/rcpdaemon/config.toml)
 - Custom path specified with --config option
 - Environment variables
 
 ## API Endpoints (Feature-gated)
 
-When built with the `api` feature, RCPD exposes RESTful endpoints:
+When built with the `api` feature, rcpdaemon exposes RESTful endpoints:
 
 - `/api/v1/status` - Service status information
 - `/api/v1/apps` - Application management
@@ -129,7 +129,7 @@ When built with the `api` feature, RCPD exposes RESTful endpoints:
 
 ## Security
 
-RCPD implements several security measures:
+rcpdaemon implements several security measures:
 
 1. TLS encryption for all TCP connections
 2. Authentication for client connections

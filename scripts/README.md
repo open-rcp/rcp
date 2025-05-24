@@ -47,33 +47,33 @@ scripts\windows\setup.bat
 
 The build scripts support building any of the RCP components:
 
-- `rcpp`: RCP Protocol library
-- `rcpc`: RCP Client library and CLI
-- `rcpd`: RCP Daemon with integrated server
+- `rcpcore`: RCP Protocol library
+- `rcpcli`: RCP Client library and CLI
+- `rcpdaemon`: RCP Daemon with integrated server
 - `examples`: Example applications
 
 **macOS/Linux:**
 ```bash
 # Build the RCP daemon in release mode with API feature
-./scripts/macos/build.sh --release --rcpd --api
+./scripts/macos/build.sh --release --rcpdaemon --api
 
 # Build all components in debug mode
 ./scripts/linux/build.sh --all
 
 # Build and run the RCP client
-./scripts/macos/build.sh --rcpc --run-rcpc
+./scripts/macos/build.sh --rcpcli --run-rcpcli
 ```
 
 **Windows:**
 ```
 # Build the RCP daemon in release mode with API feature
-scripts\windows\build.bat --release rcpd --api
+scripts\windows\build.bat --release rcpdaemon --api
 
 # Build all components in debug mode
 scripts\windows\build.bat all
 
 # Build and run the RCP client
-scripts\windows\build.bat rcpc --run
+scripts\windows\build.bat rcpcli --run
 ```
 
 ### Available Options
@@ -84,20 +84,20 @@ All build scripts support similar options:
 |--------|-------------|
 | `--release` | Build in release mode (optimized) |
 | `--debug` | Build in debug mode (default) |
-| `--rcpp` | Build the RCP protocol library |
-| `--rcpc` | Build the RCP client library/CLI |
-| `--rcpd` | Build the RCP daemon |
+| `--rcpcore` | Build the RCP protocol library |
+| `--rcpcli` | Build the RCP client library/CLI |
+| `--rcpdaemon` | Build the RCP daemon |
 | `--examples` | Build the example applications |
 | `--all` | Build all components |
-| `--run-rcpd`/`--run` | Run the RCP daemon after building |
-| `--run-rcpc` | Run the RCP client after building |
-| `--api` | Enable the API feature when building rcpd |
+| `--run-rcpdaemon`/`--run` | Run the RCP daemon after building |
+| `--run-rcpcli` | Run the RCP client after building |
+| `--api` | Enable the API feature when building rcpdaemon |
 
 ## Feature Flags
 
 The build scripts support the following feature flags:
 
-- `--api`: Enable the API component in rcpd (RESTful API endpoints)
+- `--api`: Enable the API component in rcpdaemon (RESTful API endpoints)
 
 ## Adding New Scripts
 

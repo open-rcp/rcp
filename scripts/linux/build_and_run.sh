@@ -16,7 +16,7 @@ cargo build
 
 # Run the RCP daemon
 echo -e "\033[0;32mStarting RCP daemon...\033[0m"
-cargo run --bin rcpd -- -v
+cargo run --bin rcpdaemon -- -v
 
 echo -e "\033[0;36mDaemon has stopped.\033[0m"
 

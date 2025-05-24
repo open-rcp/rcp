@@ -1,5 +1,5 @@
-use rcpc::{service::ServiceType, Client, ClientState};
-use rcpp::AuthMethod;
+use rcpcli::{service::ServiceType, Client, ClientState};
+use rcpcore::AuthMethod;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use tokio::time::Duration;
@@ -69,7 +69,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Send video quality request - use actual VideoQuality command
     println!("Setting display quality...");
-    let quality_frame = rcpp::Frame::new(rcpp::CommandId::VideoQuality as u8, vec![90]); // 90% quality
+    let quality_frame = rcpcore::Frame::new(rcpcore::CommandId::VideoQuality as u8, vec![90]); // 90% quality
     if let Err(e) = display_service.send_fire_and_forget(quality_frame).await {
         eprintln!("Failed to set display quality: {}", e);
     }
@@ -96,7 +96,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         // Create mouse move command
         let mouse_data = format!("{{\"type\":\"move\",\"x\":{},\"y\":{}}}", x, y).into_bytes();
-        let mouse_frame = rcpp::Frame::new(rcpp::CommandId::SendInput as u8, mouse_data);
+        let mouse_frame = rcpcore::Frame::new(rcpcore::CommandId::SendInput as u8, mouse_data);
 
         if let Err(e) = input_service.send_fire_and_forget(mouse_frame).await {
             eprintln!("Failed to send mouse movement: {}", e);
@@ -108,7 +108,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Sending clipboard data...");
     let clipboard_data = "RCP example clipboard data".as_bytes().to_vec();
     let clipboard_frame =
-        rcpp::Frame::new(rcpp::CommandId::ClipboardData as u8, clipboard_data);
+        rcpcore::Frame::new(rcpcore::CommandId::ClipboardData as u8, clipboard_data);
 
     if let Err(e) = clipboard_service
         .send_fire_and_forget(clipboard_frame)

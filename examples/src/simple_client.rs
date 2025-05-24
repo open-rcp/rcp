@@ -1,4 +1,4 @@
-use rcpc::ClientBuilder;
+use rcpcli::ClientBuilder;
 use std::error::Error;
 use std::io::{self};
 use std::process::{Command, Stdio};
@@ -11,7 +11,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // Build client
     let client = ClientBuilder::new()
         .host("127.0.0.1")
-        .port(8717) // RCP Server port from your rcpd_config.toml
+        .port(8717) // RCP Server port from your rcpdaemon_config.toml
         .client_name("RCP-Test-Client")
         .build();
 
@@ -49,7 +49,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     }
 
     // In a real implementation, we would get this from client.get_applications()
-    // For now we'll use the known applications from rcpd_config.toml
+    // For now we'll use the known applications from rcpdaemon_config.toml
     let apps = vec![
         AppInfo {
             id: "brave".to_string(),

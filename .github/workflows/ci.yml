@@ -127,9 +127,9 @@ jobs:
       with:
         name: rcp-${{ matrix.platform }}-artifacts
         path: |
-          target/${{ matrix.target }}/debug/rcpp
-          target/${{ matrix.target }}/debug/rcpc
-          target/${{ matrix.target }}/debug/rcpd
+          target/${{ matrix.target }}/debug/rcpcore
+          target/${{ matrix.target }}/debug/rcpcli
+          target/${{ matrix.target }}/debug/rcpdaemon
         retention-days: 2
 
   cache-dependencies:

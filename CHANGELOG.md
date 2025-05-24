@@ -20,7 +20,7 @@
 ### Bug Fixes
 * chore: update Cargo.toml to include rcp-desk and change license to Apache-2.0
 * fix: Correct path for rust RCP client in workspace configuration
-* fix: Correct typo in RCPD documentation for connection handling
+* fix: Correct typo in rcpdaemon documentation for connection handling
 * fix: Downgrade @tauri-apps/api to beta version and update icon configuration in Tauri settings
 * fix: Update CI workflow to include platform-specific dependency installations and improve test execution conditions
 * fix: Update Tauri configuration for development URL and adjust dependencies
@@ -50,8 +50,8 @@
 * refactor: Remove obsolete CI and changelog workflows
 * refactor: Remove unused DaemonCommand import from CLI tests
 * refactor: Remove unused imports and improve variable declarations in CLI command modules
-* refactor: Rename rcp-client and rcp-core to rcpc and rcpp respectively across documentation and scripts
-* refactor: Update build script and dependencies to use 'rcpd' instead of 'rcp-service'
+* refactor: Rename rcp-client and rcp-core to rcpcli and rcpcore respectively across documentation and scripts
+* refactor: Update build script and dependencies to use 'rcpdaemon' instead of 'rcp-service'
 * refactor: Update function signatures and improve default implementations across CLI modules
 * refactor: add #[allow(dead_code)] annotations to unused functions and methods across CLI and service modules
 * refactor: add missing attribute to MockService id field for clarity
@@ -73,7 +73,7 @@
 * refactor: update token property checks and expiration validation in db tests
 
 ### Documentation
-* docs: Add comprehensive installation guide for RCPD
+* docs: Add comprehensive installation guide for rcpdaemon
 * docs: update changelog for v0.1.0+7
 * docs: update changelog for v0.1.0+7
 * docs: update changelog for v0.1.0+7
@@ -123,7 +123,7 @@
 
 ### Bug Fixes
 * chore: update Cargo.toml to include rcp-desk and change license to Apache-2.0
-* fix: Correct typo in RCPD documentation for connection handling
+* fix: Correct typo in rcpdaemon documentation for connection handling
 * fix: Downgrade @tauri-apps/api to beta version and update icon configuration in Tauri settings
 * fix: Update CI workflow to include platform-specific dependency installations and improve test execution conditions
 * fix: Update Tauri configuration for development URL and adjust dependencies
@@ -150,8 +150,8 @@
 * refactor: Remove obsolete CI and changelog workflows
 * refactor: Remove unused DaemonCommand import from CLI tests
 * refactor: Remove unused imports and improve variable declarations in CLI command modules
-* refactor: Rename rcp-client and rcp-core to rcpc and rcpp respectively across documentation and scripts
-* refactor: Update build script and dependencies to use 'rcpd' instead of 'rcp-service'
+* refactor: Rename rcp-client and rcp-core to rcpcli and rcpcore respectively across documentation and scripts
+* refactor: Update build script and dependencies to use 'rcpdaemon' instead of 'rcp-service'
 * refactor: Update function signatures and improve default implementations across CLI modules
 * refactor: add #[allow(dead_code)] annotations to unused functions and methods across CLI and service modules
 * refactor: add missing attribute to MockService id field for clarity
@@ -173,7 +173,7 @@
 * refactor: update token property checks and expiration validation in db tests
 
 ### Documentation
-* docs: Add comprehensive installation guide for RCPD
+* docs: Add comprehensive installation guide for rcpdaemon
 * docs: update changelog for v0.1.0+7
 * docs: update changelog for v0.1.0+7
 * docs: update changelog for v0.1.0+7
@@ -222,7 +222,7 @@
 
 ### Bug Fixes
 * chore: update Cargo.toml to include rcp-desk and change license to Apache-2.0
-* fix: Correct typo in RCPD documentation for connection handling
+* fix: Correct typo in rcpdaemon documentation for connection handling
 * fix: Downgrade @tauri-apps/api to beta version and update icon configuration in Tauri settings
 * fix: Update CI workflow to include platform-specific dependency installations and improve test execution conditions
 * fix: Update Tauri configuration for development URL and adjust dependencies
@@ -247,8 +247,8 @@
 * refactor: Remove CLI migration summary and clean up CLI command imports
 * refactor: Remove unused DaemonCommand import from CLI tests
 * refactor: Remove unused imports and improve variable declarations in CLI command modules
-* refactor: Rename rcp-client and rcp-core to rcpc and rcpp respectively across documentation and scripts
-* refactor: Update build script and dependencies to use 'rcpd' instead of 'rcp-service'
+* refactor: Rename rcp-client and rcp-core to rcpcli and rcpcore respectively across documentation and scripts
+* refactor: Update build script and dependencies to use 'rcpdaemon' instead of 'rcp-service'
 * refactor: add #[allow(dead_code)] annotations to unused functions and methods across CLI and service modules
 * refactor: add missing attribute to MockService id field for clarity
 * refactor: add user management methods for deleting, updating roles, and resetting passwords
@@ -269,7 +269,7 @@
 * refactor: update token property checks and expiration validation in db tests
 
 ### Documentation
-* docs: Add comprehensive installation guide for RCPD
+* docs: Add comprehensive installation guide for rcpdaemon
 * docs: update changelog for v0.1.0+7
 * docs: update changelog for v0.1.0+7
 * docs: update changelog for v0.1.0+7
@@ -317,7 +317,7 @@
 
 ### Bug Fixes
 * chore: update Cargo.toml to include rcp-desk and change license to Apache-2.0
-* fix: Correct typo in RCPD documentation for connection handling
+* fix: Correct typo in rcpdaemon documentation for connection handling
 * fix: Downgrade @tauri-apps/api to beta version and update icon configuration in Tauri settings
 * fix: Update CI workflow to include platform-specific dependency installations and improve test execution conditions
 * fix: Update Tauri configuration for development URL and adjust dependencies
@@ -339,8 +339,8 @@
 * Merge pull request #15 from open-rcp/dev
 * Merge pull request #21 from open-rcp/dev
 * refactor: Remove unused imports and improve variable declarations in CLI command modules
-* refactor: Rename rcp-client and rcp-core to rcpc and rcpp respectively across documentation and scripts
-* refactor: Update build script and dependencies to use 'rcpd' instead of 'rcp-service'
+* refactor: Rename rcp-client and rcp-core to rcpcli and rcpcore respectively across documentation and scripts
+* refactor: Update build script and dependencies to use 'rcpdaemon' instead of 'rcp-service'
 * refactor: add #[allow(dead_code)] annotations to unused functions and methods across CLI and service modules
 * refactor: add missing attribute to MockService id field for clarity
 * refactor: add user management methods for deleting, updating roles, and resetting passwords
@@ -361,7 +361,7 @@
 * refactor: update token property checks and expiration validation in db tests
 
 ### Documentation
-* docs: Add comprehensive installation guide for RCPD
+* docs: Add comprehensive installation guide for rcpdaemon
 * docs: update changelog for v0.1.0+7
 * docs: update changelog for v0.1.0+7
 * docs: update changelog for v0.1.0+7
@@ -408,7 +408,7 @@
 
 ### Bug Fixes
 * chore: update Cargo.toml to include rcp-desk and change license to Apache-2.0
-* fix: Correct typo in RCPD documentation for connection handling
+* fix: Correct typo in rcpdaemon documentation for connection handling
 * fix: Downgrade @tauri-apps/api to beta version and update icon configuration in Tauri settings
 * fix: Update CI workflow to include platform-specific dependency installations and improve test execution conditions
 * fix: Update Tauri configuration for development URL and adjust dependencies
@@ -429,7 +429,7 @@
 * Merge pull request #13 from open-rcp/dev
 * Merge pull request #15 from open-rcp/dev
 * refactor: Remove unused imports and improve variable declarations in CLI command modules
-* refactor: Update build script and dependencies to use 'rcpd' instead of 'rcp-service'
+* refactor: Update build script and dependencies to use 'rcpdaemon' instead of 'rcp-service'
 * refactor: add #[allow(dead_code)] annotations to unused functions and methods across CLI and service modules
 * refactor: add missing attribute to MockService id field for clarity
 * refactor: add user management methods for deleting, updating roles, and resetting passwords
@@ -450,7 +450,7 @@
 * refactor: update token property checks and expiration validation in db tests
 
 ### Documentation
-* docs: Add comprehensive installation guide for RCPD
+* docs: Add comprehensive installation guide for rcpdaemon
 * docs: update changelog for v0.1.0+7
 * docs: update changelog for v0.1.0+7
 * docs: update changelog for v0.1.0+7
@@ -494,7 +494,7 @@
 
 ### Bug Fixes
 * chore: update Cargo.toml to include rcp-desk and change license to Apache-2.0
-* fix: Correct typo in RCPD documentation for connection handling
+* fix: Correct typo in rcpdaemon documentation for connection handling
 * fix: Downgrade @tauri-apps/api to beta version and update icon configuration in Tauri settings
 * fix: Update CI workflow to include platform-specific dependency installations and improve test execution conditions
 * fix: Update Tauri configuration for development URL and adjust dependencies
@@ -514,7 +514,7 @@
 ### Improvements
 * Merge pull request #13 from open-rcp/dev
 * Merge pull request #15 from open-rcp/dev
-* refactor: Update build script and dependencies to use 'rcpd' instead of 'rcp-service'
+* refactor: Update build script and dependencies to use 'rcpdaemon' instead of 'rcp-service'
 * refactor: add #[allow(dead_code)] annotations to unused functions and methods across CLI and service modules
 * refactor: add missing attribute to MockService id field for clarity
 * refactor: add user management methods for deleting, updating roles, and resetting passwords
@@ -535,7 +535,7 @@
 * refactor: update token property checks and expiration validation in db tests
 
 ### Documentation
-* docs: Add comprehensive installation guide for RCPD
+* docs: Add comprehensive installation guide for rcpdaemon
 * docs: update changelog for v0.1.0+7
 * docs: update changelog for v0.1.0+7
 * docs: update changelog for v0.1.0+7

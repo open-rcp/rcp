@@ -8,19 +8,19 @@ RCP follows a modular architecture with three main components that work together
 
 ### Current Components
 
-1. **rcpp (RCP Protocol)**: Core protocol library
+1. **rcpcore (RCP Protocol)**: Core protocol library
    - Protocol definitions and frame handling
    - Authentication mechanisms
    - Common utilities and data structures
    - Binary format and command definitions
 
-2. **rcpc (RCP Client)**: Client library and CLI
+2. **rcpcli (RCP Client)**: Client library and CLI
    - Connects to RCP servers using the protocol
    - Handles application control and user input
    - Provides connection string parsing
    - Service discovery and management
 
-3. **rcpd (RCP Daemon)**: Runtime daemon with integrated components
+3. **rcpdaemon (RCP Daemon)**: Runtime daemon with integrated components
    - Server functionality: Handling client connections
    - API functionality: Feature-gated REST API for remote management (optional)
    - Application lifecycle management
@@ -42,13 +42,13 @@ RCP follows a modular architecture with three main components that work together
 ## Implementation Progress
 
 ### Completed Components
-1. ✅ Core Protocol Library (rcpp)
-2. ✅ Client Library (rcpc)
-3. ✅ Server/Daemon with integrated components (rcpd)
+1. ✅ Core Protocol Library (rcpcore)
+2. ✅ Client Library (rcpcli)
+3. ✅ Server/Daemon with integrated components (rcpdaemon)
 3. ✅ Service Architecture
 4. ✅ Authentication System
 5. ✅ WebSocket Bridge
-6. ✅ RCPD with Integrated Components
+6. ✅ rcpdaemon with Integrated Components
    - Integrated server functionality
    - Feature-gated API functionality
    - Runtime management of applications
@@ -77,7 +77,7 @@ RCP follows a modular architecture with three main components that work together
 
 ```
 rcp/
-├── rcpp/           # Core protocol definitions
+├── rcpcore/           # Core protocol definitions
 │   └── src/
 │       ├── auth.rs     # Authentication modules
 │       ├── command.rs  # Protocol commands
@@ -87,9 +87,9 @@ rcp/
 │       ├── lib.rs      # Main library entry
 │       ├── protocol.rs # Protocol handling
 │       └── utils.rs    # Utilities
-├── rcpc/         # Client library
+├── rcpcli/         # Client library
 │   └── src/            # Client implementation
-├── rcpd/               # Runtime daemon with integrated server and API
+├── rcpdaemon/               # Runtime daemon with integrated server and API
 │   └── src/
 │       ├── config.rs   # Daemon configuration
 │       ├── error.rs    # Error types
@@ -174,7 +174,7 @@ When working on the RCP project, it's common to have to switch between different
 
 To add a new command to the protocol:
 
-1. Add a new variant to the `CommandId` enum in `rcpp/src/command.rs`
+1. Add a new variant to the `CommandId` enum in `rcpcore/src/command.rs`
 2. Define the command payload structure(s) in the same file
 3. Update the command handler in the session implementation
 

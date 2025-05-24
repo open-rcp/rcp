@@ -1,8 +1,8 @@
-# RCP Protocol (rcpp)
+# RCP Protocol (rcpcore)
 
 ## Overview
 
-The RCP Protocol library (`rcpp`) is the core component that defines the binary protocol format, data structures, and communication patterns used throughout the RCP ecosystem. It provides the foundation upon which the client and server components are built.
+The RCP Protocol library (`rcpcore`) is the core component that defines the binary protocol format, data structures, and communication patterns used throughout the RCP ecosystem. It provides the foundation upon which the client and server components are built.
 
 ## Features
 
@@ -69,7 +69,7 @@ pub enum ConnectionState {
 
 ## Integration
 
-The RCP Protocol library is used by both the client (`rcpc`) and daemon (`rcpd`) components. It ensures consistent message handling and protocol behavior across components.
+The RCP Protocol library is used by both the client (`rcpcli`) and daemon (`rcpdaemon`) components. It ensures consistent message handling and protocol behavior across components.
 
 ## Extension Points
 

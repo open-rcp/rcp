@@ -1,12 +1,12 @@
-# RCPD (RCP Daemon) Build and Installation Guide
+# rcpdaemon (RCP Daemon) Build and Installation Guide
 
-This guide provides comprehensive instructions for building and installing the RCP Daemon (RCPD), which combines server and API functionality into a single integrated component.
+This guide provides comprehensive instructions for building and installing the RCP Daemon (rcpdaemon), which combines server and API functionality into a single integrated component.
 
-## Building RCPD
+## Building rcpdaemon
 
 ### Prerequisites
 
-Before building RCPD, ensure you have the following dependencies installed:
+Before building rcpdaemon, ensure you have the following dependencies installed:
 
 #### Common Dependencies
 - Rust toolchain (install via [rustup](https://rustup.rs/))
@@ -76,21 +76,21 @@ chmod +x scripts/macos/build.sh
 
 #### Using Cargo Directly
 
-You can also build RCPD directly using Cargo:
+You can also build rcpdaemon directly using Cargo:
 
 ```bash
 # Debug build
-cargo build -p rcpd
+cargo build -p rcpdaemon
 
 # Release build (recommended for production)
-cargo build --release -p rcpd
+cargo build --release -p rcpdaemon
 ```
 
 ## Installation
 
 ### Windows
 
-1. Build RCPD in release mode:
+1. Build rcpdaemon in release mode:
    ```powershell
    scripts\windows\build.bat --release --daemon
    ```
@@ -98,122 +98,122 @@ cargo build --release -p rcpd
 2. Copy the executable to a permanent location:
    ```powershell
    mkdir -p "C:\Program Files\RCP"
-   copy "target\release\rcpd.exe" "C:\Program Files\RCP\"
+   copy "target\release\rcpdaemon.exe" "C:\Program Files\RCP\"
    copy "config.toml" "C:\Program Files\RCP\"
    ```
 
 3. Install as a Windows service:
    ```powershell
    cd "C:\Program Files\RCP"
-   .\rcpd.exe --install-service
+   .\rcpdaemon.exe --install-service
    ```
 
 4. Start the service:
    ```powershell
-   sc start rcpd
+   sc start rcpdaemon
    ```
 
 5. Configure Windows Firewall (if necessary):
    ```powershell
-   netsh advfirewall firewall add rule name="RCP Daemon" dir=in action=allow program="C:\Program Files\RCP\rcpd.exe" enable=yes
+   netsh advfirewall firewall add rule name="RCP Daemon" dir=in action=allow program="C:\Program Files\RCP\rcpdaemon.exe" enable=yes
    ```
 
 ### Linux
 
-1. Build RCPD in release mode:
+1. Build rcpdaemon in release mode:
    ```bash
    ./scripts/linux/build.sh --release --daemon
    ```
 
 2. Create required directories:
    ```bash
-   sudo mkdir -p /usr/local/bin /etc/rcpd /var/lib/rcpd /var/log/rcpd
+   sudo mkdir -p /usr/local/bin /etc/rcpdaemon /var/lib/rcpdaemon /var/log/rcpdaemon
    ```
 
 3. Copy the executable and configuration:
    ```bash
-   sudo cp target/release/rcpd /usr/local/bin/
-   sudo cp config.toml /etc/rcpd/
-   sudo cp rcpd/systemd/rcpd.service /etc/systemd/system/
+   sudo cp target/release/rcpdaemon /usr/local/bin/
+   sudo cp config.toml /etc/rcpdaemon/
+   sudo cp rcpdaemon/systemd/rcpdaemon.service /etc/systemd/system/
    ```
 
 4. Set proper permissions:
    ```bash
-   sudo chown -R root:root /etc/rcpd /usr/local/bin/rcpd
-   sudo chmod 755 /usr/local/bin/rcpd
-   sudo chmod 644 /etc/rcpd/config.toml /etc/systemd/system/rcpd.service
+   sudo chown -R root:root /etc/rcpdaemon /usr/local/bin/rcpdaemon
+   sudo chmod 755 /usr/local/bin/rcpdaemon
+   sudo chmod 644 /etc/rcpdaemon/config.toml /etc/systemd/system/rcpdaemon.service
    ```
 
 5. Reload systemd, enable and start the service:
    ```bash
    sudo systemctl daemon-reload
-   sudo systemctl enable rcpd
-   sudo systemctl start rcpd
+   sudo systemctl enable rcpdaemon
+   sudo systemctl start rcpdaemon
    ```
 
 6. Check the service status:
    ```bash
-   sudo systemctl status rcpd
+   sudo systemctl status rcpdaemon
    ```
 
 ### macOS
 
-1. Build RCPD in release mode:
+1. Build rcpdaemon in release mode:
    ```bash
    ./scripts/macos/build.sh --release --daemon
    ```
 
 2. Create required directories:
    ```bash
-   sudo mkdir -p /usr/local/bin /usr/local/etc/rcpd /var/lib/rcpd /var/log/rcpd
+   sudo mkdir -p /usr/local/bin /usr/local/etc/rcpdaemon /var/lib/rcpdaemon /var/log/rcpdaemon
    ```
 
 3. Copy the executable and configuration:
    ```bash
-   sudo cp target/release/rcpd /usr/local/bin/
-   sudo cp config.toml /usr/local/etc/rcpd/
+   sudo cp target/release/rcpdaemon /usr/local/bin/
+   sudo cp config.toml /usr/local/etc/rcpdaemon/
    ```
 
 4. Copy the launchd service file:
    ```bash
    # For system-wide installation
-   sudo cp rcpd/launchd/com.devstroop.rcpd.plist /Library/LaunchDaemons/
+   sudo cp rcpdaemon/launchd/com.devstroop.rcpdaemon.plist /Library/LaunchDaemons/
    
    # OR for user-specific installation
-   cp rcpd/launchd/com.devstroop.rcpd.plist ~/Library/LaunchAgents/
+   cp rcpdaemon/launchd/com.devstroop.rcpdaemon.plist ~/Library/LaunchAgents/
    ```
 
 5. Load and start the service:
    ```bash
    # For system-wide installation
-   sudo launchctl load -w /Library/LaunchDaemons/com.devstroop.rcpd.plist
+   sudo launchctl load -w /Library/LaunchDaemons/com.devstroop.rcpdaemon.plist
    
    # OR for user-specific installation
-   launchctl load -w ~/Library/LaunchAgents/com.devstroop.rcpd.plist
+   launchctl load -w ~/Library/LaunchAgents/com.devstroop.rcpdaemon.plist
    ```
 
 6. Verify the daemon is running:
    ```bash
-   launchctl list | grep rcpd
+   launchctl list | grep rcpdaemon
    ```
 
 ## Configuration
 
-RCPD uses a TOML configuration file, typically located at:
+rcpdaemon uses a TOML configuration file, typically located at:
 
 - Windows: `C:\Program Files\RCP\config.toml`
-- Linux: `/etc/rcpd/config.toml`
-- macOS: `/usr/local/etc/rcpd/config.toml`
+- Linux: `/etc/rcpdaemon/config.toml`
+- macOS: `/usr/local/etc/rcpdaemon/config.toml`
 
 ### Example Configuration
 
 ```toml
-# RCPD Configuration
+# rcpdaemon Configuration
 
 # Basic configuration
 address = "0.0.0.0"
 port = 8716
-work_dir = "/var/lib/rcpd"
+work_dir = "/var/lib/rcpdaemon"
 log_level = "info"
 
 # Server-specific configuration
@@ -234,26 +234,26 @@ auth_token_expiry = 3600
 # TLS configuration
 [tls]
 enabled = false
-cert_path = "/etc/rcpd/tls/cert.pem"
-key_path = "/etc/rcpd/tls/key.pem"
+cert_path = "/etc/rcpdaemon/tls/cert.pem"
+key_path = "/etc/rcpdaemon/tls/key.pem"
 ```
 
-## Running RCPD Manually
+## Running rcpdaemon Manually
 
-For development or testing purposes, you can run RCPD directly:
+For development or testing purposes, you can run rcpdaemon directly:
 
 ```bash
 # Run with default configuration
-rcpd
+rcpdaemon
 
 # Run with a specific configuration file
-rcpd -c /path/to/config.toml
+rcpdaemon -c /path/to/config.toml
 
 # Run in the foreground with verbose output
-rcpd -f -v
+rcpdaemon -f -v
 
 # Show all available options
-rcpd --help
+rcpdaemon --help
 ```
 
 ## Uninstalling
@@ -261,8 +261,8 @@ rcpd --help
 ### Windows
 ```powershell
 # Stop and remove service
-sc stop rcpd
-sc delete rcpd
+sc stop rcpdaemon
+sc delete rcpdaemon
 
 # Remove files
 Remove-Item -Path "C:\Program Files\RCP" -Recurse -Force
@@ -271,29 +271,29 @@ Remove-Item -Path "C:\Program Files\RCP" -Recurse -Force
 ### Linux
 ```bash
 # Stop and disable service
-sudo systemctl stop rcpd
-sudo systemctl disable rcpd
-sudo rm /etc/systemd/system/rcpd.service
+sudo systemctl stop rcpdaemon
+sudo systemctl disable rcpdaemon
+sudo rm /etc/systemd/system/rcpdaemon.service
 sudo systemctl daemon-reload
 
 # Remove files
-sudo rm /usr/local/bin/rcpd
-sudo rm -rf /etc/rcpd /var/lib/rcpd /var/log/rcpd
+sudo rm /usr/local/bin/rcpdaemon
+sudo rm -rf /etc/rcpdaemon /var/lib/rcpdaemon /var/log/rcpdaemon
 ```
 
 ### macOS
 ```bash
 # Unload service
-sudo launchctl unload /Library/LaunchDaemons/com.devstroop.rcpd.plist
+sudo launchctl unload /Library/LaunchDaemons/com.devstroop.rcpdaemon.plist
 # OR
-launchctl unload ~/Library/LaunchAgents/com.devstroop.rcpd.plist
+launchctl unload ~/Library/LaunchAgents/com.devstroop.rcpdaemon.plist
 
 # Remove files
-sudo rm /usr/local/bin/rcpd
-sudo rm /Library/LaunchDaemons/com.devstroop.rcpd.plist
+sudo rm /usr/local/bin/rcpdaemon
+sudo rm /Library/LaunchDaemons/com.devstroop.rcpdaemon.plist
 # OR
-rm ~/Library/LaunchAgents/com.devstroop.rcpd.plist
-sudo rm -rf /usr/local/etc/rcpd /var/lib/rcpd /var/log/rcpd
+rm ~/Library/LaunchAgents/com.devstroop.rcpdaemon.plist
+sudo rm -rf /usr/local/etc/rcpdaemon /var/lib/rcpdaemon /var/log/rcpdaemon
 ```
 
 ## Troubleshooting
@@ -305,30 +305,30 @@ sudo rm -rf /usr/local/etc/rcpd /var/lib/rcpd /var/log/rcpd
    - Check file ownership and permissions
 
 2. **Service Won't Start**:
-   - Check logs for errors: `/var/log/rcpd/rcpd.log` (Linux/macOS) or Event Viewer (Windows)
+   - Check logs for errors: `/var/log/rcpdaemon/rcpdaemon.log` (Linux/macOS) or Event Viewer (Windows)
    - Verify configuration file syntax
    - Ensure ports are not in use by other applications
 
 3. **Cannot Connect to Daemon**:
    - Check firewall settings
-   - Verify the daemon is running (`systemctl status rcpd`, `launchctl list | grep rcpd`, or `sc query rcpd`)
+   - Verify the daemon is running (`systemctl status rcpdaemon`, `launchctl list | grep rcpdaemon`, or `sc query rcpdaemon`)
    - Ensure the configuration has the correct bind address and port
 
 ### Viewing Logs
 
 #### Windows
-Check the Windows Event Viewer for logs from the rcpd service.
+Check the Windows Event Viewer for logs from the rcpdaemon service.
 
 #### Linux
 ```bash
-sudo journalctl -u rcpd
+sudo journalctl -u rcpdaemon
 # Or check the log file
-sudo cat /var/log/rcpd/rcpd.log
+sudo cat /var/log/rcpdaemon/rcpdaemon.log
 ```
 
 #### macOS
 ```bash
-sudo cat /var/log/rcpd/rcpd.log
+sudo cat /var/log/rcpdaemon/rcpdaemon.log
 # Or check system logs
-log show --predicate 'processImagePath CONTAINS "rcpd"'
+log show --predicate 'processImagePath CONTAINS "rcpdaemon"'
 ```

@@ -2,12 +2,12 @@
 
 ## System Architecture
 
-The Rust/Remote Control Protocol (RCP) is a modular service-oriented system with several components that work together. The architecture uses three main components: Protocol (rcpp), Client (rcpc), and Daemon (rcpd).
+The Rust/Remote Control Protocol (RCP) is a modular service-oriented system with several components that work together. The architecture uses three main components: Protocol (rcpcore), Client (rcpcli), and Daemon (rcpdaemon).
 
 ```
 ┌─────────────┐        ┌───────────────────────────┐
-│ RCP Client  │◄───────┤   RCPD (RCP Daemon)       │
-│  (rcpc)     │        │   ┌──────────┐ ┌───────┐  │
+│ RCP Client  │◄───────┤   rcpdaemon (RCP Daemon)       │
+│  (rcpcli)     │        │   ┌──────────┐ ┌───────┐  │
 └──────┬──────┘        │   │  Server  │ │  API  │  │
        │               │   └──────────┘ └───────┘  │
  ┌─────▼─────┐         └──────────────────────────┘
@@ -16,27 +16,27 @@ The Rust/Remote Control Protocol (RCP) is a modular service-oriented system with
                                   │
                          ┌────────┴───────┐
                          │  RCP Protocol  │
-                         │     (rcpp)     │
+                         │     (rcpcore)     │
                          └────────────────┘
 ```
 
 ## Core Components
 
-### 1. RCP Protocol Library (`rcpp`)
+### 1. RCP Protocol Library (`rcpcore`)
 
 - Protocol definitions and frame handling
 - Authentication mechanisms
 - Common utilities and data structures
 - Core binary format specifications
 
-### 2. RCP Client (`rcpc`)
+### 2. RCP Client (`rcpcli`)
 
 - Connects to RCP servers within the daemon
 - Handles application control and user input
 - Processes and displays streamed frames
 - Provides client-side connection management
 
-### 3. RCPD (RCP Daemon) (`rcpd`)
+### 3. rcpdaemon (RCP Daemon) (`rcpdaemon`)
 
 - Core component with integrated Server and API functionality
 - Long-running daemon/system service architecture

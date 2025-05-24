@@ -38,7 +38,7 @@ The GitHub Actions workflows have been optimized in the following ways:
   - Properly categorized into features, fixes, and improvements
   - Uses Git history since previous tag for accurate changelogs
 - **Packaging**:
-  - Platform-specific packaging for each component (rcpp, rcpc, rcpd)
+  - Platform-specific packaging for each component (rcpcore, rcpcli, rcpdaemon)
   - Consistent artifact naming and formatting
   - Release published as draft first for review, then published when all builds succeed
 

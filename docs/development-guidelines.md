@@ -6,9 +6,9 @@ This guide provides detailed instructions for implementing and using the Rust/Re
 
 1. [Introduction](#introduction)
 2. [Architecture Overview](#architecture-overview)
-3. [Protocol Library (rcpp)](#protocol-library)
-4. [Client Implementation (rcpc)](#client-implementation)
-5. [RCP Daemon Implementation (rcpd)](#daemon-implementation)
+3. [Protocol Library (rcpcore)](#protocol-library)
+4. [Client Implementation (rcpcli)](#client-implementation)
+5. [RCP Daemon Implementation (rcpdaemon)](#daemon-implementation)
    - [Server Component](#server-component)
    - [API Component](#api-component)
    - [CLI Component](#cli-component)
@@ -35,9 +35,9 @@ Key features:
 
 RCP follows a modular architecture with the following key components:
 
-1. **Protocol Library (rcpp)**: Defines the basic message format, framing, and protocol state machine.
-2. **Client Library (rcpc)**: Provides client connectivity and control interface.
-3. **Daemon (rcpd)**: Provides server functionality, session management, and administration.
+1. **Protocol Library (rcpcore)**: Defines the basic message format, framing, and protocol state machine.
+2. **Client Library (rcpcli)**: Provides client connectivity and control interface.
+3. **Daemon (rcpdaemon)**: Provides server functionality, session management, and administration.
 4. **Authentication**: Multiple methods for secure client authentication.
 5. **Runtime Service**: System service that manages application lifecycle.
 6. **CLI**: Command-line interface for administration.
@@ -148,10 +148,10 @@ async fn connect_with_string() -> Result<(), Box<dyn std::error::Error>> {
 
 ```bash
 # Connect using an SSH-like connection string
-rcpc connect user:pass@host:8716
+rcpcli connect user:pass@host:8716
 
 # Execute a command using connection string
-rcpc execute user:pass@host:8716 my_command arg1 arg2
+rcpcli execute user:pass@host:8716 my_command arg1 arg2
 ```
 
 ### Working with Services
@@ -228,14 +228,14 @@ async fn handle_events(client: &mut Client) {
 
 ## Daemon Implementation
 
-The RCP Daemon (RCPD) is a unified system daemon that includes server and API capabilities in a single component.
+The RCP Daemon (rcpdaemon) is a unified system daemon that includes server and API capabilities in a single component.
 
 ### Server Component Implementation
 
 The server component is fully integrated into the RCP Daemon.
 
 ```rust
-use rcpd::{DaemonConfig, Daemon, ServerConfig, AuthMethod, AuthConfig};
+use rcpdaemon::{DaemonConfig, Daemon, ServerConfig, AuthMethod, AuthConfig};
 
 async fn run_daemon_with_server() -> Result<(), Box<dyn std::error::Error>> {
     // Configure authentication
@@ -332,7 +332,7 @@ async fn register_services(service: &mut Service) -> Result<(), Box<dyn std::err
 This example shows how to configure and run the unified RCP daemon:
 
 ```rust
-use rcpd::{Daemon, DaemonConfig, DaemonError};
+use rcpdaemon::{Daemon, DaemonConfig, DaemonError};
 use std::path::PathBuf;
 
 #[tokio::main]
@@ -367,7 +367,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ### Configuration Management
 
 ```rust
-use rcpd::{ConfigManager, ConfigError};
+use rcpdaemon::{ConfigManager, ConfigError};
 use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -404,7 +404,7 @@ async fn manage_config() -> Result<(), ConfigError> {
 ### Server Management
 
 ```rust
-use rcpd::{ServerManager, ServerConfig, ServerError};
+use rcpdaemon::{ServerManager, ServerConfig, ServerError};
 
 async fn manage_servers(daemon: &mut Daemon) -> Result<(), ServerError> {
     // Get the server manager
@@ -570,9 +570,9 @@ The API component is integrated into the RCP Service and enabled via the "api" f
 ```rust
 // Cargo.toml
 // [dependencies]
-// rcpd = { version = "0.2.0", features = ["api"] }
+// rcpdaemon = { version = "0.2.0", features = ["api"] }
 
-use rcpd::{ServiceConfig, Service, ApiConfig};
+use rcpdaemon::{ServiceConfig, Service, ApiConfig};
 use tokio::signal;
 
 #[tokio::main]
@@ -612,7 +612,7 @@ use rcp_api::{Router, handler, Json, Response, State};
 
 // Define state
 struct AppState {
-    service_client: rcpd::client::ServiceClient,
+    service_client: rcpdaemon::client::ServiceClient,
 }
 
 // Create router
@@ -936,4 +936,4 @@ See the `examples/` directory for complete working examples:
 
 ---
 
-For more information, refer to the [Architecture Overview](architecture.md), [Protocol Specification](protocol-specification.md), [RCPD](rcpd.md), [RCP CLI](rcp-cli.md), [RCP API](rcp-api.md), [RCP Admin](rcp-admin.md), and [RCP Desk](rcp-desk.md) documents.
+For more information, refer to the [Architecture Overview](architecture.md), [Protocol Specification](protocol-specification.md), [rcpdaemon](rcpdaemon.md), [RCP CLI](rcp-cli.md), [RCP API](rcp-api.md), [RCP Admin](rcp-admin.md), and [RCP Desk](rcp-desk.md) documents.
