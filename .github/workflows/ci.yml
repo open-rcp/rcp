@@ -46,8 +46,11 @@ jobs:
             target: x86_64-unknown-linux-gnu
           - os: windows-latest
             platform: windows
-            deps_cmd: choco install pkgconfiglite
-            target: x86_64-pc-windows-msvc
+            deps_cmd: |
+              choco install pkgconfiglite
+              rustup toolchain install stable-x86_64-pc-windows-gnu
+              rustup default stable-x86_64-pc-windows-gnu
+            target: x86_64-pc-windows-gnu
             pkg_config_path: C:\ProgramData\chocolatey\lib\pkgconfiglite\tools\bin
           - os: macos-latest
             platform: macos
@@ -58,11 +61,18 @@ jobs:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
+        submodules: recursive
+    
+    # Initialize and update git submodules if checkout didn't handle them
+    - name: Initialize git submodules
+      run: |
+        git submodule update --init --recursive
+      shell: bash
     
     # Platform dependencies (apt/brew/choco)
     - name: Install platform dependencies
       run: ${{ matrix.deps_cmd }}
-      shell: bash
+      shell: ${{ matrix.os == 'windows-latest' && 'pwsh' || 'bash' }}
     
     - name: Setup Rust
       uses: dtolnay/rust-toolchain@stable
@@ -127,9 +137,8 @@ jobs:
       with:
         name: rcp-${{ matrix.platform }}-artifacts
         path: |
-          target/${{ matrix.target }}/debug/rcpcore
-          target/${{ matrix.target }}/debug/rcpcli
-          target/${{ matrix.target }}/debug/rcpdaemon
+          target/${{ matrix.target }}/debug/rcpcli${{ matrix.platform == 'windows' && '.exe' || '' }}
+          target/${{ matrix.target }}/debug/rcpdaemon${{ matrix.platform == 'windows' && '.exe' || '' }}
         retention-days: 2
 
   cache-dependencies:
