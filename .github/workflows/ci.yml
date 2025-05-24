@@ -72,7 +72,7 @@ jobs:
     # Platform dependencies (apt/brew/choco)
     - name: Install platform dependencies
       run: ${{ matrix.deps_cmd }}
-      shell: ${{ matrix.os == 'windows-latest' && 'pwsh' || 'bash' }}
+      shell: ${{ runner.os == 'Windows' && 'pwsh' || 'bash' }}
     
     - name: Setup Rust
       uses: dtolnay/rust-toolchain@stable
