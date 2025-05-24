@@ -1,0 +1,14 @@
+[submodule "rcpcli"]
+	path = rcpcli
+	url = https://github.com/open-rcp/rcpcli.git
+	branch = main
+
+[submodule "rcpcore"]
+	path = rcpcore
+	url = https://github.com/open-rcp/rcpcore.git
+	branch = main
+
+[submodule "rcpdaemon"]
+	path = rcpdaemon
+	url = https://github.com/open-rcp/rcpdaemon.git
+	branch = main
