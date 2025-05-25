@@ -1,0 +1,48 @@
+[package]
+name = "rcpadmin-backend"
+version = "0.1.0"
+edition = "2021"
+description = "RCP Admin Backend - Web administration API for RCP daemon"
+authors = ["Akash Shah <akash@devstroop.com>"]
+license = "MIT"
+
+[dependencies]
+# Web framework
+axum = { version = "0.7", features = ["ws"] }
+tower = "0.4"
+tower-http = { version = "0.5", features = ["cors", "trace", "fs"] }
+tokio = { version = "1.0", features = ["full"] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Database
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "sqlite", "chrono", "uuid"] }
+
+# Authentication
+jsonwebtoken = "9.0"
+bcrypt = "0.15"
+
+# Utilities
+uuid = { version = "1.0", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+anyhow = "1.0"
+thiserror = "1.0"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# WebSocket support
+axum-extra = { version = "0.9", features = ["typed-header"] }
+futures-util = "0.3"
+
+# RCP integration
+rcpcore = { path = "../../rcpcore" }
+rcpdaemon = { path = "../../rcpdaemon", features = ["api"] }
+
+# HTTP client for rcpdaemon API
+reqwest = { version = "0.11", features = ["json"] }
+
+[dev-dependencies]
+tokio-test = "0.4"
+axum-test = "14.0"
