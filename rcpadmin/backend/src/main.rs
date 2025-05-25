@@ -1,15 +1,8 @@
-use axum::{
-    extract::{Path, Query, State},
-    http::StatusCode,
-    response::Json,
-    routing::{get, post, put, delete},
-    Router,
-};
-use serde::{Deserialize, Serialize};
+use axum::{middleware, response::Json, routing::get, Router};
 use std::sync::Arc;
 use tokio::net::TcpListener;
 use tower_http::{cors::CorsLayer, trace::TraceLayer};
-use tracing::{info, warn};
+use tracing::info;
 
 mod api;
 mod auth;
@@ -21,6 +14,7 @@ mod services;
 mod websocket;
 
 use crate::{
+    auth::{protect, require_admin},
     config::Config,
     db::Database,
     services::rcpdaemon::RcpDaemonClient,
@@ -36,6 +30,9 @@ pub struct AppStateInner {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    // Load .env file if it exists
+    dotenvy::dotenv().ok();
+
     // Initialize tracing
     tracing_subscriber::fmt()
         .with_env_filter("rcpadmin_backend=debug,tower_http=debug")
@@ -76,16 +73,33 @@ async fn main() -> anyhow::Result<()> {
 }
 
 fn create_router(state: AppState) -> Router {
+    // Create protected API routes
+    let protected_api = Router::new()
+        .nest("/server", api::server::create_routes())
+        .nest("/applications", api::applications::create_routes())
+        .nest("/sessions", api::sessions::create_routes())
+        .nest("/system", api::system::create_routes())
+        .layer(middleware::from_fn_with_state(state.clone(), protect));
+
+    // Create admin-only API routes
+    let admin_api = Router::new()
+        .nest("/users", api::users::create_routes())
+        .layer(middleware::from_fn_with_state(state.clone(), require_admin));
+
+    // Build the main router
     Router::new()
-        // API routes
-        .nest("/api/v1", api::create_routes())
-        // WebSocket routes
-        .nest("/ws", websocket::create_routes())
         // Health check
         .route("/health", get(health_check))
+        // Auth routes (no middleware)
+        .nest("/api/v1/auth", api::auth::create_routes())
+        // Protected API routes
+        .nest("/api/v1", protected_api)
+        .nest("/api/v1", admin_api)
+        // WebSocket routes
+        .nest("/ws", websocket::create_routes())
         // Static files (for serving frontend in production)
         .fallback_service(tower_http::services::ServeDir::new("../web/dist"))
-        // Middleware
+        // Global middleware
         .layer(CorsLayer::permissive())
         .layer(TraceLayer::new_for_http())
         .with_state(state)

@@ -1,17 +1,13 @@
 use axum::{
     extract::{Path, State},
     response::Json,
-    routing::{get, delete},
+    routing::{delete, get},
     Router,
 };
-use tracing::{info, warn};
+use tracing::info;
 use uuid::Uuid;
 
-use crate::{
-    error::Result,
-    models::Session,
-    AppState,
-};
+use crate::{error::Result, models::Session, AppState};
 
 pub fn create_routes() -> Router<AppState> {
     Router::new()
@@ -40,7 +36,7 @@ async fn close_session(
 ) -> Result<Json<serde_json::Value>> {
     info!("Closing session {}", session_id);
     state.rcpdaemon_client.close_session(session_id).await?;
-    
+
     Ok(Json(serde_json::json!({
         "message": format!("Session {} closed successfully", session_id),
         "success": true

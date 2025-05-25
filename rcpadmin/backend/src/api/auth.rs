@@ -1,12 +1,9 @@
 use axum::{
     extract::State,
-    http::StatusCode,
     response::Json,
     routing::{get, post},
     Router,
 };
-use bcrypt::{hash, verify, DEFAULT_COST};
-use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::{
@@ -28,7 +25,7 @@ async fn login(
 ) -> Result<Json<LoginResponse>> {
     // For simplicity in this example, we'll use a hardcoded admin user
     // In a real application, fetch from the database
-    
+
     // Check if we have a hardcoded user match
     if login.username == "admin" {
         // Check password (hardcoded for example, use proper password hashing in production)
@@ -56,6 +53,7 @@ async fn login(
                     username: user.username,
                     email: user.email,
                     role: user.role,
+                    is_active: user.is_active,
                 },
             }));
         }

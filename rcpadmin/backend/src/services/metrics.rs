@@ -21,14 +21,14 @@ impl MetricsService {
     pub async fn get_system_metrics(&self) -> Result<SystemMetrics> {
         let url = format!("{}/api/v1/metrics/system", self.daemon_url);
         let response = self.client.get(&url).send().await?;
-        
+
         if !response.status().is_success() {
             return Err(AppError::External(format!(
                 "Failed to fetch system metrics: {}",
                 response.status()
             )));
         }
-        
+
         let metrics: SystemMetrics = response.json().await?;
         Ok(metrics)
     }
@@ -36,14 +36,14 @@ impl MetricsService {
     pub async fn get_performance_metrics(&self) -> Result<Value> {
         let url = format!("{}/api/v1/metrics/performance", self.daemon_url);
         let response = self.client.get(&url).send().await?;
-        
+
         if !response.status().is_success() {
             return Err(AppError::External(format!(
                 "Failed to fetch performance metrics: {}",
                 response.status()
             )));
         }
-        
+
         let metrics: Value = response.json().await?;
         Ok(metrics)
     }
@@ -51,14 +51,14 @@ impl MetricsService {
     pub async fn get_health_check(&self) -> Result<Value> {
         let url = format!("{}/api/v1/health", self.daemon_url);
         let response = self.client.get(&url).send().await?;
-        
+
         if !response.status().is_success() {
             return Err(AppError::External(format!(
                 "Health check failed: {}",
                 response.status()
             )));
         }
-        
+
         let health: Value = response.json().await?;
         Ok(health)
     }
