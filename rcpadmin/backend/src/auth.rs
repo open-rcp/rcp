@@ -3,10 +3,6 @@ use axum::{
     middleware::Next,
     response::{IntoResponse, Response},
 };
-use axum_extra::{
-    headers::{authorization::Bearer, Authorization},
-    TypedHeader,
-};
 use chrono::{Duration, Utc};
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
@@ -18,7 +14,7 @@ use crate::{
     AppState,
 };
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Claims {
     pub sub: String, // User ID
     pub username: String,
@@ -27,23 +23,33 @@ pub struct Claims {
     pub iat: i64, // Issued at
 }
 
-pub async fn protect(
-    State(state): State<AppState>,
-    TypedHeader(auth): TypedHeader<Authorization<Bearer>>,
-    request: Request,
-    next: Next,
-) -> Response {
-    let token = auth.token();
-    
+pub async fn protect(State(state): State<AppState>, mut request: Request, next: Next) -> Response {
+    // Extract the Authorization header manually
+    let auth_header = match request.headers().get("authorization") {
+        Some(header) => header,
+        None => return AppError::Auth("Missing authorization header".to_string()).into_response(),
+    };
+
+    let auth_str = match auth_header.to_str() {
+        Ok(s) => s,
+        Err(_) => {
+            return AppError::Auth("Invalid authorization header".to_string()).into_response()
+        }
+    };
+
+    let token = if auth_str.starts_with("Bearer ") {
+        &auth_str[7..]
+    } else {
+        return AppError::Auth("Invalid authorization format".to_string()).into_response();
+    };
+
     match validate_token(token, &state.config.jwt_secret) {
         Ok(claims) => {
             // Verify the token is valid
             match Uuid::parse_str(&claims.sub) {
                 Ok(_user_id) => {
-                    // Check if user exists and is active
-                    // For high-security applications, you might want to verify the user from the database here
-                    
-                    // Continue with the request
+                    // Insert claims into request extensions for use in handlers
+                    request.extensions_mut().insert(claims);
                     next.run(request).await
                 }
                 Err(_) => AppError::Auth("Invalid token".to_string()).into_response(),
@@ -55,19 +61,36 @@ pub async fn protect(
 
 pub async fn require_admin(
     State(state): State<AppState>,
-    TypedHeader(auth): TypedHeader<Authorization<Bearer>>,
-    request: Request,
+    mut request: Request,
     next: Next,
 ) -> Response {
-    let token = auth.token();
-    
+    // Extract the Authorization header manually
+    let auth_header = match request.headers().get("authorization") {
+        Some(header) => header,
+        None => return AppError::Auth("Missing authorization header".to_string()).into_response(),
+    };
+
+    let auth_str = match auth_header.to_str() {
+        Ok(s) => s,
+        Err(_) => {
+            return AppError::Auth("Invalid authorization header".to_string()).into_response()
+        }
+    };
+
+    let token = if auth_str.starts_with("Bearer ") {
+        &auth_str[7..]
+    } else {
+        return AppError::Auth("Invalid authorization format".to_string()).into_response();
+    };
+
     match validate_token(token, &state.config.jwt_secret) {
         Ok(claims) => {
             // Check if user has admin role
             if claims.role != UserRole::Admin.to_string() {
                 AppError::Unauthorized("Admin role required".to_string()).into_response()
             } else {
-                // Continue with the request
+                // Insert claims into request extensions for use in handlers
+                request.extensions_mut().insert(claims);
                 next.run(request).await
             }
         }
@@ -82,7 +105,7 @@ pub fn validate_token(token: &str, secret: &str) -> Result<Claims> {
         &Validation::default(),
     )
     .map_err(|e| AppError::Auth(format!("Invalid token: {}", e)))?;
-    
+
     Ok(decoded.claims)
 }
 
@@ -91,9 +114,9 @@ pub fn generate_token(user: &User, secret: &str, expires_in_days: i64) -> Result
         .checked_add_signed(Duration::days(expires_in_days))
         .expect("Valid timestamp")
         .timestamp();
-        
+
     let issued_at = Utc::now().timestamp();
-    
+
     let claims = Claims {
         sub: user.id.to_string(),
         username: user.username.clone(),
@@ -101,13 +124,13 @@ pub fn generate_token(user: &User, secret: &str, expires_in_days: i64) -> Result
         exp: expiration,
         iat: issued_at,
     };
-    
+
     let token = encode(
         &Header::default(),
         &claims,
         &EncodingKey::from_secret(secret.as_bytes()),
     )
     .map_err(|e| AppError::Internal(anyhow::anyhow!("Failed to generate token: {}", e)))?;
-    
+
     Ok(token)
 }

@@ -16,8 +16,7 @@ impl Config {
         Ok(Self {
             database_url: env::var("DATABASE_URL")
                 .unwrap_or_else(|_| "sqlite:./rcpadmin.db".to_string()),
-            bind_address: env::var("BIND_ADDRESS")
-                .unwrap_or_else(|_| "127.0.0.1:8080".to_string()),
+            bind_address: env::var("BIND_ADDRESS").unwrap_or_else(|_| "127.0.0.1:8080".to_string()),
             rcpdaemon_url: env::var("RCPDAEMON_URL")
                 .unwrap_or_else(|_| "http://127.0.0.1:3030".to_string()),
             jwt_secret: env::var("JWT_SECRET")

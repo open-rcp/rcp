@@ -1,5 +1,5 @@
-use sqlx::{sqlite::SqlitePool, Row};
 use crate::error::Result;
+use sqlx::sqlite::SqlitePool;
 
 #[derive(Clone)]
 pub struct Database {
@@ -13,7 +13,12 @@ impl Database {
     }
 
     pub async fn migrate(&self) -> Result<()> {
-        sqlx::migrate!("./migrations").run(&self.pool).await?;
+        sqlx::migrate!("./migrations")
+            .run(&self.pool)
+            .await
+            .map_err(|e| {
+                crate::error::AppError::Internal(anyhow::anyhow!("Migration failed: {}", e))
+            })?;
         Ok(())
     }
 

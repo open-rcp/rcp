@@ -1,11 +1,10 @@
 use axum::{
     extract::{Path, State},
-    http::StatusCode,
     response::Json,
-    routing::{get, post, put, delete},
+    routing::{delete, get, post, put},
     Router,
 };
-use tracing::{info, warn};
+use tracing::info;
 
 use crate::{
     error::Result,
@@ -16,7 +15,12 @@ use crate::{
 pub fn create_routes() -> Router<AppState> {
     Router::new()
         .route("/", get(list_applications).post(create_application))
-        .route("/:id", get(get_application).put(update_application).delete(delete_application))
+        .route(
+            "/:id",
+            get(get_application)
+                .put(update_application)
+                .delete(delete_application),
+        )
 }
 
 async fn list_applications(State(state): State<AppState>) -> Result<Json<Vec<Application>>> {
@@ -49,7 +53,10 @@ async fn update_application(
     Json(app): Json<CreateApplication>,
 ) -> Result<Json<Application>> {
     info!("Updating application {}", app_id);
-    let updated_app = state.rcpdaemon_client.update_application(&app_id, app).await?;
+    let updated_app = state
+        .rcpdaemon_client
+        .update_application(&app_id, app)
+        .await?;
     Ok(Json(updated_app))
 }
 
@@ -59,7 +66,7 @@ async fn delete_application(
 ) -> Result<Json<serde_json::Value>> {
     info!("Deleting application {}", app_id);
     state.rcpdaemon_client.delete_application(&app_id).await?;
-    
+
     Ok(Json(serde_json::json!({
         "message": format!("Application {} deleted successfully", app_id),
         "success": true

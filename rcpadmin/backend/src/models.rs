@@ -1,10 +1,65 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
-use uuid::Uuid;
 use std::fmt;
+use std::str::FromStr;
+use uuid::Uuid;
 
-#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+// Database models that match SQLite schema exactly
+#[derive(Debug, Clone, FromRow)]
+pub struct UserDb {
+    pub id: String,
+    pub username: String,
+    pub email: String,
+    pub password_hash: String,
+    pub role: String,
+    pub is_active: bool,
+    pub created_at: String,
+    pub updated_at: String,
+}
+
+impl From<UserDb> for User {
+    fn from(db_user: UserDb) -> Self {
+        Self {
+            id: Uuid::parse_str(&db_user.id).unwrap_or_default(),
+            username: db_user.username,
+            email: db_user.email,
+            password_hash: db_user.password_hash,
+            role: UserRole::from_str(&db_user.role).unwrap_or(UserRole::Viewer),
+            is_active: db_user.is_active,
+            created_at: DateTime::parse_from_rfc3339(&db_user.created_at)
+                .map(|dt| dt.with_timezone(&Utc))
+                .unwrap_or_else(|_| Utc::now()),
+            updated_at: DateTime::parse_from_rfc3339(&db_user.updated_at)
+                .map(|dt| dt.with_timezone(&Utc))
+                .unwrap_or_else(|_| Utc::now()),
+        }
+    }
+}
+
+#[derive(Debug, Clone, FromRow)]
+pub struct UserInfoDb {
+    pub id: String,
+    pub username: String,
+    pub email: String,
+    pub role: String,
+    pub is_active: bool,
+}
+
+impl From<UserInfoDb> for UserInfo {
+    fn from(db_user: UserInfoDb) -> Self {
+        Self {
+            id: Uuid::parse_str(&db_user.id).unwrap_or_default(),
+            username: db_user.username,
+            email: db_user.email,
+            role: UserRole::from_str(&db_user.role).unwrap_or(UserRole::Viewer),
+            is_active: db_user.is_active,
+        }
+    }
+}
+
+// API models
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct User {
     pub id: Uuid,
     pub username: String,
@@ -16,22 +71,13 @@ pub struct User {
     pub updated_at: DateTime<Utc>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, sqlx::Type)]
-#[sqlx(type_name = "text")]
-pub enum UserRole {
-    Admin,
-    Operator,
-    Viewer,
-}
-
-impl fmt::Display for UserRole {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            UserRole::Admin => write!(f, "Admin"),
-            UserRole::Operator => write!(f, "Operator"),
-            UserRole::Viewer => write!(f, "Viewer"),
-        }
-    }
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UserInfo {
+    pub id: Uuid,
+    pub username: String,
+    pub email: String,
+    pub role: UserRole,
+    pub is_active: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -40,10 +86,12 @@ pub struct CreateUser {
     pub email: String,
     pub password: String,
     pub role: UserRole,
+    pub is_active: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UpdateUser {
+    pub username: Option<String>,
     pub email: Option<String>,
     pub role: Option<UserRole>,
     pub is_active: Option<bool>,
@@ -61,13 +109,34 @@ pub struct LoginResponse {
     pub user: UserInfo,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UserInfo {
-    pub id: Uuid,
-    pub username: String,
-    pub email: String,
-    pub role: UserRole,
-    pub is_active: bool,
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub enum UserRole {
+    Admin,
+    Operator,
+    Viewer,
+}
+
+impl fmt::Display for UserRole {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            UserRole::Admin => write!(f, "Admin"),
+            UserRole::Operator => write!(f, "Operator"),
+            UserRole::Viewer => write!(f, "Viewer"),
+        }
+    }
+}
+
+impl FromStr for UserRole {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "Admin" => Ok(UserRole::Admin),
+            "Operator" => Ok(UserRole::Operator),
+            "Viewer" => Ok(UserRole::Viewer),
+            _ => Err(format!("Unknown role: {}", s)),
+        }
+    }
 }
 
 // RCP Daemon Models
