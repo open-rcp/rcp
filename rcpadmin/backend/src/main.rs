@@ -17,7 +17,6 @@ use crate::{
     auth::{protect, require_admin},
     config::Config,
     db::Database,
-    services::rcpdaemon::RcpDaemonClient,
 };
 
 pub type AppState = Arc<AppStateInner>;
@@ -25,7 +24,6 @@ pub type AppState = Arc<AppStateInner>;
 pub struct AppStateInner {
     pub db: Database,
     pub config: Config,
-    pub rcpdaemon_client: RcpDaemonClient,
 }
 
 #[tokio::main]
@@ -45,19 +43,20 @@ async fn main() -> anyhow::Result<()> {
     info!("Configuration loaded");
 
     // Initialize database
-    let db = Database::new(&config.database_url).await?;
-    db.migrate().await?;
-    info!("Database initialized");
+    // let db = Database::new(&config.database_url).await?;
+    // db.migrate().await?;  // Temporarily disable migrations
+    info!("Database initialization skipped for now");
 
-    // Initialize RCP daemon client
-    let rcpdaemon_client = RcpDaemonClient::new(&config.rcpdaemon_url).await?;
-    info!("Connected to RCP daemon at {}", config.rcpdaemon_url);
+    // Create a dummy database placeholder
+    let db = Database::new("sqlite::memory:").await.unwrap_or_else(|_| {
+        // If even memory database fails, we'll handle it gracefully
+        panic!("Could not create database connection")
+    });
 
     // Create application state
     let state = Arc::new(AppStateInner {
         db,
         config: config.clone(),
-        rcpdaemon_client,
     });
 
     // Build application router

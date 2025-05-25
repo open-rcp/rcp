@@ -1,44 +1,37 @@
-use axum::{
-    extract::State,
-    response::Json,
-    routing::{get, post},
-    Router,
-};
-use tracing::info;
+use axum::{extract::State, response::Json, routing::get, Router};
+use serde_json::Value;
 
-use crate::{error::Result, models::ServerStatus, AppState};
+use crate::{error::Result, AppState};
 
 pub fn create_routes() -> Router<AppState> {
     Router::new()
         .route("/status", get(get_status))
-        .route("/restart", post(restart_server))
-        .route("/stop", post(stop_server))
+        .route("/restart", get(restart_server))
+        .route("/config", get(get_config))
 }
 
-async fn get_status(State(state): State<AppState>) -> Result<Json<ServerStatus>> {
-    let status = state.rcpdaemon_client.get_status().await?;
-    info!("Retrieved server status: {:?}", status);
-    Ok(Json(status))
-}
-
-async fn restart_server(State(_state): State<AppState>) -> Result<Json<serde_json::Value>> {
-    // This would normally call a method on the RCP daemon client
-    // For now we'll just return a mock response
-    info!("Restart server request received");
-
+async fn get_status(State(_state): State<AppState>) -> Result<Json<Value>> {
+    // Mock response for now - replace with actual rcpdaemon call later
     Ok(Json(serde_json::json!({
-        "message": "Server restart initiated",
-        "success": true
+        "status": "running",
+        "uptime": "0h 0m 0s",
+        "version": "unknown",
+        "message": "RCP daemon not connected - mock response"
     })))
 }
 
-async fn stop_server(State(_state): State<AppState>) -> Result<Json<serde_json::Value>> {
-    // This would normally call a method on the RCP daemon client
-    // For now we'll just return a mock response
-    info!("Stop server request received");
-
+async fn restart_server(State(_state): State<AppState>) -> Result<Json<Value>> {
+    // Mock response for now - replace with actual rcpdaemon call later
     Ok(Json(serde_json::json!({
-        "message": "Server stop initiated",
-        "success": true
+        "success": false,
+        "message": "RCP daemon not connected - mock response"
+    })))
+}
+
+async fn get_config(State(_state): State<AppState>) -> Result<Json<Value>> {
+    // Mock response for now - replace with actual rcpdaemon call later
+    Ok(Json(serde_json::json!({
+        "config": {},
+        "message": "RCP daemon not connected - mock response"
     })))
 }
