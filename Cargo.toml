@@ -3,7 +3,9 @@ members = [
     "rcpcore",
     "rcpcli",
     "rcpdaemon",
-    "examples"
+    "examples", 
+    "rcpclient/rust",
+    "rcpadmin/backend"
 ]
 resolver = "2"
 
